@@ -1,0 +1,35 @@
+{
+	"name": "regular-layout",
+	"version": "0.0.1",
+	"description": "A regular CSS `grid` container",
+	"keywords": [],
+	"license": "Apache-2.0",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/texodus/regular-layout"
+	},
+	"browser": "dist/index.js",
+	"type": "module",
+	"files": [
+		"dist/**/*",
+		"src/**/*"
+	],
+	"scripts": {
+		"build": "node build.mjs",
+		"build:watch": "node build.mjs --watch",
+		"clean": "rm -rf dist",
+		"test": "playwright test",
+		"example": "npx http-server . -p 8000",
+		"lint": "biome lint src tests",
+		"format": "biome format --write src tests",
+		"check": "biome check --write src tests"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.3.10",
+		"@playwright/test": "^1.57.0",
+		"@types/node": "^22.10.5",
+		"esbuild": "^0.27.2",
+		"http-server": "^14.1.1",
+		"typescript": "^5.9.3"
+	}
+}

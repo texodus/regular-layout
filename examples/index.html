@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regular Layout</title>
+    <style>
+        regular-layout {
+            overflow: hidden;
+            position: absolute;
+            top: 36px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        regular-layout-frame {
+            position: relative;
+            box-sizing: border-box;
+            margin: 3px;
+            border-radius: 0 0 6px 6px;
+            border: 1px solid #666;
+            box-shadow: 0px 6px 6px -4px rgba(150, 150, 180);
+        }
+
+        regular-layout-frame[slot=AAA] {
+            background-color: #ffb3b0;
+        }
+
+        regular-layout-frame[slot=BBB] {
+            background-color: #b0e0a3;
+        }
+
+        regular-layout-frame[slot=CCC] {
+            background-color: #99c9ff;
+        }
+
+        regular-layout-frame[slot=DDD] {
+            background-color: #ffe699;
+        }
+
+        regular-layout-frame[slot=EEE] {
+            background-color: #ffcf99;
+        }
+
+        regular-layout-frame[slot=FFF] {
+            background-color: #ff99fd;
+        }
+
+        regular-layout-frame:not([slot]) {
+            background-color: rgba(0, 0, 0, 0.2);
+            border: 1px dashed rgb(0,0,0);
+            border-radius: 6px;
+            margin: 0;
+            box-shadow: none;
+            transition:
+                top 0.1s ease-in-out,
+                height 0.1s ease-in-out,
+                width 0.1s ease-in-out,
+                left 0.1s ease-in-out;
+        }
+
+        regular-layout-frame::part(container) {
+            display: none;
+        }
+
+        regular-layout-frame[slot]::part(container) {
+            display:revert;
+        }
+
+
+        regular-layout-frame {
+            --titlebar-height: 24px;
+        }
+
+        regular-layout-frame::part(titlebar) {
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            cursor: pointer;
+            background-color: inherit;
+            border: 1px solid #666;
+            border-radius: 6px 6px 0 0;
+            margin-left: -1px;
+            margin-right: -1px;
+            margin-bottom: 0px;
+            max-width: 200px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <button id="add">Add Panel</button>
+    </header>
+    <regular-layout>
+        <regular-layout-frame slot="AAA"></regular-layout-frame>
+        <regular-layout-frame slot="BBB"></regular-layout-frame>
+        <regular-layout-frame slot="CCC"></regular-layout-frame>
+        <regular-layout-frame slot="DDD"></regular-layout-frame>
+        <regular-layout-frame slot="EEE"></regular-layout-frame>
+        <regular-layout-frame slot="FFF"></regular-layout-frame>
+    </regular-layout>
+</body>
+
+<script type="module">
+    import "/dist/index.js";
+
+    const add = document.querySelector("#add")
+    add.addEventListener("click", () => {
+        const chars = 'abcdefghijklmnopqrstuvwxyz';
+        let name = '';
+        for (let i = 0; i < 8; i++) {
+            name += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+
+        const elem = document.createElement("regular-layout-frame");
+        elem.setAttribute("slot", name);
+        layout.appendChild(elem);
+        layout.insertPanel(name, []);
+    })
+
+    const layout = document.querySelector("regular-layout");
+    fetch("./layout.json").then(req => req.json()).then(x => layout.restore(x));
+</script>
+
+</html>
