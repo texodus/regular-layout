@@ -10,10 +10,6 @@
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 import { expect, test } from "@playwright/test";
-
-import { calculate_intersection } from "../../src/common/calculate_intersect.ts";
-import { calculate_split } from "../../src/common/calculate_split.ts";
-
 import { flatten } from "../../src/common/flatten.ts";
 import type { Layout } from "../../src/common/layout_config.ts";
 

@@ -10,7 +10,7 @@
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 import { expect, test } from "@playwright/test";
-import { TEST_PANEL } from "../fixtures.ts";
+import { TEST_PANEL } from "../helpers/fixtures.ts";
 
 import { create_css_grid_layout } from "../../src/common/generate_grid.ts";
 import type { Layout } from "../../src/common/layout_config.ts";

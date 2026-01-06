@@ -1,7 +1,8 @@
 # `<regular-layout>`
 
-[![Build Status](https://img.shields.io/github/actions/workflow/status/texodus/regular-layout/build.yaml?event=push&style=for-the-badge)](https://github.com/texodus/regular-layout/actions/workflows/build.yaml)
 [![npm](https://img.shields.io/npm/v/regular-layout.svg?style=for-the-badge)](https://www.npmjs.com/package/regular-layout)
+[![bundlephobia](https://img.shields.io/bundlephobia/minzip/regular-layout?style=for-the-badge)](https://bundlephobia.com/package/regular-layout)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/texodus/regular-layout/build.yaml?event=push&style=for-the-badge)](https://github.com/texodus/regular-layout/actions/workflows/build.yaml)
 
 A library for resizable & repositionable panel layouts, using
 [CSS `grid`](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Grid_layout).

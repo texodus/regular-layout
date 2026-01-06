@@ -9,7 +9,7 @@
 // ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-import type { LayoutPath } from "./common/layout_config.ts";
+import type { Layout, LayoutPath, TabLayout } from "./common/layout_config.ts";
 import type { RegularLayoutEvent } from "./extensions.ts";
 import type { RegularLayout } from "./regular-layout.ts";
 
@@ -62,11 +62,6 @@ export class RegularLayoutFrame extends HTMLElement {
 		this._container_sheet.replaceSync(CSS);
 		this._shadowRoot = this.attachShadow({ mode: "open" });
 		this._shadowRoot.adoptedStyleSheets = [this._container_sheet];
-		this.drawTabs = this.drawTabs.bind(this);
-		this.onPointerDown = this.onPointerDown.bind(this);
-		this.onPointerMove = this.onPointerMove.bind(this);
-		this.onPointerUp = this.onPointerUp.bind(this);
-		this.onPointerLost = this.onPointerLost.bind(this);
 	}
 
 	connectedCallback() {
@@ -88,61 +83,39 @@ export class RegularLayoutFrame extends HTMLElement {
 		this._layout.removeEventListener("regular-layout-update", this.drawTabs);
 	}
 
-	private drawTabs(event: RegularLayoutEvent) {
+	private drawTabs = (event: RegularLayoutEvent) => {
 		const slot = this.getAttribute("slot");
+		const new_panel = event.detail;
 		if (slot) {
-			const result = this._layout.getPanel(slot, event.detail);
+			const result = this._layout.getPanel(slot, new_panel);
 			this._header.textContent = "";
-			if (!result) {
-				return;
-			}
-
-			for (let e = 0; e < (result?.child?.length || 0); e++) {
-				const elem = result?.child[e];
-				const div = document.createElement("div");
-				this._tab_to_index_map.set(div, e);
-				// div.dataset.index = `${e}`;
-				div.textContent = elem || "";
-				div.setAttribute(
-					"part",
-					e === (result?.selected || 0) ? "tab active-tab" : "tab",
-				);
-
-				const x = e;
-				if (e !== (result?.selected || 0)) {
-					div.addEventListener("pointerdown", (pointerEvent: PointerEvent) => {
-						result.selected = x;
-						this._layout.restore(event.detail);
-						pointerEvent.preventDefault();
-						pointerEvent.stopImmediatePropagation();
-						pointerEvent.stopPropagation();
-					});
+			if (result) {
+				for (let e = 0; e < result.child.length; e++) {
+					const tab = this.createTab(new_panel, result, e);
+					this._header.appendChild(tab);
 				}
-
-				this._header.appendChild(div);
 			}
 		}
-	}
+	};
 
 	private onPointerDown = (event: PointerEvent): void => {
-		this._drag_state = this._layout.calculateIntersect(
-			event.clientX,
-			event.clientY,
-		);
+		const elem = event.target as HTMLDivElement;
+		if (elem.part.contains("tab")) {
+			this._drag_state = this._layout.calculateIntersect(
+				event.clientX,
+				event.clientY,
+			);
 
-		if (this._drag_state) {
-			const elem = event.target as HTMLDivElement;
-			if (elem.part.contains("tab")) {
+			if (this._drag_state) {
+				// event.preventDefault();
+				// event.stopImmediatePropagation();
+				this._header.setPointerCapture(event.pointerId);
 				const last_index = this._drag_state.path.length - 1;
 				const selected = this._tab_to_index_map.get(elem);
 				if (selected) {
 					this._drag_state.path[last_index] = selected;
 				}
 			}
-
-			this._header.setPointerCapture(event.pointerId);
-			// event.preventDefault();
-			// event.stopImmediatePropagation();
 		}
 	};
 
@@ -181,5 +154,27 @@ export class RegularLayoutFrame extends HTMLElement {
 		this._header.releasePointerCapture(event.pointerId);
 		this._drag_state = null;
 		this._drag_moved = false;
+	};
+
+	private createTab = (
+		layout: Layout,
+		result: TabLayout,
+		index: number,
+	): HTMLDivElement => {
+		const selected = result.selected || 0;
+		const tab = document.createElement("div");
+		this._tab_to_index_map.set(tab, index);
+		tab.textContent = result.child[index] || "";
+		if (index === selected) {
+			tab.setAttribute("part", "tab active-tab");
+		} else {
+			tab.setAttribute("part", "tab");
+			tab.addEventListener("pointerdown", (_: PointerEvent) => {
+				result.selected = index;
+				this._layout.restore(layout);
+			});
+		}
+
+		return tab;
 	};
 }

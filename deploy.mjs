@@ -9,56 +9,65 @@
 // ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-import * as esbuild from "esbuild";
 import { execSync } from "node:child_process";
+import { cpSync, mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
-const watch = process.argv.includes("--watch");
-
-function generateDeclarations() {
-	console.log("Generating TypeScript declaration files...");
-	execSync(
-		"pnpm tsc --project tsconfig.json",
-		{ stdio: "inherit" }
-	);
-
-	console.log("Declaration files generated!");
+function exec(command, options = {}) {
+	console.log(`> ${command}`);
+	return execSync(command, { stdio: "inherit", ...options });
 }
 
-const browserConfig = {
-	entryPoints: ["src/index.ts"],
-	bundle: true,
-	minify: true,
-	minifyWhitespace: true,
-	minifyIdentifiers: true,
-	outfile: "dist/index.js",
-	platform: "browser",
-	format: "esm",
-	sourcemap: true,
-	metafile: true,
-};
-
-function formatBytes(bytes) {
-	if (bytes < 1024) return `${bytes} B`;
-	if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
-	return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+function execOutput(command) {
+	return execSync(command, { encoding: "utf-8" }).trim();
 }
 
-async function build() {
-	if (watch) {
-		const browserContext = await esbuild.context(browserConfig);
-		await browserContext.watch();
-		console.log("Watching for changes...");
-	} else {
-		const result = await esbuild.build(browserConfig);
-		if (result.metafile) {
-			console.log("\nBundle Size:");
-			for (const [file, info] of Object.entries(result.metafile.outputs)) {
-				console.log(`  ${file}: ${formatBytes(info.bytes)}`);
-			}
-		}
-
-		generateDeclarations();
+try {
+	console.log("Checking git status...");
+	const gitStatus = execOutput("git status --porcelain");
+	if (gitStatus) {
+		console.error("Error: Git staging area is not clean. Please commit or stash your changes.");
+		console.error(gitStatus);
+		process.exit(1);
 	}
-}
 
-build().catch(() => process.exit(1));
+	console.log("Building project...");
+	exec("pnpm run build");
+
+	console.log("Preparing deployment files...");
+	const currentBranch = execOutput("git rev-parse --abbrev-ref HEAD");
+	const currentCommit = execOutput("git rev-parse --short HEAD");
+	const tempDir = mkdtempSync(join(tmpdir(), "gh-pages-"));
+	cpSync("dist", join(tempDir, "dist"), { recursive: true });
+	cpSync("examples", tempDir, { recursive: true });
+
+	console.log("Switching to gh-pages branch...");
+	let ghPagesExists = false;
+	try {
+		execSync("git show-ref --verify --quiet refs/heads/gh-pages");
+		ghPagesExists = true;
+	} catch (e) {
+		throw new Error("No gh-pages branch found");
+	}
+
+	if (ghPagesExists) {
+		exec("git checkout gh-pages");
+	} else {
+		throw new Error("No gh-pages branch found");
+	}
+
+	console.log("Copying build artifacts...");
+	cpSync(tempDir, ".", { recursive: true });
+	console.log("Committing changes...");
+	exec("git add -A");
+	exec(`git commit -m "Deploy from ${currentBranch} @ ${currentCommit}"`);
+
+	console.log(`Returning to ${currentBranch}...`);
+	exec(`git checkout ${currentBranch}`);
+	rmSync(tempDir, { recursive: true, force: true });
+	console.log("Deployment complete! gh-pages branch updated locally.");
+} catch (error) {
+	console.error("Deployment failed:", error.message);
+	process.exit(1);
+}
