@@ -72,25 +72,35 @@ function calculate_intersection_recursive(
 	row: number,
 	panel: Layout,
 	check_dividers: boolean,
-	parent_orientation: "horizontal" | "vertical" = "horizontal",
+	parent_orientation: "horizontal" | "vertical" | null = null,
 	view_window: ViewWindow = structuredClone(VIEW_WINDOW),
 	path: number[] = [],
 ): LayoutPath | null | LayoutDivider {
+	if (column < 0 || row < 0 || column > 1 || row > 1) {
+		return null;
+	}
+
 	// Base case: if this is a child panel, return its name
 	if (panel.type === "child-panel") {
+		const selected = panel.selected ?? 0;
+		const column_offset =
+			(column - view_window.col_start) /
+			(view_window.col_end - view_window.col_start);
+		const row_offset =
+			(row - view_window.row_start) /
+			(view_window.row_end - view_window.row_start);
+
 		return {
 			type: "layout-path",
 			box: undefined,
-			slot: panel.child,
+			slot: panel.child[selected],
+			panel: structuredClone(panel),
 			path: path,
 			view_window: view_window,
-			column_offset:
-				(column - view_window.col_start) /
-				(view_window.col_end - view_window.col_start),
-			row_offset:
-				(row - view_window.row_start) /
-				(view_window.row_end - view_window.row_start),
-			orientation: parent_orientation,
+			is_edge: false,
+			column_offset,
+			row_offset,
+			orientation: parent_orientation || "horizontal",
 		};
 	}
 

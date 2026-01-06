@@ -10,15 +10,18 @@
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 import type { LayoutPath } from "./common/layout_config.ts";
+import type { RegularLayoutEvent } from "./extensions.ts";
 import type { RegularLayout } from "./regular-layout.ts";
 
 const CSS = `
 :host{--titlebar--height:24px;box-sizing:border-box}
 :host([slot]){margin-top:calc(var(--titlebar--height) + 3px)!important;}
 :host([slot])::part(container){position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;background-color:inherit;border-radius:inherit}
-:host([slot])::part(titlebar){height:var(--titlebar--height);margin-top:calc(-2px - var(--titlebar--height));user-select: none;}
+:host([slot])::part(titlebar){height:var(--titlebar--height);margin-top:calc(0px - var(--titlebar--height));user-select: none;}
 :host([slot])::part(body){flex:1 1 auto;}
 `;
+
+const HTML_TEMPLATE = `<slot part="container"><slot part="titlebar"></slot><slot part="body"><slot></slot></slot></slot>`;
 
 /**
  * A custom element that represents a draggable panel within a
@@ -51,27 +54,74 @@ export class RegularLayoutFrame extends HTMLElement {
 	private _layout!: RegularLayout;
 	private _header!: HTMLElement;
 	private _drag_state: LayoutPath<DOMRect> | null = null;
+	private _drag_moved: boolean = false;
+	private _tab_to_index_map: WeakMap<HTMLDivElement, number> = new WeakMap();
 	constructor() {
 		super();
 		this._container_sheet = new CSSStyleSheet();
 		this._container_sheet.replaceSync(CSS);
 		this._shadowRoot = this.attachShadow({ mode: "open" });
 		this._shadowRoot.adoptedStyleSheets = [this._container_sheet];
-		this._shadowRoot.innerHTML = `<slot part="container"><slot part="titlebar">header</slot><slot part="body"><slot></slot></slot></slot>`;
-		this._layout = this.parentElement as RegularLayout;
-		this._header = this._shadowRoot.children[0].children[0] as HTMLElement;
+		this.drawTabs = this.drawTabs.bind(this);
+		this.onPointerDown = this.onPointerDown.bind(this);
+		this.onPointerMove = this.onPointerMove.bind(this);
+		this.onPointerUp = this.onPointerUp.bind(this);
+		this.onPointerLost = this.onPointerLost.bind(this);
 	}
 
 	connectedCallback() {
+		this._shadowRoot.innerHTML = HTML_TEMPLATE;
+		this._layout = this.parentElement as RegularLayout;
+		this._header = this._shadowRoot.children[0].children[0] as HTMLElement;
 		this._header.addEventListener("pointerdown", this.onPointerDown);
 		this._header.addEventListener("pointermove", this.onPointerMove);
 		this._header.addEventListener("pointerup", this.onPointerUp);
+		this._header.addEventListener("lostpointercapture", this.onPointerLost);
+		this._layout.addEventListener("regular-layout-update", this.drawTabs);
 	}
 
 	disconnectedCallback() {
 		this._header.removeEventListener("pointerdown", this.onPointerDown);
 		this._header.removeEventListener("pointermove", this.onPointerMove);
 		this._header.removeEventListener("pointerup", this.onPointerUp);
+		this._header.removeEventListener("lostpointercapture", this.onPointerLost);
+		this._layout.removeEventListener("regular-layout-update", this.drawTabs);
+	}
+
+	private drawTabs(event: RegularLayoutEvent) {
+		const slot = this.getAttribute("slot");
+		if (slot) {
+			const result = this._layout.getPanel(slot, event.detail);
+			this._header.textContent = "";
+			if (!result) {
+				return;
+			}
+
+			for (let e = 0; e < (result?.child?.length || 0); e++) {
+				const elem = result?.child[e];
+				const div = document.createElement("div");
+				this._tab_to_index_map.set(div, e);
+				// div.dataset.index = `${e}`;
+				div.textContent = elem || "";
+				div.setAttribute(
+					"part",
+					e === (result?.selected || 0) ? "tab active-tab" : "tab",
+				);
+
+				const x = e;
+				if (e !== (result?.selected || 0)) {
+					div.addEventListener("pointerdown", (pointerEvent: PointerEvent) => {
+						result.selected = x;
+						this._layout.restore(event.detail);
+						pointerEvent.preventDefault();
+						pointerEvent.stopImmediatePropagation();
+						pointerEvent.stopPropagation();
+					});
+				}
+
+				this._header.appendChild(div);
+			}
+		}
 	}
 
 	private onPointerDown = (event: PointerEvent): void => {
@@ -80,17 +130,25 @@ export class RegularLayoutFrame extends HTMLElement {
 			event.clientY,
 		);
 
-		if (!this._drag_state) {
-			return;
-		}
+		if (this._drag_state) {
+			const elem = event.target as HTMLDivElement;
+			if (elem.part.contains("tab")) {
+				const last_index = this._drag_state.path.length - 1;
+				const selected = this._tab_to_index_map.get(elem);
+				if (selected) {
+					this._drag_state.path[last_index] = selected;
+				}
+			}
 
-		this._header.setPointerCapture(event.pointerId);
-		event.preventDefault();
-		event.stopImmediatePropagation();
+			this._header.setPointerCapture(event.pointerId);
+			// event.preventDefault();
+			// event.stopImmediatePropagation();
+		}
 	};
 
 	private onPointerMove = (event: PointerEvent): void => {
 		if (this._drag_state) {
+			this._drag_moved = true;
 			this._layout.setOverlayState(
 				event.clientX,
 				event.clientY,
@@ -100,15 +158,28 @@ export class RegularLayoutFrame extends HTMLElement {
 	};
 
 	private onPointerUp = (event: PointerEvent): void => {
-		if (this._drag_state) {
+		if (this._drag_state && this._drag_moved) {
 			this._layout.clearOverlayState(
 				event.clientX,
 				event.clientY,
 				this._drag_state,
 			);
-
-			this._header.releasePointerCapture(event.pointerId);
-			this._drag_state = null;
 		}
+
+		// TODO This may be handled by `onPointerLost`, not sure if this is
+		// browser-specific behavior ...
+		this._header.releasePointerCapture(event.pointerId);
+		this._drag_state = null;
+		this._drag_moved = false;
+	};
+
+	private onPointerLost = (event: PointerEvent): void => {
+		if (this._drag_state) {
+			this._layout.clearOverlayState(-1, -1, this._drag_state);
+		}
+
+		this._header.releasePointerCapture(event.pointerId);
+		this._drag_state = null;
+		this._drag_moved = false;
 	};
 }

@@ -12,69 +12,8 @@
 import { expect, test } from "@playwright/test";
 import type { Layout } from "../../dist/index.js";
 
-test.describe("insertPanel", () => {
-	test("should insert a single panel into an empty layout", async ({
-		page,
-	}) => {
-		await page.goto("/examples/index.html");
-		await page.waitForSelector("regular-layout");
-
-		await page.evaluate(() => {
-			const layout = document.querySelector("regular-layout");
-			layout?.restore({
-				type: "child-panel",
-				child: "AAA",
-			});
-		});
-
-		const initialState = await page.evaluate(() => {
-			const layout = document.querySelector("regular-layout");
-			return layout?.save();
-		});
-
-		expect(initialState).toStrictEqual({
-			type: "child-panel",
-			child: "AAA",
-		});
-
-		await page.evaluate(() => {
-			const layout = document.querySelector("regular-layout");
-			layout?.insertPanel("BBB", []);
-		});
-
-		const afterInsert = await page.evaluate(() => {
-			const layout = document.querySelector("regular-layout");
-			return layout?.save();
-		});
-
-		expect(afterInsert).toStrictEqual({
-			type: "split-panel",
-			orientation: "horizontal",
-			children: [
-				{
-					type: "child-panel",
-					child: "AAA",
-				},
-				{
-					type: "child-panel",
-					child: "BBB",
-				},
-			],
-			sizes: [0.5, 0.5],
-		});
-
-		const bbbSlot = await page.evaluate(() => {
-			const layout = document.querySelector("regular-layout");
-			const slots = layout?.shadowRoot?.querySelectorAll("slot[name]");
-			return Array.from(slots || []).map((slot) => slot.getAttribute("name"));
-		});
-
-		expect(bbbSlot).toContain("BBB");
-	});
-
-	test("should insert panel at specific path in split panel", async ({
-		page,
-	}) => {
+test.describe("removePanel", () => {
+	test("should remove panel from 2-panel layout", async ({ page }) => {
 		await page.goto("/examples/index.html");
 		await page.waitForSelector("regular-layout");
 
@@ -86,11 +25,11 @@ test.describe("insertPanel", () => {
 				children: [
 					{
 						type: "child-panel",
-						child: "AAA",
+						child: ["AAA"],
 					},
 					{
 						type: "child-panel",
-						child: "BBB",
+						child: ["BBB"],
 					},
 				],
 				sizes: [0.5, 0.5],
@@ -99,36 +38,86 @@ test.describe("insertPanel", () => {
 
 		await page.evaluate(() => {
 			const layout = document.querySelector("regular-layout");
-			layout?.insertPanel("CCC", [1]);
+			layout?.removePanel("BBB");
 		});
 
-		const afterInsert = await page.evaluate(() => {
+		const afterRemove = await page.evaluate(() => {
 			const layout = document.querySelector("regular-layout");
 			return layout?.save();
 		});
 
-		expect(afterInsert).toStrictEqual({
+		expect(afterRemove).toStrictEqual({
+			type: "child-panel",
+			child: ["AAA"],
+		});
+
+		const slots = await page.evaluate(() => {
+			const layout = document.querySelector("regular-layout");
+			const slotElements = layout?.shadowRoot?.querySelectorAll("slot[name]");
+			return Array.from(slotElements || []).map((slot) =>
+				slot.getAttribute("name"),
+			);
+		});
+
+		expect(slots).not.toContain("BBB");
+		expect(slots).toContain("AAA");
+	});
+
+	test("should remove panel from 3-panel layout", async ({ page }) => {
+		await page.goto("/examples/index.html");
+		await page.waitForSelector("regular-layout");
+
+		await page.evaluate(() => {
+			const layout = document.querySelector("regular-layout");
+			layout?.restore({
+				type: "split-panel",
+				orientation: "horizontal",
+				children: [
+					{
+						type: "child-panel",
+						child: ["AAA"],
+					},
+					{
+						type: "child-panel",
+						child: ["BBB"],
+					},
+					{
+						type: "child-panel",
+						child: ["CCC"],
+					},
+				],
+				sizes: [0.2, 0.3, 0.5],
+			});
+		});
+
+		await page.evaluate(() => {
+			const layout = document.querySelector("regular-layout");
+			layout?.removePanel("BBB");
+		});
+
+		const afterRemove = await page.evaluate(() => {
+			const layout = document.querySelector("regular-layout");
+			return layout?.save();
+		});
+
+		expect(afterRemove).toStrictEqual({
 			type: "split-panel",
 			orientation: "horizontal",
 			children: [
 				{
 					type: "child-panel",
-					child: "AAA",
+					child: ["AAA"],
 				},
 				{
 					type: "child-panel",
-					child: "CCC",
-				},
-				{
-					type: "child-panel",
-					child: "BBB",
+					child: ["CCC"],
 				},
 			],
-			sizes: [0.3333333333333333, 0.3333333333333333, 0.3333333333333333],
+			sizes: [0.28571428571428575, 0.7142857142857143],
 		});
 	});
 
-	test("should insert panel into nested split panel", async ({ page }) => {
+	test("should remove panel from nested layout", async ({ page }) => {
 		await page.goto("/examples/index.html");
 		await page.waitForSelector("regular-layout");
 
@@ -144,18 +133,18 @@ test.describe("insertPanel", () => {
 						children: [
 							{
 								type: "child-panel",
-								child: "AAA",
+								child: ["AAA"],
 							},
 							{
 								type: "child-panel",
-								child: "BBB",
+								child: ["BBB"],
 							},
 						],
-						sizes: [0.5, 0.5],
+						sizes: [0.3, 0.7],
 					},
 					{
 						type: "child-panel",
-						child: "CCC",
+						child: ["CCC"],
 					},
 				],
 				sizes: [0.6, 0.4],
@@ -164,47 +153,115 @@ test.describe("insertPanel", () => {
 
 		await page.evaluate(() => {
 			const layout = document.querySelector("regular-layout");
-			layout?.insertPanel("DDD", [0, 2]);
+			layout?.removePanel("AAA");
 		});
 
-		const afterInsert = await page.evaluate(() => {
+		const afterRemove = await page.evaluate(() => {
 			const layout = document.querySelector("regular-layout");
 			return layout?.save();
 		});
 
-		expect(afterInsert).toStrictEqual({
+		expect(afterRemove).toStrictEqual({
 			type: "split-panel",
 			orientation: "horizontal",
 			children: [
 				{
-					type: "split-panel",
-					orientation: "vertical",
-					children: [
-						{
-							type: "child-panel",
-							child: "AAA",
-						},
-						{
-							type: "child-panel",
-							child: "BBB",
-						},
-						{
-							type: "child-panel",
-							child: "DDD",
-						},
-					],
-					sizes: [0.3333333333333333, 0.3333333333333333, 0.3333333333333333],
+					type: "child-panel",
+					child: ["BBB"],
 				},
 				{
 					type: "child-panel",
-					child: "CCC",
+					child: ["CCC"],
 				},
 			],
 			sizes: [0.6, 0.4],
 		});
 	});
 
-	test("should split existing panel when inserting at deeper path", async ({
+	test("should remove panel from deeply nested layout", async ({ page }) => {
+		await page.goto("/examples/index.html");
+		await page.waitForSelector("regular-layout");
+
+		await page.evaluate(() => {
+			const layout = document.querySelector("regular-layout");
+			layout?.restore({
+				type: "split-panel",
+				orientation: "vertical",
+				children: [
+					{
+						type: "split-panel",
+						orientation: "horizontal",
+						children: [
+							{
+								type: "split-panel",
+								orientation: "vertical",
+								children: [
+									{
+										type: "child-panel",
+										child: ["AAA"],
+									},
+									{
+										type: "child-panel",
+										child: ["BBB"],
+									},
+								],
+								sizes: [0.4, 0.6],
+							},
+							{
+								type: "child-panel",
+								child: ["CCC"],
+							},
+						],
+						sizes: [0.5, 0.5],
+					},
+					{
+						type: "child-panel",
+						child: ["DDD"],
+					},
+				],
+				sizes: [0.7, 0.3],
+			});
+		});
+
+		await page.evaluate(() => {
+			const layout = document.querySelector("regular-layout");
+			layout?.removePanel("BBB");
+		});
+
+		const afterRemove = await page.evaluate(() => {
+			const layout = document.querySelector("regular-layout");
+			return layout?.save();
+		});
+
+		expect(afterRemove).toStrictEqual({
+			type: "split-panel",
+			orientation: "vertical",
+			children: [
+				{
+					type: "split-panel",
+					orientation: "horizontal",
+					children: [
+						{
+							type: "child-panel",
+							child: ["AAA"],
+						},
+						{
+							type: "child-panel",
+							child: ["CCC"],
+						},
+					],
+					sizes: [0.5, 0.5],
+				},
+				{
+					type: "child-panel",
+					child: ["DDD"],
+				},
+			],
+			sizes: [0.7, 0.3],
+		});
+	});
+
+	test("should preserve state with save/restore after removePanel", async ({
 		page,
 	}) => {
 		await page.goto("/examples/index.html");
@@ -218,75 +275,27 @@ test.describe("insertPanel", () => {
 				children: [
 					{
 						type: "child-panel",
-						child: "AAA",
+						child: ["AAA"],
 					},
 					{
 						type: "child-panel",
-						child: "BBB",
+						child: ["BBB"],
+					},
+					{
+						type: "child-panel",
+						child: ["CCC"],
 					},
 				],
-				sizes: [0.5, 0.5],
+				sizes: [0.3, 0.4, 0.3],
 			});
 		});
 
 		await page.evaluate(() => {
 			const layout = document.querySelector("regular-layout");
-			layout?.insertPanel("CCC", [1, 1]);
+			layout?.removePanel("BBB");
 		});
 
-		const afterInsert = await page.evaluate(() => {
-			const layout = document.querySelector("regular-layout");
-			return layout?.save();
-		});
-
-		expect(afterInsert).toStrictEqual({
-			type: "split-panel",
-			orientation: "horizontal",
-			children: [
-				{
-					type: "child-panel",
-					child: "AAA",
-				},
-				{
-					type: "split-panel",
-					orientation: "vertical",
-					children: [
-						{
-							type: "child-panel",
-							child: "BBB",
-						},
-						{
-							type: "child-panel",
-							child: "CCC",
-						},
-					],
-					sizes: [0.5, 0.5],
-				},
-			],
-			sizes: [0.5, 0.5],
-		});
-	});
-
-	test("should preserve state with save/restore after insertPanel", async ({
-		page,
-	}) => {
-		await page.goto("/examples/index.html");
-		await page.waitForSelector("regular-layout");
-
-		await page.evaluate(() => {
-			const layout = document.querySelector("regular-layout");
-			layout?.restore({
-				type: "child-panel",
-				child: "AAA",
-			});
-		});
-
-		await page.evaluate(() => {
-			const layout = document.querySelector("regular-layout");
-			layout?.insertPanel("BBB", []);
-		});
-
-		const stateAfterInsert = await page.evaluate(() => {
+		const stateAfterRemove = await page.evaluate(() => {
 			const layout = document.querySelector("regular-layout");
 			return layout?.save();
 		});
@@ -294,13 +303,74 @@ test.describe("insertPanel", () => {
 		await page.evaluate((state) => {
 			const layout = document.querySelector("regular-layout");
 			layout?.restore(state as Layout);
-		}, stateAfterInsert);
+		}, stateAfterRemove);
 
 		const restoredState = await page.evaluate(() => {
 			const layout = document.querySelector("regular-layout");
 			return layout?.save();
 		});
 
-		expect(restoredState).toStrictEqual(stateAfterInsert);
+		expect(restoredState).toStrictEqual(stateAfterRemove);
+	});
+});
+
+test.describe("tabs", () => {
+	test("should remove a tab from the center of a 3-panel layout", async ({
+		page,
+	}) => {
+		await page.goto("/examples/index.html");
+		await page.waitForSelector("regular-layout");
+		await page.evaluate(() => {
+			const layout = document.querySelector("regular-layout");
+			layout?.restore({
+				type: "split-panel",
+				orientation: "horizontal",
+				children: [
+					{
+						type: "child-panel",
+						child: ["AAA"],
+					},
+					{
+						type: "child-panel",
+						child: ["BBB", "DDD", "EEE"],
+					},
+					{
+						type: "child-panel",
+						child: ["CCC"],
+					},
+				],
+				sizes: [0.2, 0.3, 0.5],
+			});
+		});
+
+		await page.evaluate(() => {
+			const layout = document.querySelector("regular-layout");
+			layout?.removePanel("BBB");
+		});
+
+		const afterRemove = await page.evaluate(() => {
+			const layout = document.querySelector("regular-layout");
+			return layout?.save();
+		});
+
+		expect(afterRemove).toStrictEqual({
+			type: "split-panel",
+			orientation: "horizontal",
+			children: [
+				{
+					type: "child-panel",
+					child: ["AAA"],
+				},
+				{
+					type: "child-panel",
+					child: ["DDD", "EEE"],
+				},
+				{
+					type: "child-panel",
+					child: ["CCC"],
+				},
+			],
+			sizes: [0.2, 0.3, 0.5],
+		});
 	});
 });

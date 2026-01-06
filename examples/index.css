@@ -1,0 +1,112 @@
+body {
+    font-family: "ui-monospace", "SFMono-Regular", "SF Mono", "Menlo", "Consolas", "Liberation Mono", monospace;
+}
+
+/* Layout */
+regular-layout {
+    overflow: hidden;
+    position: absolute;
+    top: 36px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+/* Frame */
+regular-layout-frame {
+    --titlebar-height: 24px;
+    position: relative;
+    box-sizing: border-box;
+    margin: 3px;
+    border-radius: 0 0 6px 6px;
+    border: 1px solid #666;
+    box-shadow: 0px 6px 6px -4px rgba(150, 150, 180);
+}
+
+regular-layout-frame::part(titlebar) {
+    display: flex;
+    align-items: stretch;
+    margin-left: -1px;
+    margin-right: -1px;
+    margin-bottom: 0px;
+}
+
+regular-layout-frame::part(tab) {
+    display: flex;
+    flex: 1 1 150px;
+    align-items: center;
+    padding: 0 12px;
+    cursor: pointer;
+    max-width: 150px;
+    text-overflow: ellipsis;
+    border: 1px solid #666;
+    border-radius: 6px 6px 0 0;
+    opacity: 0.5;
+}
+
+regular-layout-frame::part(active-tab) {
+    opacity: 1;
+}
+
+/* Frame in Overlay Mode */
+regular-layout-frame:not([slot]) {
+    background-color: rgba(0, 0, 0, 0.2) !important;
+    border: 1px dashed rgb(0, 0, 0);
+    border-radius: 6px;
+    margin: 0;
+    box-shadow: none;
+    transition:
+        top 0.1s ease-in-out,
+        height 0.1s ease-in-out,
+        width 0.1s ease-in-out,
+        left 0.1s ease-in-out;
+}
+
+regular-layout-frame::part(container) {
+    display: none;
+}
+
+regular-layout-frame[slot]::part(container) {
+    display: revert;
+}
+
+/* Colors */
+regular-layout :nth-child(8n+1),
+regular-layout :nth-child(8n+1)::part(tab) {
+    background-color: #ffadadff;
+}
+
+regular-layout :nth-child(8n+2),
+regular-layout :nth-child(8n+2)::part(tab) {
+    background-color: #ffd6a5ff;
+}
+
+regular-layout :nth-child(8n+3),
+regular-layout :nth-child(8n+3)::part(tab) {
+    background-color: #fdffb6ff;
+}
+
+regular-layout :nth-child(8n+4),
+regular-layout :nth-child(8n+4)::part(tab) {
+    background-color: #caffbfff;
+}
+
+regular-layout :nth-child(8n+5),
+regular-layout :nth-child(8n+5)::part(tab) {
+    background-color: #9bf6ffff;
+}
+
+regular-layout :nth-child(8n+6),
+regular-layout :nth-child(8n+6)::part(tab) {
+    background-color: #a0c4ffff;
+}
+
+regular-layout :nth-child(8n+7),
+regular-layout :nth-child(8n+7)::part(tab) {
+    background-color: #bdb2ffff;
+}
+
+regular-layout :nth-child(8n+8),
+regular-layout :nth-child(8n+8)::part(tab) {
+    background-color: #ffc6ffff;
+}

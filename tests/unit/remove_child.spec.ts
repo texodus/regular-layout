@@ -22,11 +22,11 @@ test.describe("remove_child", async () => {
 			children: [
 				{
 					type: "child-panel",
-					child: "BBB",
+					child: ["BBB"],
 				},
 				{
 					type: "child-panel",
-					child: "CCC",
+					child: ["CCC"],
 				},
 			],
 			sizes: [0.6, 0.4],
@@ -41,15 +41,30 @@ test.describe("remove_child", async () => {
 			children: [
 				{
 					type: "child-panel",
-					child: "AAA",
+					child: ["AAA"],
 				},
 				{
 					type: "child-panel",
-					child: "BBB",
+					child: ["BBB"],
 				},
 			],
 			sizes: [0.3, 0.7],
 			orientation: "vertical",
+		});
+	});
+
+	test("remove child from top-level tab panel", () => {
+		const result = remove_child(
+			{
+				type: "child-panel",
+				child: ["AAA", "CCC"],
+			},
+			"AAA",
+		);
+
+		expect(result).toStrictEqual({
+			type: "child-panel",
+			child: ["CCC"],
 		});
 	});
 
@@ -59,15 +74,15 @@ test.describe("remove_child", async () => {
 			children: [
 				{
 					type: "child-panel",
-					child: "AAA",
+					child: ["AAA"],
 				},
 				{
 					type: "child-panel",
-					child: "BBB",
+					child: ["BBB"],
 				},
 				{
 					type: "child-panel",
-					child: "CCC",
+					child: ["CCC"],
 				},
 			],
 			sizes: [0.2, 0.3, 0.5],
@@ -80,11 +95,11 @@ test.describe("remove_child", async () => {
 			children: [
 				{
 					type: "child-panel",
-					child: "AAA",
+					child: ["AAA"],
 				},
 				{
 					type: "child-panel",
-					child: "CCC",
+					child: ["CCC"],
 				},
 			],
 			sizes: [0.28571428571428575, 0.7142857142857143],
@@ -104,11 +119,11 @@ test.describe("remove_child", async () => {
 							children: [
 								{
 									type: "child-panel",
-									child: "AAA",
+									child: ["AAA"],
 								},
 								{
 									type: "child-panel",
-									child: "BBB",
+									child: ["BBB"],
 								},
 							],
 							sizes: [0.4, 0.6],
@@ -116,7 +131,7 @@ test.describe("remove_child", async () => {
 						},
 						{
 							type: "child-panel",
-							child: "CCC",
+							child: ["CCC"],
 						},
 					],
 					sizes: [0.5, 0.5],
@@ -124,7 +139,7 @@ test.describe("remove_child", async () => {
 				},
 				{
 					type: "child-panel",
-					child: "DDD",
+					child: ["DDD"],
 				},
 			],
 			sizes: [0.7, 0.3],
@@ -139,11 +154,11 @@ test.describe("remove_child", async () => {
 					children: [
 						{
 							type: "child-panel",
-							child: "AAA",
+							child: ["AAA"],
 						},
 						{
 							type: "child-panel",
-							child: "CCC",
+							child: ["CCC"],
 						},
 					],
 					sizes: [0.5, 0.5],
@@ -151,7 +166,7 @@ test.describe("remove_child", async () => {
 				},
 				{
 					type: "child-panel",
-					child: "DDD",
+					child: ["DDD"],
 				},
 			],
 			sizes: [0.7, 0.3],

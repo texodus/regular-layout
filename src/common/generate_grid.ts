@@ -85,7 +85,7 @@ function collectTrackPositions(
 
 function findTrackIndex(positions: number[], value: number): number {
 	for (let i = 0; i < positions.length; i++) {
-		if (Math.abs(positions[i] - value) < 0.0001) {
+		if (Math.abs(positions[i] - value) < GRID_TRACK_COLLAPSE_TOLERANCE) {
 			return i;
 		}
 	}
@@ -103,9 +103,10 @@ function buildCells(
 	rowEnd: number,
 ): GridCell[] {
 	if (panel.type === "child-panel") {
+		const selected = panel.selected ?? 0;
 		return [
 			{
-				child: panel.child,
+				child: panel.child[selected],
 				colStart: findTrackIndex(colPositions, colStart),
 				colEnd: findTrackIndex(colPositions, colEnd),
 				rowStart: findTrackIndex(rowPositions, rowStart),
@@ -203,7 +204,8 @@ export function create_css_grid_layout(
 	}
 
 	if (layout.type === "child-panel") {
-		return `${host_template("100%", "100%")}\n${child_template(layout.child, "1", "1")}`;
+		const selected = layout.selected ?? 0;
+		return `${host_template("100%", "100%")}\n${child_template(layout.child[selected], "1", "1")}`;
 	}
 
 	const colPositions = collectTrackPositions(layout, "horizontal", 0, 1);

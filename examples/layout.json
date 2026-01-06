@@ -12,7 +12,7 @@
                     "children": [
                         {
                             "type": "child-panel",
-                            "child": "AAA"
+                            "child": ["AAA"]
                         },
                         {
                             "type": "split-panel",
@@ -20,11 +20,11 @@
                             "children": [
                                 {
                                     "type": "child-panel",
-                                    "child": "BBB"
+                                    "child": ["BBB"]
                                 },
                                 {
                                     "type": "child-panel",
-                                    "child": "CCC"
+                                    "child": ["CCC"]
                                 }
                             ],
                             "sizes": [
@@ -44,11 +44,11 @@
                     "children": [
                         {
                             "type": "child-panel",
-                            "child": "DDD"
+                            "child": ["DDD"]
                         },
                         {
                             "type": "child-panel",
-                            "child": "EEE"
+                            "child": ["EEE"]
                         }
                     ],
                     "sizes": [
@@ -64,7 +64,7 @@
         },
         {
             "type": "child-panel",
-            "child": "FFF"
+            "child": ["FFF", "GGG", "HHH"]
         }
     ],
     "sizes": [

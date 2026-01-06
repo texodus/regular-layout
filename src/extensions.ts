@@ -11,10 +11,10 @@
 
 import { RegularLayout } from "./regular-layout.ts";
 import { RegularLayoutFrame } from "./regular-layout-frame.ts";
-
-customElements.define("regular-layout-frame", RegularLayoutFrame);
+import { Layout } from "./common/layout_config.ts";
 
 customElements.define("regular-layout", RegularLayout);
+customElements.define("regular-layout-frame", RegularLayoutFrame);
 
 declare global {
 	interface Document {
@@ -37,4 +37,28 @@ declare global {
 		get(tagName: "regular-layout"): typeof RegularLayout;
 		get(tagName: "regular-layout-frame"): typeof RegularLayoutFrame;
 	}
+
+	interface HTMLElement {
+		addEventListener(
+			name: "regular-layout-update",
+			cb: (e: RegularLayoutEvent) => void,
+			options?: { signal: AbortSignal },
+		): void;
+
+		removeEventListener(name: "regular-layout-update", cb: any): void;
+	}
+}
+
+export interface RegularLayoutEvent extends CustomEvent {
+	detail: Layout;
+}
+
+export interface PerspectiveViewerElementExt {
+	addEventListener(
+		name: "regular-layout-update",
+		cb: (e: RegularLayoutEvent) => void,
+		options?: { signal: AbortSignal },
+	): void;
+
+	removeEventListener(name: "regular-layout-update", cb: any): void;
 }

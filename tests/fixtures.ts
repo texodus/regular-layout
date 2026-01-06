@@ -1,4 +1,4 @@
-import type { Layout } from "../src/node.ts";
+import type { Layout } from "../src/common/layout_config.ts";
 
 export const TEST_PANEL: Layout = {
 	type: "split-panel",
@@ -8,11 +8,11 @@ export const TEST_PANEL: Layout = {
 			children: [
 				{
 					type: "child-panel",
-					child: "AAA",
+					child: ["AAA"],
 				},
 				{
 					type: "child-panel",
-					child: "BBB",
+					child: ["BBB"],
 				},
 			],
 			sizes: [0.3, 0.7],
@@ -20,7 +20,7 @@ export const TEST_PANEL: Layout = {
 		},
 		{
 			type: "child-panel",
-			child: "CCC",
+			child: ["CCC"],
 		},
 	],
 	sizes: [0.6, 0.4],

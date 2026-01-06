@@ -23,7 +23,7 @@ test.describe("save and restore", () => {
 			const layout = document.querySelector("regular-layout");
 			layout?.restore({
 				type: "child-panel",
-				child: "AAA",
+				child: ["AAA"],
 			});
 		});
 
@@ -34,7 +34,7 @@ test.describe("save and restore", () => {
 
 		expect(saved).toStrictEqual({
 			type: "child-panel",
-			child: "AAA",
+			child: ["AAA"],
 		});
 	});
 
@@ -48,7 +48,7 @@ test.describe("save and restore", () => {
 			const layout = document.querySelector("regular-layout");
 			layout?.restore({
 				type: "child-panel",
-				child: "AAA",
+				child: ["AAA"],
 			});
 		});
 
@@ -61,7 +61,7 @@ test.describe("save and restore", () => {
 			const layout = document.querySelector("regular-layout");
 			layout?.restore({
 				type: "child-panel",
-				child: "BBB",
+				child: ["BBB"],
 			});
 		});
 
@@ -90,11 +90,11 @@ test.describe("save and restore", () => {
 			children: [
 				{
 					type: "child-panel",
-					child: "AAA",
+					child: ["AAA"],
 				},
 				{
 					type: "child-panel",
-					child: "BBB",
+					child: ["BBB"],
 				},
 			],
 			sizes: [0.3, 0.7],
@@ -127,18 +127,18 @@ test.describe("save and restore", () => {
 					children: [
 						{
 							type: "child-panel",
-							child: "AAA",
+							child: ["AAA"],
 						},
 						{
 							type: "child-panel",
-							child: "BBB",
+							child: ["BBB"],
 						},
 					],
 					sizes: [0.3, 0.7],
 				},
 				{
 					type: "child-panel",
-					child: "CCC",
+					child: ["CCC"],
 				},
 			],
 			sizes: [0.6, 0.4],
@@ -173,18 +173,18 @@ test.describe("save and restore", () => {
 					children: [
 						{
 							type: "child-panel",
-							child: "AAA",
+							child: ["AAA"],
 						},
 						{
 							type: "child-panel",
-							child: "BBB",
+							child: ["BBB"],
 						},
 					],
 					sizes: [0.3, 0.7],
 				},
 				{
 					type: "child-panel",
-					child: "CCC",
+					child: ["CCC"],
 				},
 			],
 			sizes: [0.6, 0.4],
@@ -206,7 +206,7 @@ test.describe("save and restore", () => {
 			const layout = document.querySelector("regular-layout");
 			layout?.restore({
 				type: "child-panel",
-				child: "DDD",
+				child: ["DDD"],
 			});
 		});
 
@@ -240,25 +240,25 @@ test.describe("save and restore", () => {
 							children: [
 								{
 									type: "child-panel",
-									child: "AAA",
+									child: ["AAA"],
 								},
 								{
 									type: "child-panel",
-									child: "BBB",
+									child: ["BBB"],
 								},
 							],
 							sizes: [0.4, 0.6],
 						},
 						{
 							type: "child-panel",
-							child: "CCC",
+							child: ["CCC"],
 						},
 					],
 					sizes: [0.5, 0.5],
 				},
 				{
 					type: "child-panel",
-					child: "DDD",
+					child: ["DDD"],
 				},
 			],
 			sizes: [0.7, 0.3],
@@ -291,11 +291,11 @@ test.describe("save and restore", () => {
 				children: [
 					{
 						type: "child-panel",
-						child: "AAA",
+						child: ["AAA"],
 					},
 					{
 						type: "child-panel",
-						child: "BBB",
+						child: ["BBB"],
 					},
 				],
 				sizes: [0.5, 0.5],
@@ -324,11 +324,11 @@ test.describe("save and restore", () => {
 			children: [
 				{
 					type: "child-panel",
-					child: "AAA",
+					child: ["AAA"],
 				},
 				{
 					type: "child-panel",
-					child: "BBB",
+					child: ["BBB"],
 				},
 			],
 			sizes: [0.5, 0.5],
@@ -349,11 +349,11 @@ test.describe("save and restore", () => {
 				children: [
 					{
 						type: "child-panel",
-						child: "AAA",
+						child: ["AAA"],
 					},
 					{
 						type: "child-panel",
-						child: "BBB",
+						child: ["BBB"],
 					},
 				],
 				sizes: [0.5, 0.5],
@@ -380,15 +380,15 @@ test.describe("save and restore", () => {
 				children: [
 					{
 						type: "child-panel",
-						child: "CCC",
+						child: ["CCC"],
 					},
 					{
 						type: "child-panel",
-						child: "DDD",
+						child: ["DDD"],
 					},
 					{
 						type: "child-panel",
-						child: "EEE",
+						child: ["EEE"],
 					},
 				],
 				sizes: [0.3, 0.3, 0.4],
@@ -423,15 +423,15 @@ test.describe("save and restore", () => {
 			children: [
 				{
 					type: "child-panel",
-					child: "AAA",
+					child: ["AAA"],
 				},
 				{
 					type: "child-panel",
-					child: "BBB",
+					child: ["BBB"],
 				},
 				{
 					type: "child-panel",
-					child: "CCC",
+					child: ["CCC"],
 				},
 			],
 			sizes: [0.123456789, 0.456789123, 0.419754088],
@@ -472,7 +472,7 @@ test.describe("save and restore", () => {
 			const layout = document.querySelector("regular-layout");
 			layout?.restore({
 				type: "child-panel",
-				child: "AAA",
+				child: ["AAA"],
 			});
 		});
 

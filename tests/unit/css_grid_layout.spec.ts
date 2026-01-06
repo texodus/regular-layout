@@ -30,7 +30,7 @@ test("simple test", async () => {
 test("single child panel", () => {
 	const singleChild: Layout = {
 		type: "child-panel",
-		child: "ONLY",
+		child: ["ONLY"],
 	};
 
 	expect(create_css_grid_layout(singleChild, true)).toEqual(
@@ -47,11 +47,11 @@ test("regressions", () => {
 				children: [
 					{
 						type: "child-panel",
-						child: "AAA",
+						child: ["AAA"],
 					},
 					{
 						type: "child-panel",
-						child: "BBB",
+						child: ["BBB"],
 					},
 				],
 				sizes: [0.8, 0.2],
@@ -59,7 +59,7 @@ test("regressions", () => {
 			},
 			{
 				type: "child-panel",
-				child: "CCC",
+				child: ["CCC"],
 			},
 		],
 		sizes: [0.6, 0.4],
@@ -89,22 +89,22 @@ test("deeply nested css grid", () => {
 						children: [
 							{
 								type: "child-panel",
-								child: "AAA",
+								child: ["AAA"],
 							},
 							{
 								type: "child-panel",
-								child: "EEE",
+								child: ["EEE"],
 							},
 						],
 						sizes: [0.5, 0.5],
 					},
 					{
 						type: "child-panel",
-						child: "BBB",
+						child: ["BBB"],
 					},
 					{
 						type: "child-panel",
-						child: "DDD",
+						child: ["DDD"],
 					},
 				],
 				sizes: [0.3, 0.6, 0.1],
@@ -112,7 +112,7 @@ test("deeply nested css grid", () => {
 			},
 			{
 				type: "child-panel",
-				child: "CCC",
+				child: ["CCC"],
 			},
 		],
 		sizes: [0.6, 0.4],
@@ -144,22 +144,22 @@ test("Deeply nested CSS grid part 2", () => {
 						children: [
 							{
 								type: "child-panel",
-								child: "AAA",
+								child: ["AAA"],
 							},
 							{
 								type: "child-panel",
-								child: "EEE",
+								child: ["EEE"],
 							},
 						],
 						sizes: [0.5, 0.5],
 					},
 					{
 						type: "child-panel",
-						child: "BBB",
+						child: ["BBB"],
 					},
 					{
 						type: "child-panel",
-						child: "DDD",
+						child: ["DDD"],
 					},
 				],
 				sizes: [0.3, 0.6, 0.1],
@@ -171,11 +171,11 @@ test("Deeply nested CSS grid part 2", () => {
 				children: [
 					{
 						type: "child-panel",
-						child: "CCC",
+						child: ["CCC"],
 					},
 					{
 						type: "child-panel",
-						child: "FFF",
+						child: ["FFF"],
 					},
 				],
 				sizes: [0.5, 0.5],
@@ -207,11 +207,11 @@ test("parallel", () => {
 				children: [
 					{
 						type: "child-panel",
-						child: "AAA",
+						child: ["AAA"],
 					},
 					{
 						type: "child-panel",
-						child: "BBB",
+						child: ["BBB"],
 					},
 				],
 				sizes: [0.3, 0.7],
@@ -219,11 +219,11 @@ test("parallel", () => {
 			},
 			{
 				type: "child-panel",
-				child: "DDD",
+				child: ["DDD"],
 			},
 			{
 				type: "child-panel",
-				child: "CCC",
+				child: ["CCC"],
 			},
 		],
 		sizes: [0.3333333333333333, 0.3333333333333333, 0.3333333333333333],
@@ -250,11 +250,11 @@ test("Parallel split-panels with different sizes", () => {
 				children: [
 					{
 						type: "child-panel",
-						child: "AAA",
+						child: ["AAA"],
 					},
 					{
 						type: "child-panel",
-						child: "BBB",
+						child: ["BBB"],
 					},
 				],
 				sizes: [0.3, 0.7],
@@ -265,11 +265,11 @@ test("Parallel split-panels with different sizes", () => {
 				children: [
 					{
 						type: "child-panel",
-						child: "CCC",
+						child: ["CCC"],
 					},
 					{
 						type: "child-panel",
-						child: "DDD",
+						child: ["DDD"],
 					},
 				],
 				sizes: [0.7, 0.3],
@@ -304,7 +304,7 @@ test("Deeply alternating split", () => {
 						children: [
 							{
 								type: "child-panel",
-								child: "VfssXzLK",
+								child: ["VfssXzLK"],
 							},
 							{
 								type: "split-panel",
@@ -312,11 +312,11 @@ test("Deeply alternating split", () => {
 								children: [
 									{
 										type: "child-panel",
-										child: "qsAwxKvs",
+										child: ["qsAwxKvs"],
 									},
 									{
 										type: "child-panel",
-										child: "AAA",
+										child: ["AAA"],
 									},
 								],
 								sizes: [0.5, 0.5],
@@ -326,7 +326,7 @@ test("Deeply alternating split", () => {
 					},
 					{
 						type: "child-panel",
-						child: "BBB",
+						child: ["BBB"],
 					},
 				],
 				sizes: [0.3, 0.7],
@@ -334,7 +334,7 @@ test("Deeply alternating split", () => {
 			},
 			{
 				type: "child-panel",
-				child: "CCC",
+				child: ["CCC"],
 			},
 		],
 		sizes: [0.6, 0.4],
