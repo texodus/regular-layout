@@ -1,10 +1,15 @@
 # `<regular-layout>`
 
-A library for resizable panel layouts using CSS `grid`.
+[![Build Status](https://img.shields.io/github/actions/workflow/status/texodus/regular-layout/build.yaml?event=push&style=for-the-badge)](https://github.com/texodus/regular-layout/actions/workflows/build.yaml)
+[![npm](https://img.shields.io/npm/v/regular-layout.svg?style=for-the-badge)](https://www.npmjs.com/package/regular-layout)
 
-- 7kb, zero dependencies
-- Web Component
-- 
+A library for resizable & repositionable panel layouts, using
+[CSS `grid`](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Grid_layout).
+
+- Zero depedencies, pure TypeScript, tiny.
+- Implemented as a [Web Component](https://developer.mozilla.org/en-US/docs/Web/API/Web_components),
+  interoperable with any framework and fully customizable.
+- Covered in bees.
 
 ## Installation
 

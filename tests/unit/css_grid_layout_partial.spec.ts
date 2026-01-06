@@ -27,7 +27,7 @@ test("Deeply alternating split with grid-based overlay", () => {
 						children: [
 							{
 								type: "child-panel",
-								child: "AAA",
+								child: ["AAA"],
 							},
 							{
 								type: "split-panel",
@@ -35,11 +35,11 @@ test("Deeply alternating split with grid-based overlay", () => {
 								children: [
 									{
 										type: "child-panel",
-										child: "BBB",
+										child: ["BBB"],
 									},
 									{
 										type: "child-panel",
-										child: "CCC",
+										child: ["CCC"],
 									},
 								],
 								sizes: [0.5, 0.5],
@@ -49,7 +49,7 @@ test("Deeply alternating split with grid-based overlay", () => {
 					},
 					{
 						type: "child-panel",
-						child: "DDD",
+						child: ["DDD"],
 					},
 				],
 				sizes: [0.3, 0.7],
@@ -57,7 +57,7 @@ test("Deeply alternating split with grid-based overlay", () => {
 			},
 			{
 				type: "child-panel",
-				child: "EEE",
+				child: ["EEE"],
 			},
 		],
 		sizes: [0.6, 0.4],

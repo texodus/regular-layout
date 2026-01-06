@@ -30,11 +30,11 @@ test.describe("redistribute_panel_sizes", async () => {
 					children: [
 						{
 							type: "child-panel",
-							child: "AAA",
+							child: ["AAA"],
 						},
 						{
 							type: "child-panel",
-							child: "BBB",
+							child: ["BBB"],
 						},
 					],
 					sizes: [0.3, 0.7],
@@ -42,7 +42,7 @@ test.describe("redistribute_panel_sizes", async () => {
 				},
 				{
 					type: "child-panel",
-					child: "CCC",
+					child: ["CCC"],
 				},
 			],
 			sizes: [0.5, 0.5],
@@ -60,11 +60,11 @@ test.describe("redistribute_panel_sizes", async () => {
 					children: [
 						{
 							type: "child-panel",
-							child: "AAA",
+							child: ["AAA"],
 						},
 						{
 							type: "child-panel",
-							child: "BBB",
+							child: ["BBB"],
 						},
 					],
 					sizes: [0.19999999999999998, 0.7999999999999999],
@@ -72,7 +72,7 @@ test.describe("redistribute_panel_sizes", async () => {
 				},
 				{
 					type: "child-panel",
-					child: "CCC",
+					child: ["CCC"],
 				},
 			],
 			sizes: [0.6, 0.4],
@@ -89,15 +89,15 @@ test.describe("redistribute_panel_sizes", async () => {
 					children: [
 						{
 							type: "child-panel",
-							child: "AAA",
+							child: ["AAA"],
 						},
 						{
 							type: "child-panel",
-							child: "BBB",
+							child: ["BBB"],
 						},
 						{
 							type: "child-panel",
-							child: "DDD",
+							child: ["DDD"],
 						},
 					],
 					sizes: [0.3, 0.6, 0.1],
@@ -105,7 +105,7 @@ test.describe("redistribute_panel_sizes", async () => {
 				},
 				{
 					type: "child-panel",
-					child: "CCC",
+					child: ["CCC"],
 				},
 			],
 			sizes: [0.6, 0.4],
@@ -120,15 +120,15 @@ test.describe("redistribute_panel_sizes", async () => {
 					children: [
 						{
 							type: "child-panel",
-							child: "AAA",
+							child: ["AAA"],
 						},
 						{
 							type: "child-panel",
-							child: "BBB",
+							child: ["BBB"],
 						},
 						{
 							type: "child-panel",
-							child: "DDD",
+							child: ["DDD"],
 						},
 					],
 					sizes: [0.19999999999999998, 0.6857142857142857, 0.1142857142857143],
@@ -136,7 +136,7 @@ test.describe("redistribute_panel_sizes", async () => {
 				},
 				{
 					type: "child-panel",
-					child: "CCC",
+					child: ["CCC"],
 				},
 			],
 			sizes: [0.6, 0.4],
@@ -155,7 +155,7 @@ test.describe("redistribute_panel_sizes", async () => {
 					children: [
 						{
 							type: "child-panel",
-							child: "AAA",
+							child: ["AAA"],
 						},
 						{
 							type: "split-panel",
@@ -163,19 +163,19 @@ test.describe("redistribute_panel_sizes", async () => {
 							children: [
 								{
 									type: "child-panel",
-									child: "EEE",
+									child: ["EEE"],
 								},
 								{
 									type: "child-panel",
-									child: "BBB",
+									child: ["BBB"],
 								},
 								{
 									type: "child-panel",
-									child: "DDD",
+									child: ["DDD"],
 								},
 								{
 									type: "child-panel",
-									child: "CCC",
+									child: ["CCC"],
 								},
 							],
 							sizes: [0.25, 0.25, 0.25, 0.25],
@@ -185,7 +185,7 @@ test.describe("redistribute_panel_sizes", async () => {
 				},
 				{
 					type: "child-panel",
-					child: "FFF",
+					child: ["FFF"],
 				},
 			],
 			sizes: [0.5, 0.5],
@@ -202,7 +202,7 @@ test.describe("redistribute_panel_sizes", async () => {
 					children: [
 						{
 							type: "child-panel",
-							child: "AAA",
+							child: ["AAA"],
 						},
 						{
 							type: "split-panel",
@@ -210,19 +210,19 @@ test.describe("redistribute_panel_sizes", async () => {
 							children: [
 								{
 									type: "child-panel",
-									child: "EEE",
+									child: ["EEE"],
 								},
 								{
 									type: "child-panel",
-									child: "BBB",
+									child: ["BBB"],
 								},
 								{
 									type: "child-panel",
-									child: "DDD",
+									child: ["DDD"],
 								},
 								{
 									type: "child-panel",
-									child: "CCC",
+									child: ["CCC"],
 								},
 							],
 							sizes: [0.2, 0.2, 0.3, 0.3],
@@ -232,7 +232,7 @@ test.describe("redistribute_panel_sizes", async () => {
 				},
 				{
 					type: "child-panel",
-					child: "FFF",
+					child: ["FFF"],
 				},
 			],
 			sizes: [0.5, 0.5],
@@ -254,25 +254,25 @@ test.describe("redistribute_panel_sizes", async () => {
 							children: [
 								{
 									type: "child-panel",
-									child: "AAA",
+									child: ["AAA"],
 								},
 								{
 									type: "child-panel",
-									child: "BBB",
+									child: ["BBB"],
 								},
 							],
 							sizes: [0.5, 0.5],
 						},
 						{
 							type: "child-panel",
-							child: "DDD",
+							child: ["DDD"],
 						},
 					],
 					sizes: [0.5, 0.5],
 				},
 				{
 					type: "child-panel",
-					child: "FFF",
+					child: ["FFF"],
 				},
 			],
 			sizes: [0.5, 0.5],
@@ -293,25 +293,25 @@ test.describe("redistribute_panel_sizes", async () => {
 							children: [
 								{
 									type: "child-panel",
-									child: "AAA",
+									child: ["AAA"],
 								},
 								{
 									type: "child-panel",
-									child: "BBB",
+									child: ["BBB"],
 								},
 							],
 							sizes: [0.3, 0.7],
 						},
 						{
 							type: "child-panel",
-							child: "DDD",
+							child: ["DDD"],
 						},
 					],
 					sizes: [0.5, 0.5],
 				},
 				{
 					type: "child-panel",
-					child: "FFF",
+					child: ["FFF"],
 				},
 			],
 			sizes: [0.5, 0.5],
@@ -333,7 +333,7 @@ test.describe("redistribute_panel_sizes", async () => {
 							children: [
 								{
 									type: "child-panel",
-									child: "AAA",
+									child: ["AAA"],
 								},
 								{
 									type: "split-panel",
@@ -341,11 +341,11 @@ test.describe("redistribute_panel_sizes", async () => {
 									children: [
 										{
 											type: "child-panel",
-											child: "BBB",
+											child: ["BBB"],
 										},
 										{
 											type: "child-panel",
-											child: "CCC",
+											child: ["CCC"],
 										},
 									],
 									sizes: [0.5, 0.5],
@@ -355,14 +355,14 @@ test.describe("redistribute_panel_sizes", async () => {
 						},
 						{
 							type: "child-panel",
-							child: "DDD",
+							child: ["DDD"],
 						},
 					],
 					sizes: [0.5, 0.5],
 				},
 				{
 					type: "child-panel",
-					child: "FFF",
+					child: ["FFF"],
 				},
 			],
 			sizes: [0.5, 0.5],
@@ -383,7 +383,7 @@ test.describe("redistribute_panel_sizes", async () => {
 							children: [
 								{
 									type: "child-panel",
-									child: "AAA",
+									child: ["AAA"],
 								},
 								{
 									type: "split-panel",
@@ -391,11 +391,11 @@ test.describe("redistribute_panel_sizes", async () => {
 									children: [
 										{
 											type: "child-panel",
-											child: "BBB",
+											child: ["BBB"],
 										},
 										{
 											type: "child-panel",
-											child: "CCC",
+											child: ["CCC"],
 										},
 									],
 									sizes: [0.3, 0.7],
@@ -405,14 +405,14 @@ test.describe("redistribute_panel_sizes", async () => {
 						},
 						{
 							type: "child-panel",
-							child: "DDD",
+							child: ["DDD"],
 						},
 					],
 					sizes: [0.5, 0.5],
 				},
 				{
 					type: "child-panel",
-					child: "FFF",
+					child: ["FFF"],
 				},
 			],
 			sizes: [0.5, 0.5],
@@ -434,7 +434,7 @@ test.describe("redistribute_panel_sizes", async () => {
 							children: [
 								{
 									type: "child-panel",
-									child: "AAA",
+									child: ["AAA"],
 								},
 								{
 									type: "split-panel",
@@ -442,11 +442,11 @@ test.describe("redistribute_panel_sizes", async () => {
 									children: [
 										{
 											type: "child-panel",
-											child: "BBB",
+											child: ["BBB"],
 										},
 										{
 											type: "child-panel",
-											child: "CCC",
+											child: ["CCC"],
 										},
 									],
 									sizes: [0.5, 0.5],
@@ -456,14 +456,14 @@ test.describe("redistribute_panel_sizes", async () => {
 						},
 						{
 							type: "child-panel",
-							child: "DDD",
+							child: ["DDD"],
 						},
 					],
 					sizes: [0.75, 0.25],
 				},
 				{
 					type: "child-panel",
-					child: "FFF",
+					child: ["FFF"],
 				},
 			],
 			sizes: [0.5, 0.5],
@@ -484,7 +484,7 @@ test.describe("redistribute_panel_sizes", async () => {
 							children: [
 								{
 									type: "child-panel",
-									child: "AAA",
+									child: ["AAA"],
 								},
 								{
 									type: "split-panel",
@@ -492,11 +492,11 @@ test.describe("redistribute_panel_sizes", async () => {
 									children: [
 										{
 											type: "child-panel",
-											child: "BBB",
+											child: ["BBB"],
 										},
 										{
 											type: "child-panel",
-											child: "CCC",
+											child: ["CCC"],
 										},
 									],
 									sizes: [0.3666666666666667, 0.6333333333333333],
@@ -506,14 +506,14 @@ test.describe("redistribute_panel_sizes", async () => {
 						},
 						{
 							type: "child-panel",
-							child: "DDD",
+							child: ["DDD"],
 						},
 					],
 					sizes: [0.75, 0.25],
 				},
 				{
 					type: "child-panel",
-					child: "FFF",
+					child: ["FFF"],
 				},
 			],
 			sizes: [0.5, 0.5],

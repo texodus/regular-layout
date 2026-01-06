@@ -18,7 +18,7 @@ export const MINIMUM_REDISTRIBUTION_SIZE_THRESHOLD = 0.15;
 /**
  * Threshold from panel edge that is considered a split vs drop action.
  */
-export const SPLIT_EDGE_TOLERANCE = 0.15;
+export const SPLIT_EDGE_TOLERANCE = 0.25;
 
 /**
  * Tolerance threshold for considering two grid track positions as identical.
@@ -26,7 +26,17 @@ export const SPLIT_EDGE_TOLERANCE = 0.15;
  * When collecting and deduplicating track positions, any positions closer than
  * this value are treated as the same position to avoid redundant grid tracks.
  */
-export const GRID_TRACK_COLLAPSE_TOLERANCE = 0.0001;
+export const GRID_TRACK_COLLAPSE_TOLERANCE = 0.001;
+
+/**
+ * The overlay default behavior.
+ */
+export const OVERLAY_DEFAULT: OverlayMode = "absolute";
+
+/**
+ * The overlay behavior type.
+ */
+export type OverlayMode = "grid" | "absolute" | "interactive";
 
 /**
  * The representation of a CSS grid, in JSON form.
@@ -67,7 +77,8 @@ export interface SplitLayout {
  */
 export interface TabLayout {
 	type: "child-panel";
-	child: string;
+	child: string[];
+	selected?: number;
 }
 
 /**
@@ -91,11 +102,13 @@ export interface LayoutDivider {
 export interface LayoutPath<T = undefined> {
 	type: "layout-path";
 	slot: string;
+	panel: TabLayout;
 	path: number[];
 	view_window: ViewWindow;
 	column_offset: number;
 	row_offset: number;
 	orientation: Orientation;
+	is_edge: boolean;
 	box: T;
 }
 
@@ -112,7 +125,7 @@ export function* iter_panel_children(panel: Layout): Generator<string> {
 			yield* iter_panel_children(child);
 		}
 	} else {
-		yield panel.child;
+		yield* panel.child;
 	}
 }
 

@@ -16,12 +16,17 @@
  * @packageDocumentation
  */
 
-import { EMPTY_PANEL, iter_panel_children } from "./common/layout_config.ts";
+import {
+	EMPTY_PANEL,
+	iter_panel_children,
+	OVERLAY_DEFAULT,
+} from "./common/layout_config.ts";
 import { create_css_grid_layout } from "./common/generate_grid.ts";
 import type {
 	LayoutPath,
 	Layout,
 	LayoutDivider,
+	TabLayout,
 } from "./common/layout_config.ts";
 import { calculate_intersection } from "./common/calculate_intersect.ts";
 import { remove_child } from "./common/remove_child.ts";
@@ -30,10 +35,6 @@ import { redistribute_panel_sizes } from "./common/redistribute_panel_sizes.ts";
 import { updateOverlaySheet } from "./common/generate_overlay.ts";
 import { calculate_split } from "./common/calculate_split.ts";
 import { flatten } from "./common/flatten.ts";
-
-export type OverlayMode = "grid" | "absolute" | "interactive";
-
-const OVERLAY_DEFAULT: OverlayMode = "absolute";
 
 /**
  * A Web Component that provides a resizable panel layout system.
@@ -129,9 +130,6 @@ export class RegularLayout extends HTMLElement {
 		let drop_target = calculate_intersection(col, row, panel, false);
 		if (drop_target) {
 			drop_target = calculate_split(col, row, panel, slot, drop_target);
-		}
-
-		if (drop_target) {
 			if (mode === "interactive") {
 				let new_panel = remove_child(this._panel, slot);
 				new_panel = flatten(insert_child(new_panel, slot, drop_target.path));
@@ -145,7 +143,13 @@ export class RegularLayout extends HTMLElement {
 				const css = `${create_css_grid_layout(panel)}\n${updateOverlaySheet({ ...drop_target, box })}`;
 				this._stylesheet.replaceSync(css);
 			}
+		} else {
+			const css = `${create_css_grid_layout(panel)}}`;
+			this._stylesheet.replaceSync(css);
 		}
+
+		const event = new CustomEvent("regular-layout-update", { detail: panel });
+		this.dispatchEvent(event);
 	}
 
 	/**
@@ -184,9 +188,17 @@ export class RegularLayout extends HTMLElement {
 			);
 		}
 
-		const { path } = drop_target ? drop_target : drag_target;
-		this.removePanel(drag_target.slot);
-		this.insertPanel(drag_target.slot, path);
+		const { path, orientation } = drop_target ? drop_target : drag_target;
+
+		this.restore(
+			insert_child(
+				panel,
+				drag_target.slot,
+				path,
+				orientation,
+				!drop_target?.is_edge,
+			),
+		);
 	}
 
 	/**
@@ -206,6 +218,24 @@ export class RegularLayout extends HTMLElement {
 	 */
 	removePanel(name: string) {
 		this.restore(remove_child(this._panel, name));
+	}
+
+	getPanel(name: string, layout: Layout = this._panel): TabLayout | null {
+		if (layout.type === "child-panel") {
+			if (layout.child.includes(name)) {
+				return layout;
+			}
+			return null;
+		}
+
+		for (const child of layout.children) {
+			const found = this.getPanel(name, child);
+			if (found) {
+				return found;
+			}
+		}
+
+		return null;
 	}
 
 	/**
@@ -228,6 +258,10 @@ export class RegularLayout extends HTMLElement {
 		}
 
 		return null;
+	}
+
+	clear() {
+		this.restore(EMPTY_PANEL);
 	}
 
 	/**
@@ -264,6 +298,9 @@ export class RegularLayout extends HTMLElement {
 				this._slots.delete(key);
 			}
 		}
+
+		const event = new CustomEvent("regular-layout-update", { detail: layout });
+		this.dispatchEvent(event);
 	}
 
 	/**
@@ -293,13 +330,15 @@ export class RegularLayout extends HTMLElement {
 	}
 
 	private onPointerDown(event: PointerEvent) {
-		const [col, row] = this.relativeCoordinates(event.clientX, event.clientY);
-		const hit = calculate_intersection(col, row, this._panel);
-		if (hit && hit.type !== "layout-path") {
-			this._dragPath = [hit, col, row];
-			this.setPointerCapture(event.pointerId);
-			event.preventDefault();
-			event.stopImmediatePropagation();
+		if (event.target === this) {
+			const [col, row] = this.relativeCoordinates(event.clientX, event.clientY);
+			const hit = calculate_intersection(col, row, this._panel);
+			if (hit && hit.type !== "layout-path") {
+				this._dragPath = [hit, col, row];
+				this.setPointerCapture(event.pointerId);
+				// event.preventDefault();
+				// event.stopImmediatePropagation();
+			}
 		}
 	}
 

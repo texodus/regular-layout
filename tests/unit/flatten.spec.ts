@@ -11,6 +11,9 @@
 
 import { expect, test } from "@playwright/test";
 
+import { calculate_intersection } from "../../src/common/calculate_intersect.ts";
+import { calculate_split } from "../../src/common/calculate_split.ts";
+
 import { flatten } from "../../src/common/flatten.ts";
 import type { Layout } from "../../src/common/layout_config.ts";
 
@@ -25,7 +28,7 @@ test("Deeply alternating split partial", () => {
 				children: [
 					{
 						type: "child-panel",
-						child: "AAA",
+						child: ["AAA"],
 					},
 					{
 						type: "split-panel",
@@ -33,11 +36,11 @@ test("Deeply alternating split partial", () => {
 						children: [
 							{
 								type: "child-panel",
-								child: "CCC",
+								child: ["CCC"],
 							},
 							{
 								type: "child-panel",
-								child: "DDD",
+								child: ["DDD"],
 							},
 						],
 						sizes: [0.5, 0.5],
@@ -51,15 +54,15 @@ test("Deeply alternating split partial", () => {
 				children: [
 					{
 						type: "child-panel",
-						child: "FFF",
+						child: ["FFF"],
 					},
 					{
 						type: "child-panel",
-						child: "BBB",
+						child: ["BBB"],
 					},
 					{
 						type: "child-panel",
-						child: "EEE",
+						child: ["EEE"],
 					},
 				],
 				sizes: [0.3, 0.3, 0.4],
@@ -74,7 +77,7 @@ test("Deeply alternating split partial", () => {
 		children: [
 			{
 				type: "child-panel",
-				child: "AAA",
+				child: ["AAA"],
 			},
 			{
 				type: "split-panel",
@@ -82,26 +85,26 @@ test("Deeply alternating split partial", () => {
 				children: [
 					{
 						type: "child-panel",
-						child: "CCC",
+						child: ["CCC"],
 					},
 					{
 						type: "child-panel",
-						child: "DDD",
+						child: ["DDD"],
 					},
 				],
 				sizes: [0.5, 0.5],
 			},
 			{
 				type: "child-panel",
-				child: "FFF",
+				child: ["FFF"],
 			},
 			{
 				type: "child-panel",
-				child: "BBB",
+				child: ["BBB"],
 			},
 			{
 				type: "child-panel",
-				child: "EEE",
+				child: ["EEE"],
 			},
 		],
 		sizes: [0.25, 0.25, 0.15, 0.15, 0.2],

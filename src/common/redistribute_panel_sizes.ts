@@ -54,7 +54,11 @@ export function redistribute_panel_sizes(
 	if (current.type === "split-panel") {
 		const delta = deltas[current.orientation];
 		const index = path[path.length - 1];
-		current.sizes = add_and_redistribute(current.sizes, index, delta);
+
+		// It would be fun to remove this condition.
+		if (index < current.sizes.length - 1) {
+			current.sizes = add_and_redistribute(current.sizes, index, delta);
+		}
 	}
 
 	return result;

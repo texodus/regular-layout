@@ -29,22 +29,15 @@ export function insert_child(
 	child: string,
 	path: number[],
 	orientation: "horizontal" | "vertical" = "horizontal",
+	is_edge?: boolean,
 ): Layout {
 	if (path.length === 0) {
 		// Insert at root level
 		if (panel.type === "child-panel") {
-			// Convert single child-panel to split-panel with two children
+			// Add to existing child-panel as a tab
 			return {
-				type: "split-panel",
-				orientation,
-				children: [
-					panel,
-					{
-						type: "child-panel",
-						child,
-					},
-				],
-				sizes: [0.5, 0.5],
+				type: "child-panel",
+				child: [child, ...panel.child],
 			};
 		} else {
 			// Append to existing split-panel
@@ -52,7 +45,7 @@ export function insert_child(
 				...panel.children,
 				{
 					type: "child-panel",
-					child,
+					child: [child],
 				} as Layout,
 			];
 
@@ -78,15 +71,20 @@ export function insert_child(
 			sizes: [1],
 		};
 
-		return insert_child(newPanel, child, path, orientation);
+		return insert_child(newPanel, child, path, orientation, is_edge);
 	}
 
 	if (restPath.length === 0 || index === panel.children.length) {
+		if (is_edge && panel.children[index]?.type === "child-panel") {
+			panel.children[index].child.unshift(child);
+			return panel;
+		}
+
 		// Insert at this level at the specified index
 		const newChildren = [...panel.children];
 		newChildren.splice(index, 0, {
 			type: "child-panel",
-			child,
+			child: [child],
 		});
 
 		const numChildren = newChildren.length;
@@ -109,6 +107,7 @@ export function insert_child(
 			child,
 			restPath,
 			oppositeOrientation,
+			is_edge,
 		);
 
 		const newChildren = [...panel.children];
@@ -119,7 +118,14 @@ export function insert_child(
 		};
 	}
 
-	const updatedChild = insert_child(targetChild, child, restPath, orientation);
+	const updatedChild = insert_child(
+		targetChild,
+		child,
+		restPath,
+		orientation,
+		is_edge,
+	);
+
 	const newChildren = [...panel.children];
 	newChildren[index] = updatedChild;
 	return {
