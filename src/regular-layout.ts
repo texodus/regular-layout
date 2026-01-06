@@ -114,12 +114,12 @@ export class RegularLayout extends HTMLElement {
 	 *   "absolute" positions the panel absolutely, "interactive" updates the
 	 *   actual layout in real-time. Defaults to "absolute".
 	 */
-	setOverlayState<T>(
+	setOverlayState = (
 		x: number,
 		y: number,
-		{ slot }: LayoutPath<T>,
+		{ slot }: LayoutPath<unknown>,
 		mode: "grid" | "absolute" | "interactive" = OVERLAY_DEFAULT,
-	) {
+	) => {
 		let panel = this._panel;
 		if (mode === "absolute") {
 			panel = remove_child(panel, slot);
@@ -150,7 +150,7 @@ export class RegularLayout extends HTMLElement {
 
 		const event = new CustomEvent("regular-layout-update", { detail: panel });
 		this.dispatchEvent(event);
-	}
+	};
 
 	/**
 	 * Clears the overlay state and commits the panel placement.
@@ -161,12 +161,12 @@ export class RegularLayout extends HTMLElement {
 	 * @param mode - Overlay rendering mode that was used, must match the mode
 	 *   passed to `setOverlayState`. Defaults to "absolute".
 	 */
-	clearOverlayState<T>(
+	clearOverlayState = (
 		x: number,
 		y: number,
-		drag_target: LayoutPath<T>,
+		drag_target: LayoutPath<unknown>,
 		mode: "grid" | "absolute" | "interactive" = OVERLAY_DEFAULT,
-	) {
+	) => {
 		let panel = this._panel;
 		if (mode === "absolute") {
 			panel = remove_child(panel, drag_target.slot);
@@ -199,7 +199,7 @@ export class RegularLayout extends HTMLElement {
 				!drop_target?.is_edge,
 			),
 		);
-	}
+	};
 
 	/**
 	 * Inserts a new panel into the layout at a specified path.
@@ -207,20 +207,20 @@ export class RegularLayout extends HTMLElement {
 	 * @param name - Unique identifier for the new panel.
 	 * @param path - Index path defining where to insert.
 	 */
-	insertPanel(name: string, path: number[] = []) {
+	insertPanel = (name: string, path: number[] = []) => {
 		this.restore(insert_child(this._panel, name, path));
-	}
+	};
 
 	/**
 	 * Removes a panel from the layout by name.
 	 *
 	 * @param name - Name of the panel to remove
 	 */
-	removePanel(name: string) {
+	removePanel = (name: string) => {
 		this.restore(remove_child(this._panel, name));
-	}
+	};
 
-	getPanel(name: string, layout: Layout = this._panel): TabLayout | null {
+	getPanel = (name: string, layout: Layout = this._panel): TabLayout | null => {
 		if (layout.type === "child-panel") {
 			if (layout.child.includes(name)) {
 				return layout;
@@ -236,7 +236,7 @@ export class RegularLayout extends HTMLElement {
 		}
 
 		return null;
-	}
+	};
 
 	/**
 	 * Determines which panel is at a given screen coordinate.
@@ -246,11 +246,11 @@ export class RegularLayout extends HTMLElement {
 	 * @param row - Y coordinate in screen pixels.
 	 * @returns Panel information if a panel is at that position, null otherwise.
 	 */
-	calculateIntersect(
+	calculateIntersect = (
 		x: number,
 		y: number,
 		check_dividers: boolean = false,
-	): LayoutPath<DOMRect> | null {
+	): LayoutPath<DOMRect> | null => {
 		const [col, row, box] = this.relativeCoordinates(x, y);
 		const panel = calculate_intersection(col, row, this._panel, check_dividers);
 		if (panel?.type === "layout-path") {
@@ -258,11 +258,11 @@ export class RegularLayout extends HTMLElement {
 		}
 
 		return null;
-	}
+	};
 
-	clear() {
+	clear = () => {
 		this.restore(EMPTY_PANEL);
-	}
+	};
 
 	/**
 	 * Restores the layout from a saved state.
@@ -276,7 +276,7 @@ export class RegularLayout extends HTMLElement {
 	 * layout.restore(savedState);
 	 * ```
 	 */
-	restore(layout: Layout, _is_flattened: boolean = false) {
+	restore = (layout: Layout, _is_flattened: boolean = false) => {
 		this._panel = !_is_flattened ? flatten(layout) : layout;
 		const css = create_css_grid_layout(layout);
 		this._stylesheet.replaceSync(css);
@@ -301,7 +301,7 @@ export class RegularLayout extends HTMLElement {
 
 		const event = new CustomEvent("regular-layout-update", { detail: layout });
 		this.dispatchEvent(event);
-	}
+	};
 
 	/**
 	 * Serializes the current layout state, which can be restored via `restore`.
@@ -315,21 +315,21 @@ export class RegularLayout extends HTMLElement {
 	 * localStorage.setItem('layout', JSON.stringify(state));
 	 * ```
 	 */
-	save(): Layout {
+	save = (): Layout => {
 		return structuredClone(this._panel);
-	}
+	};
 
-	private relativeCoordinates(
+	private relativeCoordinates = (
 		clientX: number,
 		clientY: number,
-	): [number, number, DOMRect] {
+	): [number, number, DOMRect] => {
 		const box = this.getBoundingClientRect();
 		const col = (clientX - box.left) / (box.right - box.left);
 		const row = (clientY - box.top) / (box.bottom - box.top);
 		return [col, row, box];
-	}
+	};
 
-	private onPointerDown(event: PointerEvent) {
+	private onPointerDown = (event: PointerEvent) => {
 		if (event.target === this) {
 			const [col, row] = this.relativeCoordinates(event.clientX, event.clientY);
 			const hit = calculate_intersection(col, row, this._panel);
@@ -340,9 +340,9 @@ export class RegularLayout extends HTMLElement {
 				// event.stopImmediatePropagation();
 			}
 		}
-	}
+	};
 
-	private onPointerMove(event: PointerEvent) {
+	private onPointerMove = (event: PointerEvent) => {
 		if (this._dragPath) {
 			const [col, row] = this.relativeCoordinates(event.clientX, event.clientY);
 			const old_panel = this._panel;
@@ -351,9 +351,9 @@ export class RegularLayout extends HTMLElement {
 			const panel = redistribute_panel_sizes(old_panel, path, offset);
 			this._stylesheet.replaceSync(create_css_grid_layout(panel));
 		}
-	}
+	};
 
-	private onPointerUp(event: PointerEvent) {
+	private onPointerUp = (event: PointerEvent) => {
 		if (this._dragPath) {
 			this.releasePointerCapture(event.pointerId);
 			const [col, row] = this.relativeCoordinates(event.clientX, event.clientY);
@@ -369,5 +369,5 @@ export class RegularLayout extends HTMLElement {
 
 			this._dragPath = undefined;
 		}
-	}
+	};
 }

@@ -20,6 +20,7 @@
 		"clean": "rm -rf dist",
 		"test": "playwright test",
 		"example": "npx http-server . -p 8000",
+		"deploy": "node deploy.mjs",
 		"lint": "biome lint src tests",
 		"format": "biome format --write src tests",
 		"check": "biome check --write src tests"

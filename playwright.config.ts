@@ -18,6 +18,7 @@ export default defineConfig({
 		},
 	],
 	webServer: {
+		reuseExistingServer: true,
 		command: "npx http-server . -p 8081",
 		url: "http://127.0.0.1:8081",
 	},
