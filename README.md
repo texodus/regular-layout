@@ -1,8 +1,21 @@
-# `<regular-layout>`
+<br />
+<a href="https://perspective-dev.github.io">
+<p align="center">
+<picture>
+<source media="(prefers-color-scheme: dark)" srcset="./logo.svg">
+<img width="260" src="./logo.svg">
+</picture>
+<br/>
+<br/>
+<a href="https://www.npmjs.com/package/regular-table"><img alt="NPM Version" src="https://img.shields.io/github/actions/workflow/status/texodus/regular-layout/build.yaml?event=push&style=flat-square"></a>
+<a href="https://www.npmjs.com/package/regular-table"><img alt="NPM Version" src="https://img.shields.io/npm/v/regular-layout.svg?color=brightgreen&style=flat-square"></a>
+<a href="https://www.npmjs.com/package/regular-table"><img alt="Bundlephobia (Minified)" src="https://img.shields.io/bundlephobia/min/regular-layout?style=flat-square"></a>
+<!-- <a href="https://www.npmjs.com/package/regular-table"><img alt="Bundlephobia (Minzipped)" src="https://img.shields.io/bundlephobia/minzip/regular-layout?style=flat-square"></a> -->
+<br/>
+<br/>
+</p>
 
-[![npm](https://img.shields.io/npm/v/regular-layout.svg?style=for-the-badge)](https://www.npmjs.com/package/regular-layout)
-[![bundlephobia](https://img.shields.io/bundlephobia/minzip/regular-layout?style=for-the-badge)](https://bundlephobia.com/package/regular-layout)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/texodus/regular-layout/build.yaml?event=push&style=for-the-badge)](https://github.com/texodus/regular-layout/actions/workflows/build.yaml)
+
 
 A library for resizable & repositionable panel layouts, using
 [CSS `grid`](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Grid_layout).
