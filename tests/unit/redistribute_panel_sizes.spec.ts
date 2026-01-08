@@ -10,11 +10,15 @@
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 import { expect, test } from "@playwright/test";
-import { TEST_PANEL, LAYOUTS } from "../helpers/fixtures.ts";
+import { LAYOUTS } from "../helpers/fixtures.ts";
 import { redistribute_panel_sizes } from "../../src/common/redistribute_panel_sizes.ts";
 
 test("redistribute depth 1 child", () => {
-	const clone = redistribute_panel_sizes(structuredClone(TEST_PANEL), [0], 0.1);
+	const clone = redistribute_panel_sizes(
+		structuredClone(LAYOUTS.NESTED_BASIC),
+		[0],
+		0.1,
+	);
 
 	expect(clone).toStrictEqual({
 		type: "split-panel",
@@ -45,7 +49,7 @@ test("redistribute depth 1 child", () => {
 });
 
 test("redistribute depth 2 children", () => {
-	const clone = redistribute_panel_sizes(TEST_PANEL, [0, 0], 0.1);
+	const clone = redistribute_panel_sizes(LAYOUTS.NESTED_BASIC, [0, 0], 0.1);
 	expect(clone).toStrictEqual({
 		type: "split-panel",
 		children: [
@@ -166,7 +170,11 @@ test("redistribute nested spec with 4 children", () => {
 });
 
 test("nested aligned splitpanels", () => {
-	const clone = redistribute_panel_sizes(LAYOUTS.NESTED_ALIGNED, [0, 0, 0], 0.1);
+	const clone = redistribute_panel_sizes(
+		LAYOUTS.NESTED_ALIGNED,
+		[0, 0, 0],
+		0.1,
+	);
 	expect(clone).toStrictEqual({
 		type: "split-panel",
 		orientation: "horizontal",

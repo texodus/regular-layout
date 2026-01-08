@@ -11,15 +11,18 @@
 
 import type { LayoutPath } from "./layout_config";
 
-export function updateOverlaySheet({
-	view_window: { row_start, row_end, col_start, col_end },
-	box,
-}: LayoutPath<DOMRect>) {
+export function updateOverlaySheet(
+	slot: string,
+	{
+		view_window: { row_start, row_end, col_start, col_end },
+		box,
+	}: LayoutPath<DOMRect>,
+) {
 	const margin = 0;
 	const top = row_start * box.height + margin / 2;
 	const left = col_start * box.width + margin / 2;
 	const height = (row_end - row_start) * box.height - margin;
 	const width = (col_end - col_start) * box.width - margin;
 	const css = `position:absolute!important;z-index:1;top:${top}px;left:${left}px;height:${height}px;width:${width}px;`;
-	return `::slotted(:not([slot])){${css}}`;
+	return `::slotted([slot="${slot}"]){${css}}`;
 }

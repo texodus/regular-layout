@@ -50,7 +50,7 @@ regular-layout-frame::part(active-tab) {
 }
 
 /* Frame in Overlay Mode */
-regular-layout-frame:not([slot]) {
+regular-layout-frame.overlay {
     background-color: rgba(0, 0, 0, 0.2) !important;
     border: 1px dashed rgb(0, 0, 0);
     border-radius: 6px;
@@ -67,7 +67,7 @@ regular-layout-frame::part(container) {
     display: none;
 }
 
-regular-layout-frame[slot]::part(container) {
+regular-layout-frame:not(.overlay)::part(container) {
     display: revert;
 }
 

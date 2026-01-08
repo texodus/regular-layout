@@ -77,6 +77,7 @@ export function insert_child(
 	if (restPath.length === 0 || index === panel.children.length) {
 		if (is_edge && panel.children[index]?.type === "child-panel") {
 			panel.children[index].child.unshift(child);
+			panel.children[index].selected = 0;
 			return panel;
 		}
 

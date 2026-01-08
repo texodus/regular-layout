@@ -9,10 +9,8 @@
 // ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-import {
-	MINIMUM_REDISTRIBUTION_SIZE_THRESHOLD,
-	type Layout,
-} from "./layout_config.ts";
+import { MINIMUM_REDISTRIBUTION_SIZE_THRESHOLD } from "./constants.ts";
+import type { Layout } from "./layout_config.ts";
 
 /**
  * Adjusts panel sizes during a drag operation on a divider.

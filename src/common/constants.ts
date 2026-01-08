@@ -9,60 +9,38 @@
 // ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-import { RegularLayout } from "./regular-layout.ts";
-import { RegularLayoutFrame } from "./regular-layout-frame.ts";
-import type { Layout } from "./common/layout_config.ts";
+import type { OverlayMode } from "./layout_config";
 
-customElements.define("regular-layout", RegularLayout);
-customElements.define("regular-layout-frame", RegularLayoutFrame);
+/**
+ * The minimum number of pixels the mouse must move to be considered a drag.
+ */
+export const MIN_DRAG_DISTANCE = 10;
 
-declare global {
-	interface Document {
-		createElement(
-			tagName: "regular-layout",
-			options?: ElementCreationOptions,
-		): RegularLayout;
+/**
+ * Class name to use for child elements in overlay position (dragging).
+ */
+export const OVERLAY_CLASSNAME = "overlay";
 
-		createElement(
-			tagName: "regular-layout-frame",
-			options?: ElementCreationOptions,
-		): RegularLayoutFrame;
+/**
+ * The percentage of the maximum resize distance that will be clamped.
+ *
+ */
+export const MINIMUM_REDISTRIBUTION_SIZE_THRESHOLD = 0.15;
 
-		querySelector<E extends Element = Element>(selectors: string): E | null;
-		querySelector(selectors: "regular-layout"): RegularLayout | null;
-		querySelector(selectors: "regular-layout-frame"): RegularLayoutFrame | null;
-	}
+/**
+ * Threshold from panel edge that is considered a split vs drop action.
+ */
+export const SPLIT_EDGE_TOLERANCE = 0.25;
 
-	interface CustomElementRegistry {
-		get(tagName: "regular-layout"): typeof RegularLayout;
-		get(tagName: "regular-layout-frame"): typeof RegularLayoutFrame;
-	}
+/**
+ * Tolerance threshold for considering two grid track positions as identical.
+ *
+ * When collecting and deduplicating track positions, any positions closer than
+ * this value are treated as the same position to avoid redundant grid tracks.
+ */
+export const GRID_TRACK_COLLAPSE_TOLERANCE = 0.001;
 
-	interface HTMLElement {
-		addEventListener(
-			name: "regular-layout-update",
-			cb: (e: RegularLayoutEvent) => void,
-			options?: { signal: AbortSignal },
-		): void;
-
-		addEventListener(
-			name: "regular-layout-before-update",
-			cb: (e: RegularLayoutEvent) => void,
-			options?: { signal: AbortSignal },
-		): void;
-
-		removeEventListener(
-			name: "regular-layout-update",
-			cb: (e: RegularLayoutEvent) => void,
-		): void;
-
-		removeEventListener(
-			name: "regular-layout-before-update",
-			cb: (e: RegularLayoutEvent) => void,
-		): void;
-	}
-}
-
-export interface RegularLayoutEvent extends CustomEvent {
-	detail: Layout;
-}
+/**
+ * The overlay default behavior.
+ */
+export const OVERLAY_DEFAULT: OverlayMode = "absolute";

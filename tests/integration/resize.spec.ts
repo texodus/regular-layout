@@ -13,7 +13,7 @@ import { expect, test } from "@playwright/test";
 import {
 	setupLayout,
 	saveLayout,
-	restoreAndVerify,
+	restoreLayout,
 	dragMouse,
 } from "../helpers/integration.ts";
 
@@ -35,8 +35,12 @@ test("should resize panels by dragging dividers and preserve state with save/res
 	expect(resizedState).not.toEqual(initialState);
 	expect(resizedState).toHaveProperty("type", "split-panel");
 	expect(resizedState).toHaveProperty("sizes");
-	await restoreAndVerify(page, initialState);
-	await restoreAndVerify(page, resizedState);
+	await restoreLayout(page, initialState);
+	const restored1 = await saveLayout(page);
+	expect(restored1).toStrictEqual(initialState);
+	await restoreLayout(page, resizedState);
+	const restored2 = await saveLayout(page);
+	expect(restored2).toStrictEqual(resizedState);
 });
 
 test("should resize nested panels by dragging horizontal divider", async ({
@@ -59,7 +63,9 @@ test("should resize nested panels by dragging horizontal divider", async ({
 
 	const resizedState = await saveLayout(page);
 	expect(resizedState).not.toEqual(initialState);
-	await restoreAndVerify(page, initialState);
+	await restoreLayout(page, initialState);
+	const restored = await saveLayout(page);
+	expect(restored).toStrictEqual(initialState);
 });
 
 test("should handle multiple resize operations and save/restore cycles", async ({
@@ -81,7 +87,13 @@ test("should handle multiple resize operations and save/restore cycles", async (
 	expect(state1).not.toEqual(state2);
 	expect(state2).not.toEqual(state3);
 	expect(state1).not.toEqual(state3);
-	await restoreAndVerify(page, state1);
-	await restoreAndVerify(page, state2);
-	await restoreAndVerify(page, state3);
+	await restoreLayout(page, state1);
+	const restored1 = await saveLayout(page);
+	expect(restored1).toStrictEqual(state1);
+	await restoreLayout(page, state2);
+	const restored2 = await saveLayout(page);
+	expect(restored2).toStrictEqual(state2);
+	await restoreLayout(page, state3);
+	const restored3 = await saveLayout(page);
+	expect(restored3).toStrictEqual(state3);
 });
