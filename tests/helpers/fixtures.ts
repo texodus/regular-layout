@@ -1,31 +1,15 @@
-import type { Layout } from "../../src/common/layout_config.ts";
+// ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+// ░░░░░░░░▄▀░█▀▄░█▀▀░█▀▀░█░█░█░░░█▀█░█▀▄░░░░░█░░░█▀█░█░█░█▀█░█░█░▀█▀░▀▄░░░░░░░░
+// ░░░░░░░▀▄░░█▀▄░█▀▀░█░█░█░█░█░░░█▀█░█▀▄░▀▀▀░█░░░█▀█░░█░░█░█░█░█░░█░░░▄▀░░░░░░░
+// ░░░░░░░░░▀░▀░▀░▀▀▀░▀▀▀░▀▀▀░▀▀▀░▀░▀░▀░▀░░░░░▀▀▀░▀░▀░░▀░░▀▀▀░▀▀▀░░▀░░▀░░░░░░░░░
+// ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+// ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+// ┃  *  Copyright (c) 2026, the Regular Layout Authors. This file is part  *  ┃
+// ┃  *  of the Regular Layout library, distributed under the terms of the  *  ┃
+// ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
+// ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-export const TEST_PANEL: Layout = {
-	type: "split-panel",
-	children: [
-		{
-			type: "split-panel",
-			children: [
-				{
-					type: "child-panel",
-					child: ["AAA"],
-				},
-				{
-					type: "child-panel",
-					child: ["BBB"],
-				},
-			],
-			sizes: [0.3, 0.7],
-			orientation: "vertical",
-		},
-		{
-			type: "child-panel",
-			child: ["CCC"],
-		},
-	],
-	sizes: [0.6, 0.4],
-	orientation: "horizontal",
-};
+import type { Layout } from "../../src/common/layout_config.ts";
 
 /**
  * Common layout fixtures for testing
@@ -47,6 +31,7 @@ export const LAYOUTS = {
 	SINGLE_TABS: {
 		type: "child-panel",
 		child: ["AAA", "BBB", "CCC"],
+		selected: 0,
 	} as Layout,
 
 	/** Two panels horizontal split (30/70) */
@@ -105,7 +90,32 @@ export const LAYOUTS = {
 	} as Layout,
 
 	/** Nested layout: horizontal split with left side vertical split (60/40 outer, 30/70 inner) */
-	NESTED_BASIC: TEST_PANEL,
+	NESTED_BASIC: {
+		type: "split-panel",
+		children: [
+			{
+				type: "split-panel",
+				children: [
+					{
+						type: "child-panel",
+						child: ["AAA"],
+					},
+					{
+						type: "child-panel",
+						child: ["BBB"],
+					},
+				],
+				sizes: [0.3, 0.7],
+				orientation: "vertical",
+			},
+			{
+				type: "child-panel",
+				child: ["CCC"],
+			},
+		],
+		sizes: [0.6, 0.4],
+		orientation: "horizontal",
+	} as Layout,
 
 	/** Nested layout: vertical split with nested horizontal */
 	NESTED_VERTICAL_OUTER: {

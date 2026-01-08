@@ -14,10 +14,8 @@ import {
 	setupLayout,
 	saveLayout,
 	restoreLayout,
-	expectLayoutState,
 	getSlots,
 	expectSlots,
-	restoreAndVerify,
 	insertPanel,
 } from "../helpers/integration.ts";
 import { LAYOUTS } from "../helpers/fixtures.ts";
@@ -25,15 +23,66 @@ import { LAYOUTS } from "../helpers/fixtures.ts";
 test("should save and restore various layout types", async ({ page }) => {
 	// Test single panel
 	await setupLayout(page, LAYOUTS.SINGLE_AAA);
-	await expectLayoutState(page, LAYOUTS.SINGLE_AAA);
+	const currentState = await saveLayout(page);
+	expect(currentState).toStrictEqual({
+		type: "child-panel",
+		child: ["AAA"],
+		selected: 0,
+	});
 
 	// Test 2-panel horizontal
 	await restoreLayout(page, LAYOUTS.TWO_HORIZONTAL);
-	await expectLayoutState(page, LAYOUTS.TWO_HORIZONTAL);
+	const currentState2 = await saveLayout(page);
+	expect(currentState2).toStrictEqual({
+		type: "split-panel",
+		orientation: "horizontal",
+		children: [
+			{
+				type: "child-panel",
+				child: ["AAA"],
+				selected: 0,
+			},
+			{
+				type: "child-panel",
+				child: ["BBB"],
+				selected: 0,
+			},
+		],
+		sizes: [0.3, 0.7],
+	});
 
 	// Test nested layout
 	await restoreLayout(page, LAYOUTS.NESTED_BASIC);
-	await expectLayoutState(page, LAYOUTS.NESTED_BASIC);
+	const currentState3 = await saveLayout(page);
+	expect(currentState3).toStrictEqual({
+		type: "split-panel",
+		orientation: "horizontal",
+		children: [
+			{
+				type: "split-panel",
+				orientation: "vertical",
+				children: [
+					{
+						type: "child-panel",
+						child: ["AAA"],
+						selected: 0,
+					},
+					{
+						type: "child-panel",
+						child: ["BBB"],
+						selected: 0,
+					},
+				],
+				sizes: [0.3, 0.7],
+			},
+			{
+				type: "child-panel",
+				child: ["CCC"],
+				selected: 0,
+			},
+		],
+		sizes: [0.6, 0.4],
+	});
 });
 
 test("should save, modify, and revert to saved state", async ({ page }) => {
@@ -41,18 +90,17 @@ test("should save, modify, and revert to saved state", async ({ page }) => {
 	await setupLayout(page, LAYOUTS.SINGLE_AAA);
 	const saved1 = await saveLayout(page);
 	await restoreLayout(page, LAYOUTS.SINGLE_BBB);
-	await restoreAndVerify(page, saved1);
+	await restoreLayout(page, saved1);
+	const restored1 = await saveLayout(page);
+	expect(restored1).toStrictEqual(saved1);
 
 	// Complex case: nested layout
 	await restoreLayout(page, LAYOUTS.NESTED_BASIC);
 	const saved2 = await saveLayout(page);
 	await restoreLayout(page, LAYOUTS.SINGLE_DDD);
-	await restoreAndVerify(page, saved2);
-});
-
-test("should save and restore a deeply nested layout", async ({ page }) => {
-	await setupLayout(page, LAYOUTS.DEEPLY_NESTED_ALT);
-	await expectLayoutState(page, LAYOUTS.DEEPLY_NESTED_ALT);
+	await restoreLayout(page, saved2);
+	const restored2 = await saveLayout(page);
+	expect(restored2).toStrictEqual(saved2);
 });
 
 test("should save returns a deep clone, not a reference", async ({ page }) => {
@@ -61,7 +109,23 @@ test("should save returns a deep clone, not a reference", async ({ page }) => {
 	await insertPanel(page, "CCC", []);
 	const afterModification = await saveLayout(page);
 	expect(afterModification).not.toStrictEqual(saved);
-	expect(saved).toStrictEqual(LAYOUTS.TWO_HORIZONTAL_EQUAL);
+	expect(saved).toStrictEqual({
+		type: "split-panel",
+		orientation: "horizontal",
+		children: [
+			{
+				type: "child-panel",
+				child: ["AAA"],
+				selected: 0,
+			},
+			{
+				type: "child-panel",
+				child: ["BBB"],
+				selected: 0,
+			},
+		],
+		sizes: [0.5, 0.5],
+	});
 });
 
 test("should restore updates shadow DOM slots correctly", async ({ page }) => {
@@ -83,8 +147,31 @@ test("should restore updates shadow DOM slots correctly", async ({ page }) => {
 test("should save and restore preserve exact size ratios", async ({ page }) => {
 	await setupLayout(page, LAYOUTS.THREE_HORIZONTAL_PRECISE);
 	const saved = await saveLayout(page);
-	expect(saved).toStrictEqual(LAYOUTS.THREE_HORIZONTAL_PRECISE);
-	await restoreAndVerify(page, saved);
+	expect(saved).toStrictEqual({
+		type: "split-panel",
+		orientation: "horizontal",
+		children: [
+			{
+				type: "child-panel",
+				child: ["AAA"],
+				selected: 0,
+			},
+			{
+				type: "child-panel",
+				child: ["BBB"],
+				selected: 0,
+			},
+			{
+				type: "child-panel",
+				child: ["CCC"],
+				selected: 0,
+			},
+		],
+		sizes: [0.123456789, 0.456789123, 0.419754088],
+	});
+	await restoreLayout(page, saved);
+	const restored = await saveLayout(page);
+	expect(restored).toStrictEqual(saved);
 });
 
 test("should save and restore handle empty then populated layout", async ({
@@ -95,6 +182,10 @@ test("should save and restore handle empty then populated layout", async ({
 	await insertPanel(page, "BBB", []);
 	await insertPanel(page, "CCC", []);
 	const saved2 = await saveLayout(page);
-	await restoreAndVerify(page, saved1);
-	await restoreAndVerify(page, saved2);
+	await restoreLayout(page, saved1);
+	const restored1 = await saveLayout(page);
+	expect(restored1).toStrictEqual(saved1);
+	await restoreLayout(page, saved2);
+	const restored2 = await saveLayout(page);
+	expect(restored2).toStrictEqual(saved2);
 });

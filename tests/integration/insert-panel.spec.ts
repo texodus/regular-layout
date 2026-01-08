@@ -14,7 +14,6 @@ import type { Layout } from "../../dist/index.js";
 import {
 	setupLayout,
 	saveLayout,
-	expectLayoutState,
 	expectSlots,
 	insertPanel,
 } from "../helpers/integration.ts";
@@ -22,11 +21,19 @@ import { LAYOUTS } from "../helpers/fixtures.ts";
 
 test("should insert a single panel into an empty layout", async ({ page }) => {
 	await setupLayout(page, LAYOUTS.SINGLE_AAA);
-	await expectLayoutState(page, LAYOUTS.SINGLE_AAA);
+	const currentState = await saveLayout(page);
+	expect(currentState).toStrictEqual({
+		type: "child-panel",
+		child: ["AAA"],
+		selected: 0,
+	});
+
 	await insertPanel(page, "BBB", []);
-	await expectLayoutState(page, {
+	const currentState2 = await saveLayout(page);
+	expect(currentState2).toStrictEqual({
 		type: "child-panel",
 		child: ["BBB", "AAA"],
+		selected: 0,
 	});
 
 	await expectSlots(page, { contains: ["BBB"] });
@@ -45,14 +52,17 @@ test("should insert panel at specific path in split panel", async ({
 			{
 				type: "child-panel",
 				child: ["AAA"],
+				selected: 0,
 			},
 			{
 				type: "child-panel",
 				child: ["CCC"],
+				selected: 0,
 			},
 			{
 				type: "child-panel",
 				child: ["BBB"],
+				selected: 0,
 			},
 		],
 		sizes: [0.3333333333333333, 0.3333333333333333, 0.3333333333333333],
@@ -88,14 +98,17 @@ test("should insert panel into nested split panel", async ({ page }) => {
 					{
 						type: "child-panel",
 						child: ["AAA"],
+						selected: 0,
 					},
 					{
 						type: "child-panel",
 						child: ["BBB"],
+						selected: 0,
 					},
 					{
 						type: "child-panel",
 						child: ["DDD"],
+						selected: 0,
 					},
 				],
 				sizes: [0.3333333333333333, 0.3333333333333333, 0.3333333333333333],
@@ -103,6 +116,7 @@ test("should insert panel into nested split panel", async ({ page }) => {
 			{
 				type: "child-panel",
 				child: ["CCC"],
+				selected: 0,
 			},
 		],
 		sizes: [0.6, 0.4],
@@ -137,6 +151,7 @@ test("should split existing panel when inserting at deeper path", async ({
 			{
 				type: "child-panel",
 				child: ["AAA"],
+				selected: 0,
 			},
 			{
 				type: "split-panel",
@@ -145,10 +160,12 @@ test("should split existing panel when inserting at deeper path", async ({
 					{
 						type: "child-panel",
 						child: ["BBB"],
+						selected: 0,
 					},
 					{
 						type: "child-panel",
 						child: ["CCC"],
+						selected: 0,
 					},
 				],
 				sizes: [0.5, 0.5],

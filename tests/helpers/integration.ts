@@ -24,7 +24,6 @@ export async function setupLayout(
 ): Promise<void> {
 	await page.goto("/examples/index.html");
 	await page.waitForSelector("regular-layout");
-
 	if (initialLayout) {
 		await restoreLayout(page, initialLayout);
 	}
@@ -51,29 +50,6 @@ export async function restoreLayout(page: Page, state: Layout): Promise<void> {
 }
 
 /**
- * Restores a layout and verifies it matches the expected state.
- */
-export async function restoreAndVerify(
-	page: Page,
-	state: Layout,
-): Promise<void> {
-	await restoreLayout(page, state);
-	const restored = await saveLayout(page);
-	expect(restored).toStrictEqual(state);
-}
-
-/**
- * Saves the current layout state and verifies it matches the expected state.
- */
-export async function expectLayoutState(
-	page: Page,
-	expectedState: Layout,
-): Promise<void> {
-	const currentState = await saveLayout(page);
-	expect(currentState).toStrictEqual(expectedState);
-}
-
-/**
  * Returns an array of slot names from the layout's shadow DOM.
  */
 export async function getSlots(page: Page): Promise<string[]> {
@@ -97,7 +73,6 @@ export async function expectSlots(
 	},
 ): Promise<void> {
 	const slots = await getSlots(page);
-
 	if (options.contains) {
 		for (const slot of options.contains) {
 			expect(slots).toContain(slot);
@@ -155,4 +130,121 @@ export async function removePanel(
 		const layout = document.querySelector("regular-layout");
 		layout?.removePanel(p as string);
 	}, pathOrName);
+}
+
+/**
+ * Calls setOverlayState with the given coordinates and options.
+ */
+export async function setOverlayState(
+	page: Page,
+	x: number,
+	y: number,
+	slot: string,
+	className?: string,
+	mode?: "grid" | "absolute",
+): Promise<void> {
+	await page.evaluate(
+		({ x, y, slot, className, mode }) => {
+			const layout = document.querySelector("regular-layout");
+			const layoutPath = layout?.calculateIntersect(x, y);
+			if (layoutPath) {
+				layout?.setOverlayState(x, y, { ...layoutPath, slot }, className, mode);
+			}
+		},
+		{ x, y, slot, className, mode },
+	);
+}
+
+/**
+ * Calls clearOverlayState with the given coordinates and options.
+ */
+export async function clearOverlayState(
+	page: Page,
+	x: number,
+	y: number,
+	slot: string,
+	className?: string,
+	mode?: "grid" | "absolute",
+): Promise<void> {
+	await page.evaluate(
+		({ x, y, slot, className, mode }) => {
+			const layout = document.querySelector("regular-layout");
+			const layoutPath = layout?.calculateIntersect(x, y);
+			if (layoutPath) {
+				layout?.clearOverlayState(
+					x,
+					y,
+					{ ...layoutPath, slot },
+					className,
+					mode,
+				);
+			}
+		},
+		{ x, y, slot, className, mode },
+	);
+}
+
+/**
+ * Gets the computed CSS for a slot element.
+ */
+export async function getSlotCSS(
+	page: Page,
+	slotName: string,
+): Promise<{
+	gridArea?: string;
+	display?: string;
+}> {
+	return await page.evaluate((name) => {
+		const layout = document.querySelector("regular-layout");
+		const slot = layout?.shadowRoot?.querySelector(`slot[name="${name}"]`);
+		if (!slot) return {};
+
+		const computedStyle = window.getComputedStyle(slot);
+		return {
+			gridArea: computedStyle.gridArea,
+			display: computedStyle.display,
+		};
+	}, slotName);
+}
+
+/**
+ * Checks if an element has a specific CSS class.
+ */
+export async function hasClass(
+	page: Page,
+	slotName: string,
+	className: string,
+): Promise<boolean> {
+	return await page.evaluate(
+		({ name, className }) => {
+			const layout = document.querySelector("regular-layout");
+			const slot = layout?.shadowRoot?.querySelector(
+				`slot[name="${name}"]`,
+			) as HTMLSlotElement | null;
+			const element = slot?.assignedElements()[0];
+			return element?.classList.contains(className) || false;
+		},
+		{ name: slotName, className },
+	);
+}
+
+/**
+ * Gets the layout bounds for testing overlay coordinates.
+ */
+export async function getLayoutBounds(page: Page): Promise<{
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+}> {
+	return await page.evaluate(() => {
+		const layout = document.querySelector("regular-layout");
+		const rect = layout?.getBoundingClientRect();
+		return {
+			x: rect?.left || 0,
+			y: rect?.top || 0,
+			width: rect?.width || 0,
+			height: rect?.height || 0,
+		};
+	});
 }

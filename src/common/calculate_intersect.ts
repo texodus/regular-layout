@@ -86,6 +86,7 @@ function calculate_intersection_recursive(
 		const column_offset =
 			(column - view_window.col_start) /
 			(view_window.col_end - view_window.col_start);
+
 		const row_offset =
 			(row - view_window.row_start) /
 			(view_window.row_end - view_window.row_start);
@@ -98,6 +99,8 @@ function calculate_intersection_recursive(
 			path: path,
 			view_window: view_window,
 			is_edge: false,
+			column,
+			row,
 			column_offset,
 			row_offset,
 			orientation: parent_orientation || "horizontal",

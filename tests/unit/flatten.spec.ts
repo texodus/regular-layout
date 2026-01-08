@@ -74,6 +74,7 @@ test("Deeply alternating split partial", () => {
 			{
 				type: "child-panel",
 				child: ["AAA"],
+				selected: 0,
 			},
 			{
 				type: "split-panel",
@@ -82,6 +83,48 @@ test("Deeply alternating split partial", () => {
 					{
 						type: "child-panel",
 						child: ["CCC"],
+						selected: 0,
+					},
+					{
+						type: "child-panel",
+						child: ["DDD"],
+						selected: 0,
+					},
+				],
+				sizes: [0.5, 0.5],
+			},
+			{
+				type: "child-panel",
+				child: ["FFF"],
+				selected: 0,
+			},
+			{
+				type: "child-panel",
+				child: ["BBB"],
+				selected: 0,
+			},
+			{
+				type: "child-panel",
+				child: ["EEE"],
+				selected: 0,
+			},
+		],
+		sizes: [0.25, 0.25, 0.15, 0.15, 0.2],
+	});
+});
+
+test("Nested split panels with a single child", () => {
+	const test: Layout = {
+		type: "split-panel",
+		orientation: "horizontal",
+		children: [
+			{
+				type: "split-panel",
+				orientation: "vertical",
+				children: [
+					{
+						type: "child-panel",
+						child: ["AAA", "BBB", "CCC"],
 					},
 					{
 						type: "child-panel",
@@ -90,19 +133,25 @@ test("Deeply alternating split partial", () => {
 				],
 				sizes: [0.5, 0.5],
 			},
+		],
+		sizes: [1],
+	};
+
+	expect(flatten(test)).toStrictEqual({
+		type: "split-panel",
+		orientation: "vertical",
+		children: [
 			{
 				type: "child-panel",
-				child: ["FFF"],
+				child: ["AAA", "BBB", "CCC"],
+				selected: 0,
 			},
 			{
 				type: "child-panel",
-				child: ["BBB"],
-			},
-			{
-				type: "child-panel",
-				child: ["EEE"],
+				child: ["DDD"],
+				selected: 0,
 			},
 		],
-		sizes: [0.25, 0.25, 0.15, 0.15, 0.2],
+		sizes: [0.5, 0.5],
 	});
 });

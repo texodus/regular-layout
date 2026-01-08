@@ -9,60 +9,56 @@
 // ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-import { RegularLayout } from "./regular-layout.ts";
-import { RegularLayoutFrame } from "./regular-layout-frame.ts";
-import type { Layout } from "./common/layout_config.ts";
+import { expect, test } from "@playwright/test";
+import {
+	getLayoutBounds,
+	hasClass,
+	setupLayout,
+} from "../helpers/integration.ts";
+import { LAYOUTS } from "../helpers/fixtures.ts";
 
-customElements.define("regular-layout", RegularLayout);
-customElements.define("regular-layout-frame", RegularLayoutFrame);
+test("should handle overlay near top edge of panel", async ({ page }) => {
+	await setupLayout(page, LAYOUTS.TWO_VERTICAL);
+	const bounds = await getLayoutBounds(page);
 
-declare global {
-	interface Document {
-		createElement(
-			tagName: "regular-layout",
-			options?: ElementCreationOptions,
-		): RegularLayout;
+	// Near top edge of AAA panel
+	const x = bounds.x + bounds.width * 0.5;
+	const y = bounds.y + bounds.height * 0.1;
 
-		createElement(
-			tagName: "regular-layout-frame",
-			options?: ElementCreationOptions,
-		): RegularLayoutFrame;
+	await page.evaluate(
+		({ x, y }) => {
+			const layout = document.querySelector("regular-layout");
+			const layoutPath = layout?.calculateIntersect(x, y);
+			if (layoutPath) {
+				layout?.setOverlayState(x, y, layoutPath, "overlay", "absolute");
+			}
+		},
+		{ x, y },
+	);
 
-		querySelector<E extends Element = Element>(selectors: string): E | null;
-		querySelector(selectors: "regular-layout"): RegularLayout | null;
-		querySelector(selectors: "regular-layout-frame"): RegularLayoutFrame | null;
-	}
+	const hasOverlayClass = await hasClass(page, "AAA", "overlay");
+	expect(hasOverlayClass).toBe(true);
+});
 
-	interface CustomElementRegistry {
-		get(tagName: "regular-layout"): typeof RegularLayout;
-		get(tagName: "regular-layout-frame"): typeof RegularLayoutFrame;
-	}
+test("should handle overlay near bottom edge of panel", async ({ page }) => {
+	await setupLayout(page, LAYOUTS.TWO_VERTICAL);
+	const bounds = await getLayoutBounds(page);
 
-	interface HTMLElement {
-		addEventListener(
-			name: "regular-layout-update",
-			cb: (e: RegularLayoutEvent) => void,
-			options?: { signal: AbortSignal },
-		): void;
+	// Near bottom edge of BBB panel
+	const x = bounds.x + bounds.width * 0.5;
+	const y = bounds.y + bounds.height * 0.9;
 
-		addEventListener(
-			name: "regular-layout-before-update",
-			cb: (e: RegularLayoutEvent) => void,
-			options?: { signal: AbortSignal },
-		): void;
+	await page.evaluate(
+		({ x, y }) => {
+			const layout = document.querySelector("regular-layout");
+			const layoutPath = layout?.calculateIntersect(x, y);
+			if (layoutPath) {
+				layout?.setOverlayState(x, y, layoutPath, "overlay", "absolute");
+			}
+		},
+		{ x, y },
+	);
 
-		removeEventListener(
-			name: "regular-layout-update",
-			cb: (e: RegularLayoutEvent) => void,
-		): void;
-
-		removeEventListener(
-			name: "regular-layout-before-update",
-			cb: (e: RegularLayoutEvent) => void,
-		): void;
-	}
-}
-
-export interface RegularLayoutEvent extends CustomEvent {
-	detail: Layout;
-}
+	const hasOverlayClass = await hasClass(page, "BBB", "overlay");
+	expect(hasOverlayClass).toBe(true);
+});

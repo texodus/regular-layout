@@ -9,7 +9,8 @@
 // ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-import { GRID_TRACK_COLLAPSE_TOLERANCE, type Layout } from "./layout_config.ts";
+import { GRID_TRACK_COLLAPSE_TOLERANCE } from "./constants.ts";
+import type { Layout } from "./layout_config.ts";
 import { remove_child } from "./remove_child.ts";
 
 interface GridCell {

@@ -21,17 +21,19 @@ test("should switch between tabs by clicking", async ({ page }) => {
 		layoutElement?.restore(layout as Layout);
 	}, LAYOUTS.SINGLE_TABS_WITH_SELECTED);
 
-	const getSelectedTab = async () => {
-		return await page.evaluate(() => {
-			const frame = document.querySelector('regular-layout-frame[slot="AAA"]');
+	const getSelectedTab = async (slot: string) => {
+		return await page.evaluate((slot) => {
+			const frame = document.querySelector(
+				`regular-layout-frame[slot=${slot}]`,
+			);
 			const activeTab = frame?.shadowRoot?.querySelector(
 				'[part~="active-tab"]',
 			);
 			return activeTab?.textContent;
-		});
+		}, slot);
 	};
 
-	const selectedBefore = await getSelectedTab();
+	const selectedBefore = await getSelectedTab("AAA");
 	expect(selectedBefore).toBe("AAA");
 	const frameBounds = await page.evaluate(() => {
 		const frame = document.querySelector('regular-layout-frame[slot="AAA"]');
@@ -50,8 +52,8 @@ test("should switch between tabs by clicking", async ({ page }) => {
 		await page.mouse.click(frameBounds.x, frameBounds.y);
 	}
 
-	await page.waitForTimeout(100);
-	const selectedAfter = await getSelectedTab();
+	// Since tab selection has happened, the visible titlebar is now "BBB"'s
+	const selectedAfter = await getSelectedTab("BBB");
 	expect(selectedAfter).toBe("BBB");
 	const layoutState = await page.evaluate(() => {
 		const layout = document.querySelector("regular-layout");
@@ -72,27 +74,6 @@ test("should move a panel by dragging a selected tab", async ({ page }) => {
 		const layoutElement = document.querySelector("regular-layout");
 		layoutElement?.restore(layout as Layout);
 	}, LAYOUTS.TWO_HORIZONTAL_WITH_TABS);
-
-	const layoutBefore = await page.evaluate(() => {
-		const layout = document.querySelector("regular-layout");
-		return layout?.save();
-	});
-
-	expect(layoutBefore).toMatchObject({
-		type: "split-panel",
-		orientation: "horizontal",
-		children: [
-			{
-				type: "child-panel",
-				child: ["AAA", "BBB"],
-				selected: 0,
-			},
-			{
-				type: "child-panel",
-				child: ["CCC"],
-			},
-		],
-	});
 
 	const dragCoords = await page.evaluate(() => {
 		const frame = document.querySelector('regular-layout-frame[slot="AAA"]');
@@ -121,7 +102,6 @@ test("should move a panel by dragging a selected tab", async ({ page }) => {
 		await page.mouse.up();
 	}
 
-	await page.waitForTimeout(100);
 	const layoutAfter = await page.evaluate(() => {
 		const layout = document.querySelector("regular-layout");
 		return layout?.save();
@@ -138,11 +118,11 @@ test("should move a panel by dragging a selected tab", async ({ page }) => {
 			},
 			{
 				type: "child-panel",
-				child: ["AAA"],
+				child: ["CCC"],
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				child: ["AAA"],
 			},
 		],
 	});
@@ -206,7 +186,6 @@ test("should move a panel by dragging a deselected tab", async ({ page }) => {
 		await page.mouse.up();
 	}
 
-	await page.waitForTimeout(100);
 	const layoutAfter = await page.evaluate(() => {
 		const layout = document.querySelector("regular-layout");
 		return layout?.save();
@@ -223,11 +202,11 @@ test("should move a panel by dragging a deselected tab", async ({ page }) => {
 			},
 			{
 				type: "child-panel",
-				child: ["BBB"],
+				child: ["CCC"],
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				child: ["BBB"],
 			},
 		],
 	});

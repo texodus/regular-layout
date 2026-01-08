@@ -36,6 +36,7 @@ export function remove_child(panel: Layout, child: string): Layout {
 				child: newChild,
 			};
 		}
+
 		return structuredClone(panel);
 	}
 

@@ -24,6 +24,7 @@ import type { Layout } from "./layout_config.ts";
  */
 export function flatten(layout: Layout): Layout {
 	if (layout.type === "child-panel") {
+		layout.selected = layout.selected || 0;
 		return layout;
 	}
 

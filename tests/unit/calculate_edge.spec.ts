@@ -10,42 +10,97 @@
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 import { expect, test } from "@playwright/test";
-import { TEST_PANEL, LAYOUTS } from "../helpers/fixtures.ts";
-import { calculate_split } from "../../src/common/calculate_split.ts";
+import { LAYOUTS } from "../helpers/fixtures.ts";
+import { calculate_edge } from "../../src/common/calculate_edge.ts";
 import { calculate_intersection } from "../../src/common/calculate_intersect.ts";
 import type { LayoutPath, TabLayout } from "../../src/common/layout_config.ts";
 
 test("cursor in center of panel - no split", () => {
-	const drop_target = calculate_intersection(0.3, 0.5, TEST_PANEL, false);
-	const result = calculate_split(0.3, 0.5, TEST_PANEL, "DDD", drop_target);
+	const drop_target = calculate_intersection(
+		0.3,
+		0.5,
+		LAYOUTS.NESTED_BASIC,
+		false,
+	);
+	const result = calculate_edge(
+		0.3,
+		0.5,
+		LAYOUTS.NESTED_BASIC,
+		"DDD",
+		drop_target,
+	);
 	expect(result.is_edge).toBe(false);
 	expect(result.slot).toBe("BBB");
 });
 
 test("cursor near left edge of vertical split panel", () => {
-	const drop_target = calculate_intersection(0.05, 0.3, TEST_PANEL, false);
-	const result = calculate_split(0.05, 0.3, TEST_PANEL, "DDD", drop_target);
+	const drop_target = calculate_intersection(
+		0.05,
+		0.3,
+		LAYOUTS.NESTED_BASIC,
+		false,
+	);
+	const result = calculate_edge(
+		0.05,
+		0.3,
+		LAYOUTS.NESTED_BASIC,
+		"DDD",
+		drop_target,
+	);
 	expect(result.is_edge).toBe(true);
 	expect(result.slot).toBe("DDD");
 });
 
 test("cursor near right edge of vertical split panel", () => {
-	const drop_target = calculate_intersection(0.55, 0.3, TEST_PANEL, false);
-	const result = calculate_split(0.55, 0.3, TEST_PANEL, "DDD", drop_target);
+	const drop_target = calculate_intersection(
+		0.55,
+		0.3,
+		LAYOUTS.NESTED_BASIC,
+		false,
+	);
+	const result = calculate_edge(
+		0.55,
+		0.3,
+		LAYOUTS.NESTED_BASIC,
+		"DDD",
+		drop_target,
+	);
 	expect(result.is_edge).toBe(true);
 	expect(result.slot).toBe("DDD");
 });
 
 test("cursor near top edge of horizontal split panel", () => {
-	const drop_target = calculate_intersection(0.7, 0.05, TEST_PANEL, false);
-	const result = calculate_split(0.7, 0.05, TEST_PANEL, "DDD", drop_target);
+	const drop_target = calculate_intersection(
+		0.7,
+		0.05,
+		LAYOUTS.NESTED_BASIC,
+		false,
+	);
+	const result = calculate_edge(
+		0.7,
+		0.05,
+		LAYOUTS.NESTED_BASIC,
+		"DDD",
+		drop_target,
+	);
 	expect(result.is_edge).toBe(true);
 	expect(result.slot).toBe("CCC"); // ???
 });
 
 test("cursor near bottom edge of horizontal split panel", () => {
-	const drop_target = calculate_intersection(0.7, 0.95, TEST_PANEL, false);
-	const result = calculate_split(0.7, 0.95, TEST_PANEL, "DDD", drop_target);
+	const drop_target = calculate_intersection(
+		0.7,
+		0.95,
+		LAYOUTS.NESTED_BASIC,
+		false,
+	);
+	const result = calculate_edge(
+		0.7,
+		0.95,
+		LAYOUTS.NESTED_BASIC,
+		"DDD",
+		drop_target,
+	);
 	expect(result.is_edge).toBe(true);
 	expect(result.slot).toBe("CCC"); // ???
 });
@@ -58,7 +113,7 @@ test("cursor near left edge but with horizontal orientation", () => {
 		false,
 	);
 
-	const result = calculate_split(
+	const result = calculate_edge(
 		0.05,
 		0.5,
 		LAYOUTS.SINGLE_SPLIT_HORIZONTAL,
@@ -78,7 +133,7 @@ test("cursor near right edge but with horizontal orientation", () => {
 		false,
 	);
 
-	const result = calculate_split(
+	const result = calculate_edge(
 		0.95,
 		0.5,
 		LAYOUTS.SINGLE_SPLIT_HORIZONTAL,
@@ -98,7 +153,7 @@ test("cursor near top edge but with vertical orientation", () => {
 		false,
 	);
 
-	const result = calculate_split(
+	const result = calculate_edge(
 		0.5,
 		0.05,
 		LAYOUTS.SINGLE_SPLIT_VERTICAL,
@@ -118,7 +173,7 @@ test("cursor near bottom edge but with vertical orientation", () => {
 		false,
 	);
 
-	const result = calculate_split(
+	const result = calculate_edge(
 		0.5,
 		0.95,
 		LAYOUTS.SINGLE_SPLIT_VERTICAL,
@@ -135,7 +190,7 @@ test("integrated top edge", () => {
 	const row = 0.002;
 	let drop_target = calculate_intersection(col, row, LAYOUTS.SINGLE_AAA, false);
 	if (drop_target) {
-		drop_target = calculate_split(
+		drop_target = calculate_edge(
 			col,
 			row,
 			LAYOUTS.SINGLE_AAA,
@@ -157,7 +212,7 @@ test("integrated right edge", () => {
 	const row = 0.53;
 	let drop_target = calculate_intersection(col, row, LAYOUTS.SINGLE_AAA, false);
 	if (drop_target) {
-		drop_target = calculate_split(
+		drop_target = calculate_edge(
 			col,
 			row,
 			LAYOUTS.SINGLE_AAA,
@@ -166,11 +221,27 @@ test("integrated right edge", () => {
 		);
 	}
 
-	expect(drop_target.view_window).toStrictEqual({
-		col_end: 1,
-		col_start: 0.5,
-		row_end: 1,
-		row_start: 0,
+	expect(drop_target).toStrictEqual({
+		box: undefined,
+		column: 0.998,
+		column_offset: 0.996,
+		is_edge: true,
+		orientation: "horizontal",
+		panel: {
+			child: ["BBB"],
+			type: "child-panel",
+		},
+		path: [1],
+		row: 0.53,
+		row_offset: 0.53,
+		slot: "BBB",
+		type: "layout-path",
+		view_window: {
+			col_end: 1,
+			col_start: 0.5,
+			row_end: 1,
+			row_start: 0,
+		},
 	});
 });
 
@@ -182,6 +253,8 @@ test("cursor in top-left corner prioritizes row offset", () => {
 		panel: singlePanel as TabLayout,
 		path: [],
 		view_window: { row_start: 0, row_end: 1, col_start: 0, col_end: 1 },
+		column: 0.1,
+		row: 0.05,
 		column_offset: 0.1,
 		row_offset: 0.05,
 		orientation: "horizontal",
@@ -189,7 +262,7 @@ test("cursor in top-left corner prioritizes row offset", () => {
 		box: undefined,
 	};
 
-	const result = calculate_split(0.1, 0.05, singlePanel, "BBB", drop_target);
+	const result = calculate_edge(0.1, 0.05, singlePanel, "BBB", drop_target);
 	expect(result.is_edge).toBe(true);
 });
 
@@ -201,6 +274,8 @@ test("cursor in bottom-right corner prioritizes row offset", () => {
 		panel: singlePanel as TabLayout,
 		path: [],
 		view_window: { row_start: 0, row_end: 1, col_start: 0, col_end: 1 },
+		column: 0.9,
+		row: 0.95,
 		column_offset: 0.9,
 		row_offset: 0.95,
 		orientation: "horizontal",
@@ -208,7 +283,7 @@ test("cursor in bottom-right corner prioritizes row offset", () => {
 		box: undefined,
 	};
 
-	const result = calculate_split(0.9, 0.95, singlePanel, "BBB", drop_target);
+	const result = calculate_edge(0.9, 0.95, singlePanel, "BBB", drop_target);
 	expect(result.is_edge).toBe(true);
 });
 
@@ -220,6 +295,8 @@ test("cursor near edge with offset exactly at tolerance threshold", () => {
 		path: [],
 		panel: singlePanel as TabLayout,
 		view_window: { row_start: 0, row_end: 1, col_start: 0, col_end: 1 },
+		column: 0.3,
+		row: 0.5,
 		column_offset: 0.3,
 		row_offset: 0.5,
 		orientation: "horizontal",
@@ -227,7 +304,7 @@ test("cursor near edge with offset exactly at tolerance threshold", () => {
 		box: undefined,
 	};
 
-	const result = calculate_split(0.3, 0.5, singlePanel, "BBB", drop_target);
+	const result = calculate_edge(0.3, 0.5, singlePanel, "BBB", drop_target);
 	expect(result.is_edge).toBe(false);
 });
 
@@ -239,6 +316,8 @@ test("cursor near edge with offset just below tolerance threshold", () => {
 		panel: singlePanel as TabLayout,
 		path: [],
 		view_window: { row_start: 0, row_end: 1, col_start: 0, col_end: 1 },
+		column: 0.14,
+		row: 0.5,
 		column_offset: 0.14,
 		row_offset: 0.5,
 		orientation: "horizontal",
@@ -246,21 +325,43 @@ test("cursor near edge with offset just below tolerance threshold", () => {
 		box: undefined,
 	};
 
-	const result = calculate_split(0.14, 0.5, singlePanel, "BBB", drop_target);
+	const result = calculate_edge(0.14, 0.5, singlePanel, "BBB", drop_target);
 	expect(result.is_edge).toBe(true);
 });
 
 test("nested panel with vertical orientation at left edge", () => {
-	const drop_target = calculate_intersection(0.02, 0.3, TEST_PANEL, false);
-	const result = calculate_split(0.02, 0.3, TEST_PANEL, "DDD", drop_target);
+	const drop_target = calculate_intersection(
+		0.02,
+		0.3,
+		LAYOUTS.NESTED_BASIC,
+		false,
+	);
+	const result = calculate_edge(
+		0.02,
+		0.3,
+		LAYOUTS.NESTED_BASIC,
+		"DDD",
+		drop_target,
+	);
 	expect(result.is_edge).toBe(true);
 	expect(result.slot).toBe("DDD");
 	expect(result.path).toEqual([0, 1, 0]);
 });
 
 test("nested panel with vertical orientation at right edge", () => {
-	const drop_target = calculate_intersection(0.58, 0.3, TEST_PANEL, false);
-	const result = calculate_split(0.58, 0.3, TEST_PANEL, "DDD", drop_target);
+	const drop_target = calculate_intersection(
+		0.58,
+		0.3,
+		LAYOUTS.NESTED_BASIC,
+		false,
+	);
+	const result = calculate_edge(
+		0.58,
+		0.3,
+		LAYOUTS.NESTED_BASIC,
+		"DDD",
+		drop_target,
+	);
 	expect(result.is_edge).toBe(true);
 	expect(result.slot).toBe("DDD");
 	expect(result.path).toEqual([0, 1, 1]);
@@ -274,7 +375,7 @@ test("complex layout with multiple nested panels", () => {
 		false,
 	);
 
-	const result = calculate_split(
+	const result = calculate_edge(
 		0.02,
 		0.3,
 		LAYOUTS.COMPLEX_NESTED_ABC,
@@ -287,8 +388,19 @@ test("complex layout with multiple nested panels", () => {
 });
 
 test("preserves drop_target properties when no split occurs", () => {
-	const drop_target = calculate_intersection(0.3, 0.3, TEST_PANEL, false);
-	const result = calculate_split(0.3, 0.3, TEST_PANEL, "DDD", drop_target);
+	const drop_target = calculate_intersection(
+		0.3,
+		0.3,
+		LAYOUTS.NESTED_BASIC,
+		false,
+	);
+	const result = calculate_edge(
+		0.3,
+		0.3,
+		LAYOUTS.NESTED_BASIC,
+		"DDD",
+		drop_target,
+	);
 	expect(result.view_window).toBeDefined();
 	expect(result.path).toBeDefined();
 	expect(result.orientation).toBeDefined();

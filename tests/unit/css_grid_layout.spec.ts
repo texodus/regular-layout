@@ -10,7 +10,7 @@
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 import { expect, test } from "@playwright/test";
-import { TEST_PANEL } from "../helpers/fixtures.ts";
+import { LAYOUTS } from "../helpers/fixtures.ts";
 
 import { create_css_grid_layout } from "../../src/common/generate_grid.ts";
 import type { Layout } from "../../src/common/layout_config.ts";
@@ -23,7 +23,7 @@ const RESULT = `
 `.trim();
 
 test("simple test", async () => {
-	const css = create_css_grid_layout(TEST_PANEL, true);
+	const css = create_css_grid_layout(LAYOUTS.NESTED_BASIC, true);
 	expect(css).toBe(RESULT);
 });
 

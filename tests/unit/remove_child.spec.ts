@@ -10,11 +10,11 @@
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 import { expect, test } from "@playwright/test";
-import { TEST_PANEL, LAYOUTS } from "../helpers/fixtures.ts";
+import { LAYOUTS } from "../helpers/fixtures.ts";
 import { remove_child } from "../../src/common/remove_child.ts";
 
 test("remove child from nested split panel", () => {
-	const result = remove_child(TEST_PANEL, "AAA");
+	const result = remove_child(LAYOUTS.NESTED_BASIC, "AAA");
 	expect(result).toStrictEqual({
 		type: "split-panel",
 		children: [
@@ -33,7 +33,7 @@ test("remove child from nested split panel", () => {
 });
 
 test("remove child from top-level split panel", () => {
-	const result = remove_child(TEST_PANEL, "CCC");
+	const result = remove_child(LAYOUTS.NESTED_BASIC, "CCC");
 	expect(result).toStrictEqual({
 		type: "split-panel",
 		children: [
