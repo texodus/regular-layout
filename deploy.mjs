@@ -53,6 +53,8 @@ try {
 
 	if (ghPagesExists) {
 		exec("git checkout gh-pages");
+		exec("git add -A");
+		exec("git stash");
 	} else {
 		throw new Error("No gh-pages branch found");
 	}
@@ -60,10 +62,12 @@ try {
 	console.log("Copying build artifacts...");
 	cpSync(tempDir, ".", { recursive: true });
 	console.log("Committing changes...");
+	
 	exec("git add -A");
 	exec(`git commit -m "Deploy from ${currentBranch} @ ${currentCommit}"`);
 
 	console.log(`Returning to ${currentBranch}...`);
+	exec(`git stash pop`);
 	exec(`git checkout ${currentBranch}`);
 	rmSync(tempDir, { recursive: true, force: true });
 	console.log("Deployment complete! gh-pages branch updated locally.");

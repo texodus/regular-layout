@@ -1,6 +1,6 @@
 {
 	"name": "regular-layout",
-	"version": "0.0.2",
+	"version": "0.1.0",
 	"description": "A regular CSS `grid` container",
 	"keywords": [],
 	"license": "Apache-2.0",
