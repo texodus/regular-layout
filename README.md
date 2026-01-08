@@ -7,9 +7,9 @@
 </picture>
 <br/>
 <br/>
-<a href="https://www.npmjs.com/package/regular-table"><img alt="NPM Version" src="https://img.shields.io/github/actions/workflow/status/texodus/regular-layout/build.yaml?event=push&style=flat-square"></a>
-<a href="https://www.npmjs.com/package/regular-table"><img alt="NPM Version" src="https://img.shields.io/npm/v/regular-layout.svg?color=brightgreen&style=flat-square"></a>
-<a href="https://www.npmjs.com/package/regular-table"><img alt="Bundlephobia (Minified)" src="https://img.shields.io/bundlephobia/min/regular-layout?style=flat-square"></a>
+<a href="https://github.com/texodus/regular-layout/actions"><img alt="Build Status" src="https://img.shields.io/github/actions/workflow/status/texodus/regular-layout/build.yaml?event=push&style=flat-square"></a>
+<a href="https://www.npmjs.com/package/regular-layout"><img alt="NPM Version" src="https://img.shields.io/npm/v/regular-layout.svg?color=brightgreen&style=flat-square"></a>
+<a href="https://bundlephobia.com/package/regular-layout"><img alt="Bundlephobia (Minified)" src="https://img.shields.io/bundlephobia/min/regular-layout?style=flat-square"></a>
 <!-- <a href="https://www.npmjs.com/package/regular-table"><img alt="Bundlephobia (Minzipped)" src="https://img.shields.io/bundlephobia/minzip/regular-layout?style=flat-square"></a> -->
 <br/>
 <br/>
