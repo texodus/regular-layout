@@ -9,56 +9,50 @@
 // ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-import { expect, test } from "@playwright/test";
-import {
-	getLayoutBounds,
-	hasClass,
-	setupLayout,
-} from "../helpers/integration.ts";
-import { LAYOUTS } from "../helpers/fixtures.ts";
+import "../src/index.ts";
 
-test("should handle overlay near top edge of panel", async ({ page }) => {
-	await setupLayout(page, LAYOUTS.TWO_VERTICAL);
-	const bounds = await getLayoutBounds(page);
+const themes = document.querySelector("#themes") as HTMLSelectElement;
+const add = document.querySelector("#add") as HTMLButtonElement;
+const save = document.querySelector("#save") as HTMLButtonElement;
+const restore = document.querySelector("#restore") as HTMLButtonElement;
+const clear = document.querySelector("#clear") as HTMLButtonElement;
+add.addEventListener("click", () => {
+	// Note: this *demo* implementation leaks `div` elements, because they
+	// are not removed from the light DOM by `clear` or `restore`. You must
+	// handle the lifecycle of the light DOM objects yourself!
+	const chars = "abcdefghijklmnopqrstuvwxyz";
+	let name = "";
+	for (let i = 0; i < 8; i++) {
+		name += chars.charAt(Math.floor(Math.random() * chars.length));
+	}
 
-	// Near top edge of AAA panel
-	const x = bounds.x + bounds.width * 0.5;
-	const y = bounds.y + bounds.height * 0.1;
-
-	await page.evaluate(
-		({ x, y }) => {
-			const layout = document.querySelector("regular-layout");
-			const layoutPath = layout?.calculateIntersect(x, y);
-			if (layoutPath) {
-				layout?.setOverlayState(x, y, layoutPath, "overlay", "absolute");
-			}
-		},
-		{ x, y },
-	);
-
-	const hasOverlayClass = await hasClass(page, "AAA", "overlay");
-	expect(hasOverlayClass).toBe(true);
+	const COLORS = ["AAA", "BBB", "CCC", "DDD", "EEE", "FFF"];
+	const elem = document.createElement("regular-layout-frame");
+	elem.setAttribute("name", name);
+	elem.classList.add(COLORS[Math.floor(COLORS.length * Math.random())]);
+	layout.appendChild(elem);
+	layout.insertPanel(name, []);
 });
 
-test("should handle overlay near bottom edge of panel", async ({ page }) => {
-	await setupLayout(page, LAYOUTS.TWO_VERTICAL);
-	const bounds = await getLayoutBounds(page);
+themes.addEventListener("change", (_event) => {
+	layout.className = themes.value;
+})
 
-	// Near bottom edge of BBB panel
-	const x = bounds.x + bounds.width * 0.5;
-	const y = bounds.y + bounds.height * 0.9;
+const req = await fetch("./layout.json");
+let state = await req.json();
 
-	await page.evaluate(
-		({ x, y }) => {
-			const layout = document.querySelector("regular-layout");
-			const layoutPath = layout?.calculateIntersect(x, y);
-			if (layoutPath) {
-				layout?.setOverlayState(x, y, layoutPath, "overlay", "absolute");
-			}
-		},
-		{ x, y },
-	);
+const layout = document.querySelector("regular-layout") as any;
+layout.restore(state);
+save.addEventListener("click", () => {
+	state = layout.save();
+});
 
-	const hasOverlayClass = await hasClass(page, "BBB", "overlay");
-	expect(hasOverlayClass).toBe(true);
+restore.addEventListener("click", () => {
+	if (state) {
+		layout.restore(state);
+	}
+});
+
+clear.addEventListener("click", () => {
+	layout.clear();
 });

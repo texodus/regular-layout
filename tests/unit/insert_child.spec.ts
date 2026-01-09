@@ -11,7 +11,12 @@
 
 import { expect, test } from "@playwright/test";
 import { LAYOUTS } from "../helpers/fixtures.ts";
-import { insert_child } from "../../src/common/insert_child.ts";
+import { insert_child } from "../../src/layout/insert_child.ts";
+
+// - If the last index of the path is a split-panel, insert at that point.
+// - If the last index of the path is a child panel, stack at the last position in the tab
+// - If the second to last position is a child panel, stack in the position of the last index.
+// - if _edge_mode_ is set, always insert in a split panel at the second to last index
 
 test("insert into root split panel", () => {
 	const result = insert_child(LAYOUTS.NESTED_BASIC, "DDD", []);
@@ -42,8 +47,252 @@ test("insert into root split panel", () => {
 				child: ["DDD"],
 			},
 		],
-		sizes: [0.3333333333333333, 0.3333333333333333, 0.3333333333333333],
+		sizes: [0.39999999999999997, 0.26666666666666666, 0.3333333333333333],
 		orientation: "horizontal",
+	});
+});
+
+test("insert into root split panel edge", () => {
+	const result = insert_child(
+		LAYOUTS.NESTED_BASIC,
+		"DDD",
+		[0],
+		"vertical",
+		// true,
+	);
+
+	expect(result).toStrictEqual({
+		type: "split-panel",
+		orientation: "vertical",
+		sizes: [0.5, 0.5],
+		children: [
+			{
+				type: "child-panel",
+				child: ["DDD"],
+			},
+			{
+				type: "split-panel",
+				children: [
+					{
+						type: "split-panel",
+						children: [
+							{
+								type: "child-panel",
+								child: ["AAA"],
+							},
+							{
+								type: "child-panel",
+								child: ["BBB"],
+							},
+						],
+						sizes: [0.3, 0.7],
+						orientation: "vertical",
+					},
+					{
+						type: "child-panel",
+						child: ["CCC"],
+					},
+				],
+				sizes: [0.6, 0.4],
+				orientation: "horizontal",
+			},
+		],
+	});
+});
+
+test("insert into root split panel edge along the same orientation", () => {
+	const result = insert_child(LAYOUTS.NESTED_BASIC, "DDD", [0]);
+	expect(result).toStrictEqual({
+		type: "split-panel",
+		children: [
+			{
+				type: "child-panel",
+				child: ["DDD"],
+			},
+			{
+				type: "split-panel",
+				children: [
+					{
+						type: "child-panel",
+						child: ["AAA"],
+					},
+					{
+						type: "child-panel",
+						child: ["BBB"],
+					},
+				],
+				sizes: [0.3, 0.7],
+				orientation: "vertical",
+			},
+			{
+				type: "child-panel",
+				child: ["CCC"],
+			},
+		],
+		sizes: [0.3333333333333333, 0.39999999999999997, 0.26666666666666666],
+		orientation: "horizontal",
+	});
+});
+
+test("stack split panel", () => {
+	const result = insert_child(LAYOUTS.NESTED_BASIC, "DDD", [0, 1, 0]);
+	expect(result).toStrictEqual({
+		type: "split-panel",
+		children: [
+			{
+				type: "split-panel",
+				children: [
+					{
+						type: "child-panel",
+						child: ["AAA"],
+					},
+					{
+						type: "child-panel",
+						child: ["DDD", "BBB"],
+					},
+				],
+				sizes: [0.3, 0.7],
+				orientation: "vertical",
+			},
+			{
+				type: "child-panel",
+				child: ["CCC"],
+			},
+		],
+		sizes: [0.6, 0.4],
+		orientation: "horizontal",
+	});
+});
+
+test("stack split panel single child after", () => {
+	const result = insert_child(LAYOUTS.SINGLE_AAA, "DDD", [1]);
+	expect(result).toStrictEqual({
+		type: "child-panel",
+		child: ["AAA", "DDD"],
+	});
+});
+
+test("stack split panel single child before", () => {
+	const result = insert_child(LAYOUTS.SINGLE_AAA, "DDD", [0]);
+	expect(result).toStrictEqual({
+		type: "child-panel",
+		child: ["DDD", "AAA"],
+	});
+});
+
+test("stack split panel two horizontal before", () => {
+	const result = insert_child(LAYOUTS.TWO_HORIZONTAL, "DDD", [0, 0]);
+	expect(result).toStrictEqual({
+		type: "split-panel",
+		orientation: "horizontal",
+		children: [
+			{
+				type: "child-panel",
+				child: ["DDD", "AAA"],
+			},
+			{
+				type: "child-panel",
+				child: ["BBB"],
+			},
+		],
+		sizes: [0.3, 0.7],
+	});
+});
+
+test("stack split panel two horizontal after", () => {
+	const result = insert_child(LAYOUTS.TWO_HORIZONTAL, "DDD", [0, 1]);
+	expect(result).toStrictEqual({
+		type: "split-panel",
+		orientation: "horizontal",
+		children: [
+			{
+				type: "child-panel",
+				child: ["AAA", "DDD"],
+			},
+			{
+				type: "child-panel",
+				child: ["BBB"],
+			},
+		],
+		sizes: [0.3, 0.7],
+	});
+});
+
+test("stack nested basic after", () => {
+	const result = insert_child(LAYOUTS.TWO_HORIZONTAL, "DDD", [0, 1]);
+	expect(result).toStrictEqual({
+		type: "split-panel",
+		orientation: "horizontal",
+		children: [
+			{
+				type: "child-panel",
+				child: ["AAA", "DDD"],
+			},
+			{
+				type: "child-panel",
+				child: ["BBB"],
+			},
+		],
+		sizes: [0.3, 0.7],
+	});
+});
+
+test("stack nested basic after 5", () => {
+	const result = insert_child(
+		LAYOUTS.NESTED_BASIC,
+		"DDD",
+		[1, 0],
+		// "horizontal",
+		// false,
+	);
+	expect(result).toStrictEqual({
+		type: "split-panel",
+		children: [
+			{
+				type: "split-panel",
+				children: [
+					{
+						type: "child-panel",
+						child: ["AAA"],
+					},
+					{
+						type: "child-panel",
+						child: ["BBB"],
+					},
+				],
+				sizes: [0.3, 0.7],
+				orientation: "vertical",
+			},
+			{
+				type: "child-panel",
+				child: ["DDD", "CCC"],
+			},
+		],
+		sizes: [0.6, 0.4],
+		orientation: "horizontal",
+	});
+});
+
+test("stack nested basic after 4", () => {
+	const result = insert_child(LAYOUTS.TWO_HORIZONTAL_EQUAL, "DDD", [1]);
+	expect(result).toStrictEqual({
+		type: "split-panel",
+		orientation: "horizontal",
+		children: [
+			{
+				type: "child-panel",
+				child: ["AAA"],
+			},
+			{
+				type: "child-panel",
+				child: ["DDD"],
+			},
+			{
+				type: "child-panel",
+				child: ["BBB"],
+			},
+		],
+		sizes: [0.3333333333333333, 0.3333333333333333, 0.3333333333333333],
 	});
 });
 
@@ -76,7 +325,7 @@ test("append top level split-panel", () => {
 				child: ["DDD"],
 			},
 		],
-		sizes: [0.3333333333333333, 0.3333333333333333, 0.3333333333333333],
+		sizes: [0.39999999999999997, 0.26666666666666666, 0.3333333333333333],
 		orientation: "horizontal",
 	});
 });
@@ -110,7 +359,37 @@ test("insert into top level split-panel", () => {
 				child: ["CCC"],
 			},
 		],
-		sizes: [0.3333333333333333, 0.3333333333333333, 0.3333333333333333],
+		sizes: [0.39999999999999997, 0.3333333333333333, 0.26666666666666666],
+		orientation: "horizontal",
+	});
+});
+
+test("insert into top level split-panel 2", () => {
+	const result = insert_child(LAYOUTS.NESTED_BASIC, "DDD", [1, 0]);
+	expect(result).toStrictEqual({
+		type: "split-panel",
+		children: [
+			{
+				type: "split-panel",
+				children: [
+					{
+						type: "child-panel",
+						child: ["AAA"],
+					},
+					{
+						type: "child-panel",
+						child: ["BBB"],
+					},
+				],
+				sizes: [0.3, 0.7],
+				orientation: "vertical",
+			},
+			{
+				type: "child-panel",
+				child: ["DDD", "CCC"],
+			},
+		],
+		sizes: [0.6, 0.4],
 		orientation: "horizontal",
 	});
 });
@@ -136,19 +415,8 @@ test("insert at path splitting a child panel", () => {
 				sizes: [0.3, 0.7],
 			},
 			{
-				type: "split-panel",
-				orientation: "vertical",
-				children: [
-					{
-						type: "child-panel",
-						child: ["CCC"],
-					},
-					{
-						type: "child-panel",
-						child: ["DDD"],
-					},
-				],
-				sizes: [0.5, 0.5],
+				type: "child-panel",
+				child: ["CCC", "DDD"],
 			},
 		],
 		sizes: [0.6, 0.4],
@@ -177,7 +445,7 @@ test("insert into nested split panel", () => {
 						child: ["DDD"],
 					},
 				],
-				sizes: [0.3333333333333333, 0.3333333333333333, 0.3333333333333333],
+				sizes: [0.19999999999999998, 0.4666666666666666, 0.3333333333333333],
 				orientation: "vertical",
 			},
 			{
@@ -199,19 +467,8 @@ test("split a nested child panel", () => {
 				type: "split-panel",
 				children: [
 					{
-						type: "split-panel",
-						orientation: "horizontal",
-						children: [
-							{
-								type: "child-panel",
-								child: ["AAA"],
-							},
-							{
-								type: "child-panel",
-								child: ["DDD"],
-							},
-						],
-						sizes: [0.5, 0.5],
+						type: "child-panel",
+						child: ["AAA", "DDD"],
 					},
 					{
 						type: "child-panel",
@@ -232,7 +489,7 @@ test("split a nested child panel", () => {
 });
 
 test("insert into single child panel", () => {
-	const result = insert_child(LAYOUTS.SINGLE_ONLY, "SECOND", [], "horizontal");
+	const result = insert_child(LAYOUTS.SINGLE_ONLY, "SECOND", []);
 	expect(result).toStrictEqual({
 		type: "child-panel",
 		child: ["SECOND", "ONLY"],
@@ -240,9 +497,32 @@ test("insert into single child panel", () => {
 });
 
 test("insert into single child panel, on the top edge", () => {
-	const result = insert_child(LAYOUTS.SINGLE_ONLY, "SECOND", [0], "vertical");
+	const result = insert_child(
+		LAYOUTS.SINGLE_ONLY,
+		"SECOND",
+		[0],
+		// "vertical",
+		// true,
+	);
+
+	expect(result).toStrictEqual({
+		type: "child-panel",
+		child: ["SECOND", "ONLY"],
+	});
+});
+
+test("insert into single child panel, on the top edge with split", () => {
+	const result = insert_child(
+		LAYOUTS.SINGLE_ONLY,
+		"SECOND",
+		[0],
+		"vertical",
+		// true,
+	);
+
 	expect(result).toStrictEqual({
 		type: "split-panel",
+		sizes: [0.5, 0.5],
 		orientation: "vertical",
 		children: [
 			{
@@ -254,31 +534,32 @@ test("insert into single child panel, on the top edge", () => {
 				child: ["ONLY"],
 			},
 		],
-		sizes: [0.5, 0.5],
 	});
 });
 
 test("insert into single child panel, on the left edge", () => {
-	const result = insert_child(LAYOUTS.SINGLE_ONLY, "SECOND", [0], "horizontal");
+	const result = insert_child(
+		LAYOUTS.SINGLE_ONLY,
+		"SECOND",
+		[1],
+		// "vertical",
+		// true,
+	);
+
 	expect(result).toStrictEqual({
-		type: "split-panel",
-		orientation: "horizontal",
-		children: [
-			{
-				type: "child-panel",
-				child: ["SECOND"],
-			},
-			{
-				type: "child-panel",
-				child: ["ONLY"],
-			},
-		],
-		sizes: [0.5, 0.5],
+		type: "child-panel",
+		child: ["ONLY", "SECOND"],
 	});
 });
 
 test("insert into single child panel, on the bottom edge", () => {
-	const result = insert_child(LAYOUTS.SINGLE_ONLY, "SECOND", [1], "vertical");
+	const result = insert_child(
+		LAYOUTS.SINGLE_ONLY,
+		"SECOND",
+		[1],
+		"vertical",
+		// true,
+	);
 	expect(result).toStrictEqual({
 		type: "split-panel",
 		orientation: "vertical",
@@ -297,7 +578,13 @@ test("insert into single child panel, on the bottom edge", () => {
 });
 
 test("insert into single child panel, on the right edge", () => {
-	const result = insert_child(LAYOUTS.SINGLE_ONLY, "SECOND", [1], "horizontal");
+	const result = insert_child(
+		LAYOUTS.SINGLE_ONLY,
+		"SECOND",
+		[1],
+		"horizontal",
+		// true,
+	);
 	expect(result).toStrictEqual({
 		type: "split-panel",
 		orientation: "horizontal",
@@ -316,6 +603,14 @@ test("insert into single child panel, on the right edge", () => {
 });
 
 test("insert into a child-panel root, on the top edge", () => {
+	const result = insert_child(LAYOUTS.SINGLE_AAA, "BBB", [0]);
+	expect(result).toStrictEqual({
+		type: "child-panel",
+		child: ["BBB", "AAA"],
+	});
+});
+
+test("insert into a child-panel root, on the top edge with split", () => {
 	const result = insert_child(LAYOUTS.SINGLE_AAA, "BBB", [0], "vertical");
 	expect(result).toStrictEqual({
 		type: "split-panel",
@@ -334,31 +629,39 @@ test("insert into a child-panel root, on the top edge", () => {
 	});
 });
 
+test("insert into SINGLE_TABS", () => {
+	const result = insert_child(LAYOUTS.SINGLE_TABS, "DDD", [1]);
+	expect(result).toStrictEqual({
+		type: "child-panel",
+		child: ["AAA", "DDD", "BBB", "CCC"],
+		selected: 0,
+	});
+});
+
 test("insert with split path into SINGLE_TABS", () => {
-	const result = insert_child(LAYOUTS.SINGLE_TABS, "DDD", [0, 1], "horizontal");
+	const result = insert_child(
+		LAYOUTS.SINGLE_TABS,
+		"DDD",
+		[1],
+		"vertical",
+		// true,
+	);
+
 	expect(result).toStrictEqual({
 		type: "split-panel",
-		orientation: "horizontal",
+		sizes: [0.5, 0.5],
+		orientation: "vertical",
 		children: [
 			{
-				type: "split-panel",
-				orientation: "vertical",
-				children: [
-					{
-						type: "child-panel",
-						child: ["AAA", "BBB", "CCC"],
-						selected: 0,
-					},
-					{
-						type: "child-panel",
-						child: ["DDD"],
-						// TODO this one case does not call flatten internally for performance
-						// selected: 0,
-					},
-				],
-				sizes: [0.5, 0.5],
+				type: "child-panel",
+				child: ["AAA", "BBB", "CCC"],
+				selected: 0,
+			},
+			{
+				type: "child-panel",
+				child: ["DDD"],
+				// selected: 0,
 			},
 		],
-		sizes: [1],
 	});
 });

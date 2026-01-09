@@ -10,46 +10,79 @@
  * ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
  */
 
-body {
-    margin: 0px;
+regular-layout.hotdog {
+    background-color: #FF0000;
     font-family: "ui-monospace", "SFMono-Regular", "SF Mono", "Menlo", "Consolas", "Liberation Mono", monospace;
-}
-
-header {
-    padding: 0 12px;
-    gap: 12px;
-    display: flex;
-    align-items: center;
-    height: 36px;
-}
-
-/* Layout */
-regular-layout {
-    overflow: hidden;
-    position: absolute;
-    top: 36px;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: 3px;
-    /* padding: 12px; */
-
-    /* 
-        `regular-layout` supports the CSS `gap` property, but the "absolute"
-        mode overlay will not respect it (because there is no `gap` positioning
-        for absolutely positioned elements), leading to slightly off-center
-        drag/drop overlays. As "absolute" mode is required for CSS transitions
-        to work (making the smooth animation), you will need to use `margin`
-        instead of `gap` if you want smooth overlay animations _and_ correctly
-        positioned overlays.
-    */
-        
-    /* margin: 3px; */
-    /* gap: 6px; */
+    padding: 24px;
 }
 
 /* Frame */
-regular-layout-frame {
-    position: relative;
-    box-sizing: border-box;
+regular-layout.hotdog regular-layout-frame {
+    margin: 12px;
+    background: #FFFF00;
+    border-width: 2px;
+    border-color: #FF6B6B #8B0000 #8B0000 #FF6B6B;
+    border-style: solid;
+}
+
+regular-layout.hotdog regular-layout-frame::part(close) {
+    border-width: 1px;
+    border-color: #FF6B6B #8B0000 #8B0000 #FF6B6B;
+    border-style: solid;
+    height: 16px;
+    background: #FF0000;
+    align-self: center;
+    display: flex;
+    align-items: center;
+    padding: 0px 4px;
+    color: #FFFF00;
+}
+
+regular-layout.hotdog regular-layout-frame::part(close):before {
+    content: "X";
+    font-size: 10px;
+    font-weight: bold;
+}
+
+regular-layout.hotdog regular-layout-frame::part(titlebar) {
+    display: flex;
+    align-items: stretch;
+    padding-right: 0px;
+}
+
+regular-layout.hotdog regular-layout-frame::part(tab) {
+    display: flex;
+    flex: 1 1 150px;
+    align-items: center;
+    padding: 0 3px 0 8px;
+    cursor: pointer;
+    text-overflow: ellipsis;
+    background: #CC0000;
+    color: #FFFF00;
+    font-family: "Tahoma", "Arial", sans-serif;
+    font-weight: bold;
+    font-size: 11px;
+}
+
+regular-layout.hotdog regular-layout-frame::part(active-tab) {
+    background: #FF0000;
+    opacity: 1;
+}
+
+regular-layout.hotdog:has(.overlay)>* {
+    opacity: 0.8;
+}
+
+regular-layout.hotdog:has(.overlay)>.overlay {
+    opacity: 1;
+}
+
+/* Frame in Overlay Mode */
+regular-layout.hotdog regular-layout-frame.overlay {
+    margin: 0;
+    transition:
+        top 0.1s ease-in-out,
+        height 0.1s ease-in-out,
+        width 0.1s ease-in-out,
+        left 0.1s ease-in-out;
 }

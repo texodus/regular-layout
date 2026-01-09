@@ -9,8 +9,8 @@
 // ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-import type { Layout, TabLayout } from "./layout_config.ts";
-import { EMPTY_PANEL } from "./layout_config.ts";
+import type { Layout, TabLayout } from "./types.ts";
+import { EMPTY_PANEL } from "./types.ts";
 
 /**
  * Removes a child panel from the layout tree by its name.

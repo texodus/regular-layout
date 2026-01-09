@@ -16,23 +16,28 @@
  * @packageDocumentation
  */
 
-import { EMPTY_PANEL, iter_panel_children } from "./common/layout_config.ts";
-import { create_css_grid_layout } from "./common/generate_grid.ts";
+import { EMPTY_PANEL } from "./layout/types.ts";
+import { create_css_grid_layout } from "./layout/generate_grid.ts";
 import type {
 	LayoutPath,
 	Layout,
 	LayoutDivider,
 	TabLayout,
 	OverlayMode,
-} from "./common/layout_config.ts";
-import { calculate_intersection } from "./common/calculate_intersect.ts";
-import { remove_child } from "./common/remove_child.ts";
-import { insert_child } from "./common/insert_child.ts";
-import { redistribute_panel_sizes } from "./common/redistribute_panel_sizes.ts";
-import { updateOverlaySheet } from "./common/generate_overlay.ts";
-import { calculate_edge } from "./common/calculate_edge.ts";
-import { flatten } from "./common/flatten.ts";
-import { OVERLAY_CLASSNAME, OVERLAY_DEFAULT } from "./common/constants.ts";
+	Orientation,
+} from "./layout/types.ts";
+import { calculate_intersection } from "./layout/calculate_intersect.ts";
+import { remove_child } from "./layout/remove_child.ts";
+import { insert_child } from "./layout/insert_child.ts";
+import { redistribute_panel_sizes } from "./layout/redistribute_panel_sizes.ts";
+import { updateOverlaySheet } from "./layout/generate_overlay.ts";
+import { calculate_edge } from "./layout/calculate_edge.ts";
+import { flatten } from "./layout/flatten.ts";
+import {
+	CUSTOM_EVENT_NAME_PREFIX,
+	OVERLAY_CLASSNAME,
+	OVERLAY_DEFAULT,
+} from "./layout/constants.ts";
 
 /**
  * A Web Component that provides a resizable panel layout system.
@@ -43,8 +48,8 @@ import { OVERLAY_CLASSNAME, OVERLAY_DEFAULT } from "./common/constants.ts";
  * @example
  * ```html
  * <regular-layout>
- *   <div slot="sidebar">Sidebar content</div>
- *   <div slot="main">Main content</div>
+ *   <div name="sidebar">Sidebar content</div>
+ *   <div name="main">Main content</div>
  * </regular-layout>
  * ```
  *
@@ -71,19 +76,34 @@ export class RegularLayout extends HTMLElement {
 	private _shadowRoot: ShadowRoot;
 	private _panel: Layout;
 	private _stylesheet: CSSStyleSheet;
-	private _dragPath?: [LayoutDivider, number, number];
-	private _slots: Map<string, HTMLSlotElement>;
-	private _unslotted_slot: HTMLSlotElement;
+	private _cursor_stylesheet: CSSStyleSheet;
+	private _drag_target?: [LayoutDivider, number, number];
+	private _cursor_override: boolean;
+	private _dimensions?: { box: DOMRect; style: CSSStyleDeclaration };
 
 	constructor() {
 		super();
 		this._panel = structuredClone(EMPTY_PANEL);
-		this._stylesheet = new CSSStyleSheet();
-		this._unslotted_slot = document.createElement("slot");
+
+		// Why does this implementation use a `<slot>` at all? We must use
+		// `<slot>` and the Shadow DOM to scope the grid CSS rules to each
+		// instance of `<regular-layout>` (without e.g. giving them unique
+		// `"id"` and injecting into `document,head`), and we can only select
+		// `::slotted` light DOM children from `adoptedStyleSheets` on the
+		// `ShadowRoot`.
+
+		// In addition, this model uses a single un-named `<slot>` to host all
+		// light-DOM children, and the child's `"name"` attribute to identify
+		// its position in the `Layout`. Alternatively, using named
 		this._shadowRoot = this.attachShadow({ mode: "open" });
-		this._shadowRoot.adoptedStyleSheets = [this._stylesheet];
-		this._shadowRoot.appendChild(this._unslotted_slot);
-		this._slots = new Map();
+		this._shadowRoot.innerHTML = `<slot></slot>`;
+		this._stylesheet = new CSSStyleSheet();
+		this._cursor_stylesheet = new CSSStyleSheet();
+		this._cursor_override = false;
+		this._shadowRoot.adoptedStyleSheets = [
+			this._stylesheet,
+			this._cursor_stylesheet,
+		];
 	}
 
 	connectedCallback() {
@@ -97,6 +117,33 @@ export class RegularLayout extends HTMLElement {
 		this.removeEventListener("pointerup", this.onPointerUp);
 		this.removeEventListener("pointermove", this.onPointerMove);
 	}
+
+	/**
+	 * Determines which panel is at a given screen coordinate.
+	 *
+	 * @param column - X coordinate in screen pixels.
+	 * @param row - Y coordinate in screen pixels.
+	 * @returns Panel information if a panel is at that position, null otherwise.
+	 */
+	calculateIntersect = (
+		x: number,
+		y: number,
+		check_dividers: boolean = false,
+	): LayoutPath<Layout> | null => {
+		const [col, row, box] = this.relativeCoordinates(x, y, false);
+		const panel = calculate_intersection(
+			col,
+			row,
+			this._panel,
+			check_dividers ? box : null,
+		);
+
+		if (panel?.type === "layout-path") {
+			return { ...panel, layout: this.save() };
+		}
+
+		return null;
+	};
 
 	/**
 	 * Sets the visual overlay state during drag-and-drop operations.
@@ -119,35 +166,29 @@ export class RegularLayout extends HTMLElement {
 		className: string = OVERLAY_CLASSNAME,
 		mode: OverlayMode = OVERLAY_DEFAULT,
 	) => {
-		let panel = this._panel;
-		if (mode === "absolute") {
-			panel = remove_child(panel, slot);
-			this.updateSlots(panel, slot);
-			this._slots.get(slot)?.assignedElements()[0]?.classList.add(className);
-		}
+		const panel = remove_child(this._panel, slot);
+		Array.from(this.children)
+			.find((x) => x.getAttribute("name") === slot)
+			?.classList.add(className);
 
-		const [col, row, box] = this.relativeCoordinates(x, y);
-		let drop_target = calculate_intersection(col, row, panel, false);
+		const [col, row, box, style] = this.relativeCoordinates(x, y, false);
+		let drop_target = calculate_intersection(col, row, panel);
 		if (drop_target) {
-			drop_target = calculate_edge(col, row, panel, slot, drop_target);
-			if (mode === "grid") {
-				const path: [string, string] = [slot, drop_target.slot];
-				const css = create_css_grid_layout(this._panel, false, path);
-				this._stylesheet.replaceSync(css);
-			} else if (mode === "absolute") {
-				const grid_css = create_css_grid_layout(panel);
-				const overlay_css = updateOverlaySheet(slot, { ...drop_target, box });
-				this._stylesheet.replaceSync([grid_css, overlay_css].join("\n"));
-			}
-		} else {
-			const css = `${create_css_grid_layout(panel)}}`;
-			this._stylesheet.replaceSync(css);
+			drop_target = calculate_edge(col, row, panel, slot, drop_target, box);
 		}
 
-		const event = new CustomEvent("regular-layout-before-update", {
-			detail: panel,
-		});
+		if (mode === "grid" && drop_target) {
+			const path: [string, string] = [slot, drop_target?.slot];
+			const css = create_css_grid_layout(panel, false, path);
+			this._stylesheet.replaceSync(css);
+		} else if (mode === "absolute") {
+			const grid_css = create_css_grid_layout(panel);
+			const overlay_css = updateOverlaySheet(slot, box, style, drop_target);
+			this._stylesheet.replaceSync([grid_css, overlay_css].join("\n"));
+		}
 
+		const event_name = `${CUSTOM_EVENT_NAME_PREFIX}-before-update`;
+		const event = new CustomEvent<Layout>(event_name, { detail: panel });
 		this.dispatchEvent(event);
 	};
 
@@ -166,21 +207,17 @@ export class RegularLayout extends HTMLElement {
 	clearOverlayState = (
 		x: number,
 		y: number,
-		drag_target: LayoutPath<unknown>,
+		drag_target: LayoutPath<Layout>,
 		className: string = OVERLAY_CLASSNAME,
-		mode: OverlayMode = OVERLAY_DEFAULT,
 	) => {
 		let panel = this._panel;
-		if (mode === "absolute") {
-			panel = remove_child(panel, drag_target.slot);
-			this._slots
-				.get(drag_target.slot)
-				?.assignedElements()[0]
-				?.classList.remove(className);
-		}
+		panel = remove_child(panel, drag_target.slot);
+		Array.from(this.children)
+			.find((x) => x.getAttribute("name") === drag_target.slot)
+			?.classList.remove(className);
 
-		const [col, row, _] = this.relativeCoordinates(x, y);
-		let drop_target = calculate_intersection(col, row, panel, false);
+		const [col, row, box] = this.relativeCoordinates(x, y, false);
+		let drop_target = calculate_intersection(col, row, panel);
 		if (drop_target) {
 			drop_target = calculate_edge(
 				col,
@@ -188,19 +225,21 @@ export class RegularLayout extends HTMLElement {
 				panel,
 				drag_target.slot,
 				drop_target,
+				box,
 			);
 		}
 
 		const { path, orientation } = drop_target ? drop_target : drag_target;
-		this.restore(
-			insert_child(
-				panel,
-				drag_target.slot,
-				path,
-				orientation,
-				!drop_target?.is_edge,
-			),
-		);
+		const new_layout = drop_target
+			? insert_child(
+					panel,
+					drag_target.slot,
+					path,
+					drop_target?.is_edge ? orientation : undefined,
+				)
+			: drag_target.layout;
+
+		this.restore(new_layout);
 	};
 
 	/**
@@ -208,9 +247,25 @@ export class RegularLayout extends HTMLElement {
 	 *
 	 * @param name - Unique identifier for the new panel.
 	 * @param path - Index path defining where to insert.
+	 * @param split - Force a split in the layout at the end of `path`
+	 *     regardless if there is a leaf at this position or not. Optionally,
+	 *.    `split` may be your preferred `Orientation`, which will be used by
+	 *     the new `SplitPanel` _if_ there is an option of orientation (e.g. if
+	 *     the layout had no pre-existing `SplitPanel`)
 	 */
-	insertPanel = (name: string, path: number[] = []) => {
-		this.restore(insert_child(this._panel, name, path));
+	insertPanel = (
+		name: string,
+		path: number[] = [],
+		split?: boolean | Orientation,
+	) => {
+		let orientation: Orientation | undefined;
+		if (typeof split === "boolean" && split) {
+			orientation = "horizontal";
+		} else if (typeof split === "string") {
+			orientation = split;
+		}
+
+		this.restore(insert_child(this._panel, name, path, orientation));
 	};
 
 	/**
@@ -248,27 +303,6 @@ export class RegularLayout extends HTMLElement {
 	};
 
 	/**
-	 * Determines which panel is at a given screen coordinate.
-	 *
-	 * @param column - X coordinate in screen pixels.
-	 * @param row - Y coordinate in screen pixels.
-	 * @returns Panel information if a panel is at that position, null otherwise.
-	 */
-	calculateIntersect = (
-		x: number,
-		y: number,
-		check_dividers: boolean = false,
-	): LayoutPath<DOMRect> | null => {
-		const [col, row, box] = this.relativeCoordinates(x, y);
-		const panel = calculate_intersection(col, row, this._panel, check_dividers);
-		if (panel?.type === "layout-path") {
-			return { ...panel, box };
-		}
-
-		return null;
-	};
-
-	/**
 	 * Clears the entire layout, unslotting all panels.
 	 */
 	clear = () => {
@@ -291,11 +325,8 @@ export class RegularLayout extends HTMLElement {
 		this._panel = !_is_flattened ? flatten(layout) : layout;
 		const css = create_css_grid_layout(this._panel);
 		this._stylesheet.replaceSync(css);
-		this.updateSlots(this._panel);
-		const event = new CustomEvent("regular-layout-update", {
-			detail: this._panel,
-		});
-
+		const event_name = `${CUSTOM_EVENT_NAME_PREFIX}-update`;
+		const event = new CustomEvent<Layout>(event_name, { detail: this._panel });
 		this.dispatchEvent(event);
 	};
 
@@ -331,44 +362,41 @@ export class RegularLayout extends HTMLElement {
 	relativeCoordinates = (
 		clientX: number,
 		clientY: number,
-	): [number, number, DOMRect] => {
-		const box = this.getBoundingClientRect();
-		const col = (clientX - box.left) / (box.right - box.left);
-		const row = (clientY - box.top) / (box.bottom - box.top);
-		return [col, row, box];
-	};
-
-	private updateSlots = (layout: Layout, overlay?: string) => {
-		const old = new Set(this._slots.keys());
-		if (overlay) {
-			old.delete(overlay);
+		recalculate_bounds: boolean = true,
+	): [number, number, DOMRect, CSSStyleDeclaration] => {
+		if (recalculate_bounds || !this._dimensions) {
+			this._dimensions = {
+				box: this.getBoundingClientRect(),
+				style: getComputedStyle(this),
+			};
 		}
 
-		for (const name of iter_panel_children(layout)) {
-			old.delete(name);
-			if (!this._slots.has(name)) {
-				const slot = document.createElement("slot");
-				slot.setAttribute("name", name);
-				this._shadowRoot.appendChild(slot);
-				this._slots.set(name, slot);
-			}
-		}
+		const box = this._dimensions.box;
+		const style = this._dimensions.style;
+		const col =
+			(clientX - box.left - parseFloat(style.paddingLeft)) /
+			(box.width -
+				parseFloat(style.paddingLeft) -
+				parseFloat(style.paddingRight));
+		const row =
+			(clientY - box.top - parseFloat(style.paddingTop)) /
+			(box.height -
+				parseFloat(style.paddingTop) -
+				parseFloat(style.paddingBottom));
 
-		for (const key of old) {
-			const child = this._slots.get(key);
-			if (child) {
-				this._shadowRoot.removeChild(child);
-				this._slots.delete(key);
-			}
-		}
+		return [col, row, box, style];
 	};
 
 	private onPointerDown = (event: PointerEvent) => {
 		if (event.target === this) {
-			const [col, row] = this.relativeCoordinates(event.clientX, event.clientY);
-			const hit = calculate_intersection(col, row, this._panel);
+			const [col, row, box] = this.relativeCoordinates(
+				event.clientX,
+				event.clientY,
+			);
+
+			const hit = calculate_intersection(col, row, this._panel, box);
 			if (hit && hit.type !== "layout-path") {
-				this._dragPath = [hit, col, row];
+				this._drag_target = [hit, col, row];
 				this.setPointerCapture(event.pointerId);
 				event.preventDefault();
 			}
@@ -376,31 +404,52 @@ export class RegularLayout extends HTMLElement {
 	};
 
 	private onPointerMove = (event: PointerEvent) => {
-		if (this._dragPath) {
-			const [col, row] = this.relativeCoordinates(event.clientX, event.clientY);
-			const old_panel = this._panel;
-			const [{ path, type }, old_col, old_row] = this._dragPath;
+		if (this._drag_target) {
+			const [col, row] = this.relativeCoordinates(
+				event.clientX,
+				event.clientY,
+				false,
+			);
+
+			const [{ path, type }, old_col, old_row] = this._drag_target;
 			const offset = type === "horizontal" ? old_col - col : old_row - row;
-			const panel = redistribute_panel_sizes(old_panel, path, offset);
+			const panel = redistribute_panel_sizes(this._panel, path, offset);
 			this._stylesheet.replaceSync(create_css_grid_layout(panel));
+		} else if (event.target === this) {
+			const [col, row, box] = this.relativeCoordinates(
+				event.clientX,
+				event.clientY,
+				false,
+			);
+
+			const divider = calculate_intersection(col, row, this._panel, box);
+			if (divider?.type === "vertical") {
+				this._cursor_stylesheet.replaceSync(":host{cursor:row-resize");
+				this._cursor_override = true;
+			} else if (divider?.type === "horizontal") {
+				this._cursor_stylesheet.replaceSync(":host{cursor:col-resize");
+				this._cursor_override = true;
+			}
+		} else if (this._cursor_override) {
+			this._cursor_override = false;
+			this._cursor_stylesheet.replaceSync("");
 		}
 	};
 
 	private onPointerUp = (event: PointerEvent) => {
-		if (this._dragPath) {
+		if (this._drag_target) {
 			this.releasePointerCapture(event.pointerId);
-			const [col, row] = this.relativeCoordinates(event.clientX, event.clientY);
-			const old_panel = this._panel;
-			const [{ path }, old_col, old_row] = this._dragPath;
-			if (this._dragPath[0].type === "horizontal") {
-				const panel = redistribute_panel_sizes(old_panel, path, old_col - col);
-				this.restore(panel, true);
-			} else {
-				const panel = redistribute_panel_sizes(old_panel, path, old_row - row);
-				this.restore(panel, true);
-			}
+			const [col, row] = this.relativeCoordinates(
+				event.clientX,
+				event.clientY,
+				false,
+			);
 
-			this._dragPath = undefined;
+			const [{ path, type }, old_col, old_row] = this._drag_target;
+			const offset = type === "horizontal" ? old_col - col : old_row - row;
+			const panel = redistribute_panel_sizes(this._panel, path, offset);
+			this.restore(panel, true);
+			this._drag_target = undefined;
 		}
 	};
 }

@@ -10,15 +10,15 @@
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 import { expect, test } from "@playwright/test";
-import { calculate_intersection } from "../../src/common/calculate_intersect.ts";
+import { calculate_intersection } from "../../src/layout/calculate_intersect.ts";
 import { LAYOUTS } from "../helpers/fixtures.ts";
 
 test("AAA", () => {
 	const result = calculate_intersection(0.1, 0.1, LAYOUTS.NESTED_BASIC);
 	expect(result).toStrictEqual({
 		slot: "AAA",
-		box: undefined,
 		path: [0, 0],
+		layout: undefined,
 		type: "layout-path",
 		is_edge: false,
 		orientation: "vertical",
@@ -32,10 +32,6 @@ test("AAA", () => {
 		row: 0.1,
 		column_offset: 0.16666666666666669,
 		row_offset: 0.33333333333333337,
-		panel: {
-			child: ["AAA"],
-			type: "child-panel",
-		},
 	});
 });
 
@@ -44,7 +40,7 @@ test("BBB", () => {
 	expect(result).toStrictEqual({
 		slot: "BBB",
 		path: [0, 1],
-		box: undefined,
+		layout: undefined,
 		type: "layout-path",
 		is_edge: false,
 		orientation: "vertical",
@@ -58,10 +54,6 @@ test("BBB", () => {
 		row: 0.4,
 		column_offset: 0.16666666666666669,
 		row_offset: 0.1428571428571429,
-		panel: {
-			child: ["BBB"],
-			type: "child-panel",
-		},
 	});
 });
 
@@ -70,14 +62,10 @@ test("CCC", () => {
 	expect(result).toStrictEqual({
 		slot: "CCC",
 		path: [1],
-		box: undefined,
+		layout: undefined,
 		type: "layout-path",
 		is_edge: false,
 		orientation: "horizontal",
-		panel: {
-			child: ["CCC"],
-			type: "child-panel",
-		},
 		view_window: {
 			row_end: 1,
 			row_start: 0,
@@ -92,7 +80,10 @@ test("CCC", () => {
 });
 
 test("gap", () => {
-	const result = calculate_intersection(0.6, 0.1, LAYOUTS.NESTED_BASIC);
+	const result = calculate_intersection(0.6, 0.1, LAYOUTS.NESTED_BASIC, {
+		width: 100,
+		height: 100,
+	} as DOMRect);
 	expect(result).toStrictEqual({
 		path: [0],
 		type: "horizontal",
@@ -106,7 +97,10 @@ test("gap", () => {
 });
 
 test("nested gap", () => {
-	const result = calculate_intersection(0.1, 0.3, LAYOUTS.NESTED_BASIC);
+	const result = calculate_intersection(0.1, 0.3, LAYOUTS.NESTED_BASIC, {
+		width: 100,
+		height: 100,
+	} as DOMRect);
 	expect(result).toStrictEqual({
 		path: [0, 0],
 		type: "vertical",
@@ -115,6 +109,31 @@ test("nested gap", () => {
 			row_end: 0.3,
 			col_start: 0,
 			col_end: 0.6,
+		},
+	});
+});
+
+test("single AAA", () => {
+	const result = calculate_intersection(0.1, 0.3, LAYOUTS.SINGLE_AAA, {
+		width: 100,
+		height: 100,
+	} as DOMRect);
+	expect(result).toStrictEqual({
+		layout: undefined,
+		column: 0.1,
+		column_offset: 0.1,
+		is_edge: false,
+		orientation: "horizontal",
+		path: [],
+		row: 0.3,
+		row_offset: 0.3,
+		slot: "AAA",
+		type: "layout-path",
+		view_window: {
+			col_end: 1,
+			col_start: 0,
+			row_end: 1,
+			row_start: 0,
 		},
 	});
 });

@@ -11,7 +11,7 @@
 
 import { expect, test } from "@playwright/test";
 import { LAYOUTS } from "../helpers/fixtures.ts";
-import { remove_child } from "../../src/common/remove_child.ts";
+import { remove_child } from "../../src/layout/remove_child.ts";
 
 test("remove child from nested split panel", () => {
 	const result = remove_child(LAYOUTS.NESTED_BASIC, "AAA");

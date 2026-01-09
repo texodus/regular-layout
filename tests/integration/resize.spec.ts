@@ -27,7 +27,9 @@ test("should resize panels by dragging dividers and preserve state with save/res
 	expect(initialState).toHaveProperty("sizes");
 	const layoutBox = await page.locator("regular-layout").boundingBox();
 	expect(layoutBox).not.toBeNull();
+	// biome-ignore lint/style/noNonNullAssertion: playwright expectation
 	const dividerX = layoutBox!.x + layoutBox!.width * 0.5;
+	// biome-ignore lint/style/noNonNullAssertion: playwright expectation
 	const dividerY = layoutBox!.y + layoutBox!.height * 0.5;
 	const dragDistance = -100;
 	await dragMouse(page, dividerX, dividerY, dividerX + dragDistance, dividerY);
@@ -50,7 +52,9 @@ test("should resize nested panels by dragging horizontal divider", async ({
 	const initialState = await saveLayout(page);
 	const layoutBox = await page.locator("regular-layout").boundingBox();
 	expect(layoutBox).not.toBeNull();
+	// biome-ignore lint/style/noNonNullAssertion: playwright expectation
 	const nestedDividerX = layoutBox!.x + layoutBox!.width * 0.5;
+	// biome-ignore lint/style/noNonNullAssertion: playwright expectation
 	const nestedDividerY = layoutBox!.y + layoutBox!.height * 0.25;
 	const dragDistance = 50;
 	await dragMouse(
@@ -74,11 +78,15 @@ test("should handle multiple resize operations and save/restore cycles", async (
 	await setupLayout(page);
 	const layoutBox = await page.locator("regular-layout").boundingBox();
 	expect(layoutBox).not.toBeNull();
+	// biome-ignore lint/style/noNonNullAssertion: playwright expectation
 	const divider1X = layoutBox!.x + layoutBox!.width * 0.5;
+	// biome-ignore lint/style/noNonNullAssertion: playwright expectation
 	const divider1Y = layoutBox!.y + layoutBox!.height * 0.5;
 	await dragMouse(page, divider1X, divider1Y, divider1X - 80, divider1Y);
 	const state1 = await saveLayout(page);
+	// biome-ignore lint/style/noNonNullAssertion: playwright expectation
 	const divider2X = layoutBox!.x + layoutBox!.width * 0.25;
+	// biome-ignore lint/style/noNonNullAssertion: playwright expectation
 	const divider2Y = layoutBox!.y + layoutBox!.height * 0.25;
 	await dragMouse(page, divider2X, divider2Y, divider2X, divider2Y + 60);
 	const state2 = await saveLayout(page);

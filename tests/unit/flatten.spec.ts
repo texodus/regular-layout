@@ -10,8 +10,8 @@
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 import { expect, test } from "@playwright/test";
-import { flatten } from "../../src/common/flatten.ts";
-import type { Layout } from "../../src/common/layout_config.ts";
+import { flatten } from "../../src/layout/flatten.ts";
+import type { Layout } from "../../src/layout/types.ts";
 
 test("Deeply alternating split partial", () => {
 	const test: Layout = {

@@ -9,56 +9,32 @@
 // ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-import * as esbuild from "esbuild";
-import { execSync } from "node:child_process";
+import type { LayoutPath } from "./types";
 
-const watch = process.argv.includes("--watch");
-
-function generateDeclarations() {
-	console.log("Generating TypeScript declaration files...");
-	execSync(
-		"pnpm tsc --project tsconfig.json",
-		{ stdio: "inherit" }
-	);
-
-	console.log("Declaration files generated!");
-}
-
-const browserConfig = {
-	entryPoints: ["src/index.ts"],
-	bundle: true,
-	minify: true,
-	minifyWhitespace: true,
-	minifyIdentifiers: true,
-	outfile: "dist/index.js",
-	platform: "browser",
-	format: "esm",
-	sourcemap: true,
-	metafile: true,
-};
-
-function formatBytes(bytes) {
-	if (bytes < 1024) return `${bytes} B`;
-	if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
-	return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-}
-
-async function build() {
-	if (watch) {
-		const browserContext = await esbuild.context(browserConfig);
-		await browserContext.watch();
-		console.log("Watching for changes...");
-	} else {
-		const result = await esbuild.build(browserConfig);
-		if (result.metafile) {
-			console.log("\nBundle Size:");
-			for (const [file, info] of Object.entries(result.metafile.outputs)) {
-				console.log(`  ${file}: ${formatBytes(info.bytes)}`);
-			}
-		}
-
-		generateDeclarations();
+export function updateOverlaySheet(
+	slot: string,
+	box: DOMRect,
+	style: CSSStyleDeclaration,
+	drag_target: LayoutPath<undefined> | null,
+) {
+	if (!drag_target) {
+		return `:host ::slotted([name="${slot}"]){display:none;}`;
 	}
-}
 
-build().catch(() => process.exit(1));
+	const {
+		view_window: { row_start, row_end, col_start, col_end },
+	} = drag_target;
+
+	const box_height =
+		box.height - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+
+	const box_width =
+		box.width - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+
+	const top = row_start * box_height + parseFloat(style.paddingTop);
+	const left = col_start * box_width + parseFloat(style.paddingLeft);
+	const height = (row_end - row_start) * box_height;
+	const width = (col_end - col_start) * box_width;
+	const css = `display:flex;position:absolute!important;z-index:1;top:${top}px;left:${left}px;height:${height}px;width:${width}px;`;
+	return `::slotted([name="${slot}"]){${css}}`;
+}

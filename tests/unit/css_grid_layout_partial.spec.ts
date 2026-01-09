@@ -11,8 +11,8 @@
 
 import { expect, test } from "@playwright/test";
 
-import { create_css_grid_layout } from "../../src/common/generate_grid.ts";
-import type { Layout } from "../../src/common/layout_config.ts";
+import { create_css_grid_layout } from "../../src/layout/generate_grid.ts";
+import type { Layout } from "../../src/layout/types.ts";
 
 test("Deeply alternating split with grid-based overlay", () => {
 	const test: Layout = {
@@ -66,13 +66,14 @@ test("Deeply alternating split with grid-based overlay", () => {
 
 	expect(create_css_grid_layout(test, false, ["BBB", "AAA"])).toEqual(
 		`
-:host { display: grid; gap: 0px; grid-template-rows: 30% 70%; grid-template-columns: 30% 30% 40%; }
-:host ::slotted([slot=AAA]) { grid-column: 1; grid-row: 1; }
-:host ::slotted([slot=BBB]) { grid-column: 1; grid-row: 1; }
-:host ::slotted([slot=BBB]) { z-index: 1; }
-:host ::slotted([slot=CCC]) { grid-column: 2; grid-row: 1; }
-:host ::slotted([slot=DDD]) { grid-column: 1 / 3; grid-row: 2; }
-:host ::slotted([slot=EEE]) { grid-column: 3; grid-row: 1 / 3; }
+:host ::slotted(*){display:none}:host{display:grid;grid-template-rows:15fr 15fr 70fr;grid-template-columns:30fr 30fr 40fr}
+:host ::slotted([name="AAA"]){display:flex;grid-column:1;grid-row:1 / 3}
+:host ::slotted([name="BBB"]){display:flex;grid-column:1;grid-row:1 / 3}
+:host ::slotted([name=BBB]){z-index:1}
+:host ::slotted([name="BBB"]){display:flex;grid-column:2;grid-row:1}
+:host ::slotted([name="CCC"]){display:flex;grid-column:2;grid-row:2}
+:host ::slotted([name="DDD"]){display:flex;grid-column:1 / 3;grid-row:3}
+:host ::slotted([name="EEE"]){display:flex;grid-column:3;grid-row:1 / 4}
         `.trim(),
 	);
 });
