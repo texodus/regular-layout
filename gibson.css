@@ -1,0 +1,264 @@
+/* ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+ * ░░░░░░░░▄▀░█▀▄░█▀▀░█▀▀░█░█░█░░░█▀█░█▀▄░░░░░█░░░█▀█░█░█░█▀█░█░█░▀█▀░▀▄░░░░░░░░
+ * ░░░░░░░▀▄░░█▀▄░█▀▀░█░█░█░█░█░░░█▀█░█▀▄░▀▀▀░█░░░█▀█░░█░░█░█░█░█░░█░░░▄▀░░░░░░░
+ * ░░░░░░░░░▀░▀░▀░▀▀▀░▀▀▀░▀▀▀░▀▀▀░▀░▀░▀░▀░░░░░▀▀▀░▀░▀░░▀░░▀▀▀░▀▀▀░░▀░░▀░░░░░░░░░
+ * ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+ * ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+ * ┃  *  Copyright (c) 2026, the Regular Layout Authors. This file is part  *  ┃
+ * ┃  *  of the Regular Layout library, distributed under the terms of the  *  ┃
+ * ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
+ * ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+ */
+
+regular-layout.gibson {
+    background: radial-gradient(ellipse at center, #0a0a1a 0%, #000000 100%);
+    font-family: "ui-monospace", "SFMono-Regular", "SF Mono", "Menlo", "Consolas", "Liberation Mono", monospace;
+    padding: 8px;
+}
+
+/* Frame */
+regular-layout.gibson regular-layout-frame {
+    --titlebar-height: 28px;
+    position: relative;
+    box-sizing: border-box;
+    margin: 8px;
+    background: rgba(10, 10, 26, 0.85);
+    backdrop-filter: blur(4px);
+}
+
+regular-layout.gibson regular-layout-frame::part(active-close) {
+    border: 1px solid #ff00ff;
+    height: 18px;
+    width: 18px;
+    background: rgba(255, 0, 255, 0.1);
+    align-self: center;
+    /* biome-ignore lint/complexity/noImportantStyles: reasons */
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1px;
+    box-shadow: 0 0 8px rgba(255, 0, 255, 0.4);
+    transition: all 0.1s ease;
+}
+
+regular-layout.gibson regular-layout-frame::part(active-close):hover {
+    background: rgba(255, 0, 255, 0.3);
+    box-shadow: 0 0 12px rgba(255, 0, 255, 0.8);
+}
+
+regular-layout.gibson regular-layout-frame::part(active-close):before {
+    content: "×";
+    font-size: 14px;
+    font-weight: bold;
+    color: #ff00ff;
+    text-shadow: 0 0 4px rgba(255, 0, 255, 0.8);
+}
+
+regular-layout.gibson regular-layout-frame::part(close) {
+    display: none;
+}
+
+
+regular-layout.gibson regular-layout-frame::part(titlebar) {
+    display: flex;
+    justify-content: flex-end;
+    align-items: stretch;
+    padding-left: 12px;
+    height: 32px;
+
+    /* border-bottom: 1px solid rgba(0, 255, 255, 0.3); */
+}
+
+regular-layout.gibson regular-layout-frame::part(tab) {
+    display: flex;
+    flex: 1 1 150px;
+    max-width: 200px;
+    align-items: center;
+    padding: 0 0 0 12px;
+    cursor: pointer;
+    text-overflow: ellipsis;
+    background: rgba(255, 0, 255, 0.1);
+    color: #00ffff;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    /* border-right: 1px solid rgba(0, 255, 255, 0.2); */
+    opacity: 0.6;
+    transition: all 0.2s ease;
+    text-shadow: 0 0 4px rgba(0, 255, 255, 0.5);
+}
+
+regular-layout.gibson regular-layout-frame::part(tab):hover {
+    box-shadow: inset 0 0 12px rgba(0, 255, 255, 0.9);
+}
+
+regular-layout.gibson regular-layout-frame::part(active-tab) {
+    background: rgba(0, 255, 255, 0.15);
+    opacity: 1;
+    border: 2px solid #00ffff;
+    border-bottom-width: 1px;
+    box-shadow:
+        inset 0 0 12px rgba(0, 255, 255, 0.3),
+        0 0 8px rgba(0, 255, 255, 0.4);
+}
+
+regular-layout.gibson:has(.overlay) > * {
+    opacity: 0.5;
+}
+
+regular-layout.gibson:has(.overlay) > .overlay {
+    opacity: 1;
+}
+
+/* Frame in Overlay Mode */
+regular-layout.gibson regular-layout-frame.overlay {
+    background: rgba(255, 0, 255, 0.1);
+    border: 1px dashed #ff00ff;
+    border-radius: 12px;
+    box-shadow:
+        0 0 15px rgba(255, 0, 255, 0.6),
+        inset 0 0 20px rgba(255, 0, 255, 0.2);
+    margin: 0;
+    transition:
+        top 0.075s ease-out,
+        height 0.075s ease-out,
+        width 0.075s ease-out,
+        left 0.075s ease-out;
+}
+
+regular-layout.gibson regular-layout-frame::part(container) {
+    display: none;
+    border: 1px solid #00ffff;
+    border-radius: 12px 0 12px 0;
+}
+
+regular-layout.gibson regular-layout-frame::part(titlebar) {
+    display: none;
+}
+
+regular-layout.gibson regular-layout-frame:not(.overlay)::part(container),
+regular-layout.gibson regular-layout-frame:not(.overlay)::part(titlebar) {
+    display: flex;
+}
+
+/* Cyberpunk color variations */
+regular-layout.gibson :nth-child(6n+1)::part(container) {
+    border-color: #00ffff;
+    box-shadow:
+        0 0 10px rgba(0, 255, 255, 0.75),
+        inset 0 0 20px rgba(0, 255, 255, 0.1);
+}
+
+regular-layout.gibson :nth-child(6n+1)::part(tab) {
+    color: #00ffff;
+    text-shadow: 0 0 4px rgba(0, 255, 255, 0.6);
+}
+
+regular-layout.gibson :nth-child(6n+1)::part(active-tab) {
+    background: #00ffff44;
+    border-color: #00ffff;
+    box-shadow:
+        inset 0 0 12px rgba(0, 255, 255, 0.3),
+        0 0 8px rgba(0, 255, 255, 0.4);
+}
+
+regular-layout.gibson :nth-child(6n+2)::part(container) {
+    border-color: #ff00ff;
+    box-shadow:
+        0 0 10px rgba(255, 0, 255, 0.75),
+        inset 0 0 20px rgba(255, 0, 255, 0.1);
+}
+
+regular-layout.gibson :nth-child(6n+2)::part(tab) {
+    color: #ff00ff;
+    text-shadow: 0 0 4px rgba(255, 0, 255, 0.6);
+}
+
+regular-layout.gibson :nth-child(6n+2)::part(active-tab) {
+    background: #ff00ff44;
+    border-color: #ff00ff;
+    box-shadow:
+        inset 0 0 12px rgba(255, 0, 255, 0.3),
+        0 0 8px rgba(255, 0, 255, 0.4);
+}
+
+regular-layout.gibson :nth-child(6n+3)::part(container) {
+    border-color: #00ff00;
+    box-shadow:
+        0 0 10px rgba(0, 255, 0, 0.75),
+        inset 0 0 20px rgba(0, 255, 0, 0.1);
+}
+
+regular-layout.gibson :nth-child(6n+3)::part(tab) {
+    color: #00ff00;
+    text-shadow: 0 0 4px rgba(0, 255, 0, 0.6);
+}
+
+regular-layout.gibson :nth-child(6n+3)::part(active-tab) {
+    background: #00ff0044;
+    border-color: #00ff00;
+    box-shadow:
+        inset 0 0 12px rgba(0, 255, 0, 0.3),
+        0 0 8px rgba(0, 255, 0, 0.4);
+}
+
+regular-layout.gibson :nth-child(6n+4)::part(container) {
+    border-color: #ff0080;
+    box-shadow:
+        0 0 10px rgba(255, 0, 128, 0.75),
+        inset 0 0 20px rgba(255, 0, 128, 0.1);
+}
+
+regular-layout.gibson :nth-child(6n+4)::part(tab) {
+    color: #ff0080;
+    text-shadow: 0 0 4px rgba(255, 0, 128, 0.6);
+}
+
+regular-layout.gibson :nth-child(6n+4)::part(active-tab) {
+    background: #ff008044;
+    border-color: #ff0080;
+    box-shadow:
+        inset 0 0 12px rgba(255, 0, 128, 0.3),
+        0 0 8px rgba(255, 0, 128, 0.4);
+}
+
+regular-layout.gibson :nth-child(6n+5)::part(container) {
+    border-color: #8000ff;
+    box-shadow:
+        0 0 10px rgba(128, 0, 255, 0.75),
+        inset 0 0 20px rgba(128, 0, 255, 0.1);
+}
+
+regular-layout.gibson :nth-child(6n+5)::part(tab) {
+    color: #8000ff;
+    text-shadow: 0 0 4px rgba(128, 0, 255, 0.6);
+}
+
+regular-layout.gibson :nth-child(6n+5)::part(active-tab) {
+    background: #8000ff44;
+    border-color: #8000ff;
+    box-shadow:
+        inset 0 0 12px rgba(128, 0, 255, 0.3),
+        0 0 8px rgba(128, 0, 255, 0.4);
+}
+
+regular-layout.gibson :nth-child(6n+6)::part(container) {
+    border-color: #ffff00;
+    box-shadow:
+        0 0 10px rgba(255, 255, 0, 0.75),
+        inset 0 0 20px rgba(255, 255, 0, 0.1);
+}
+
+regular-layout.gibson :nth-child(6n+6)::part(tab) {
+    color: #ffff00;
+    text-shadow: 0 0 4px rgba(255, 255, 0, 0.6);
+}
+
+regular-layout.gibson :nth-child(6n+6)::part(active-tab) {
+    background: #ffff0044;
+    border-color: #ffff00;
+    box-shadow:
+        inset 0 0 12px rgba(255, 255, 0, 0.3),
+        0 0 8px rgba(255, 255, 0, 0.4);
+}

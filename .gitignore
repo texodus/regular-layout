@@ -1,3 +1,5 @@
 node_modules
 dist
 test-results
+.vscode/settings.json
+.esbuild-serve

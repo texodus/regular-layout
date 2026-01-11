@@ -1,28 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Regular Layout</title>
-        <link rel="stylesheet" href="./index.css">
-        <script type="module" src="./index.js"></script>
-    </head>
-    <body>
-        <header>
-            <button id="add">Add Panel</button>
-            <button id="save">Save State</button>
-            <button id="restore">Restore State</button>
-            <button id="clear">Clear</button>
-        </header>
-        <regular-layout>
-            <regular-layout-frame slot="AAA"></regular-layout-frame>
-            <regular-layout-frame slot="BBB"></regular-layout-frame>
-            <regular-layout-frame slot="CCC"></regular-layout-frame>
-            <regular-layout-frame slot="DDD"></regular-layout-frame>
-            <regular-layout-frame slot="EEE"></regular-layout-frame>
-            <regular-layout-frame slot="FFF"></regular-layout-frame>
-            <regular-layout-frame slot="GGG"></regular-layout-frame>
-            <regular-layout-frame slot="HHH"></regular-layout-frame>
-        </regular-layout>
-    </body>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regular Layout</title>
+    <link rel="stylesheet" href="./index.css">
+    <link rel="stylesheet" href="./chicago.css">
+    <link rel="stylesheet" href="./lorax.css">
+    <link rel="stylesheet" href="./gibson.css">
+    <link rel="stylesheet" href="./fluxbox.css">
+    <link rel="stylesheet" href="./hotdog.css">
+    <script type="module" src="./index.js"></script>
+</head>
+<body>
+    <header>
+        <button id="add">Add Panel</button>
+        <button id="save">Save State</button>
+        <button id="restore">Restore State</button>
+        <button id="clear">Clear</button>
+        <select id="themes">
+            <option value="lorax">Lorax</option>
+            <option value="gibson">Gibson</option>
+            <option value="chicago">Chicago</option>
+            <option value="fluxbox">Fluxbox</option>
+            <option value="hotdog">Hot Dog</option>
+        </select>
+    </header>
+    <regular-layout class="lorax">
+        <regular-layout-frame name="AAA"> </regular-layout-frame>
+        <regular-layout-frame name="BBB"></regular-layout-frame>
+        <regular-layout-frame name="CCC"></regular-layout-frame>
+        <regular-layout-frame name="DDD"></regular-layout-frame>
+        <regular-layout-frame name="EEE"></regular-layout-frame>
+        <regular-layout-frame name="FFF"></regular-layout-frame>
+        <regular-layout-frame name="GGG"></regular-layout-frame>
+        <regular-layout-frame name="HHH"></regular-layout-frame>
+    </regular-layout>
+</body>
+
 </html>
