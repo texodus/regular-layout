@@ -12,14 +12,14 @@
 import { expect, test } from "@playwright/test";
 import { LAYOUTS } from "../helpers/fixtures.ts";
 
-import { create_css_grid_layout } from "../../src/common/generate_grid.ts";
-import type { Layout } from "../../src/common/layout_config.ts";
+import { create_css_grid_layout } from "../../src/layout/generate_grid.ts";
+import type { Layout } from "../../src/layout/types.ts";
 
 const RESULT = `
-:host { display: grid; gap: 0px; grid-template-rows: 30% 70%; grid-template-columns: 60% 40%; }
-:host ::slotted([slot=AAA]) { grid-column: 1; grid-row: 1; }
-:host ::slotted([slot=BBB]) { grid-column: 1; grid-row: 2; }
-:host ::slotted([slot=CCC]) { grid-column: 2; grid-row: 1 / 3; }
+:host ::slotted(*){display:none}:host{display:grid;grid-template-rows:30fr 70fr;grid-template-columns:60fr 40fr}
+:host ::slotted([name="AAA"]){display:flex;grid-column:1;grid-row:1}
+:host ::slotted([name="BBB"]){display:flex;grid-column:1;grid-row:2}
+:host ::slotted([name="CCC"]){display:flex;grid-column:2;grid-row:1 / 3}
 `.trim();
 
 test("simple test", async () => {
@@ -34,7 +34,7 @@ test("single child panel", () => {
 	};
 
 	expect(create_css_grid_layout(singleChild, true)).toEqual(
-		`:host { display: grid; gap: 0px; grid-template-rows: 100%; grid-template-columns: 100%; }\n:host ::slotted([slot=ONLY]) { grid-column: 1; grid-row: 1; }`,
+		`:host ::slotted(*){display:none}:host{display:grid;grid-template-rows:100%;grid-template-columns:100%}\n:host ::slotted([name="ONLY"]){display:flex;grid-column:1;grid-row:1}`,
 	);
 });
 
@@ -68,10 +68,10 @@ test("regressions", () => {
 
 	expect(create_css_grid_layout(test, true)).toEqual(
 		`
-:host { display: grid; gap: 0px; grid-template-rows: 80% 20%; grid-template-columns: 60% 40%; }
-:host ::slotted([slot=AAA]) { grid-column: 1; grid-row: 1; }
-:host ::slotted([slot=BBB]) { grid-column: 1; grid-row: 2; }
-:host ::slotted([slot=CCC]) { grid-column: 2; grid-row: 1 / 3; }
+:host ::slotted(*){display:none}:host{display:grid;grid-template-rows:80fr 20fr;grid-template-columns:60fr 40fr}
+:host ::slotted([name="AAA"]){display:flex;grid-column:1;grid-row:1}
+:host ::slotted([name="BBB"]){display:flex;grid-column:1;grid-row:2}
+:host ::slotted([name="CCC"]){display:flex;grid-column:2;grid-row:1 / 3}
 	`.trim(),
 	);
 });
@@ -121,12 +121,12 @@ test("deeply nested css grid", () => {
 
 	expect(create_css_grid_layout(test, true)).toEqual(
 		`
-:host { display: grid; gap: 0px; grid-template-rows: 30% 60% 10%; grid-template-columns: 30% 30% 40%; }
-:host ::slotted([slot=AAA]) { grid-column: 1; grid-row: 1; }
-:host ::slotted([slot=EEE]) { grid-column: 2; grid-row: 1; }
-:host ::slotted([slot=BBB]) { grid-column: 1 / 3; grid-row: 2; }
-:host ::slotted([slot=DDD]) { grid-column: 1 / 3; grid-row: 3; }
-:host ::slotted([slot=CCC]) { grid-column: 3; grid-row: 1 / 4; }
+:host ::slotted(*){display:none}:host{display:grid;grid-template-rows:30fr 60fr 10fr;grid-template-columns:30fr 30fr 40fr}
+:host ::slotted([name="AAA"]){display:flex;grid-column:1;grid-row:1}
+:host ::slotted([name="EEE"]){display:flex;grid-column:2;grid-row:1}
+:host ::slotted([name="BBB"]){display:flex;grid-column:1 / 3;grid-row:2}
+:host ::slotted([name="DDD"]){display:flex;grid-column:1 / 3;grid-row:3}
+:host ::slotted([name="CCC"]){display:flex;grid-column:3;grid-row:1 / 4}
 	`.trim(),
 	);
 });
@@ -187,13 +187,13 @@ test("Deeply nested CSS grid part 2", () => {
 
 	expect(create_css_grid_layout(test, true)).toEqual(
 		`
-:host { display: grid; gap: 0px; grid-template-rows: 30% 60% 10%; grid-template-columns: 30% 30% 20% 20%; }
-:host ::slotted([slot=AAA]) { grid-column: 1; grid-row: 1; }
-:host ::slotted([slot=EEE]) { grid-column: 2; grid-row: 1; }
-:host ::slotted([slot=BBB]) { grid-column: 1 / 3; grid-row: 2; }
-:host ::slotted([slot=DDD]) { grid-column: 1 / 3; grid-row: 3; }
-:host ::slotted([slot=CCC]) { grid-column: 3; grid-row: 1 / 4; }
-:host ::slotted([slot=FFF]) { grid-column: 4; grid-row: 1 / 4; }
+:host ::slotted(*){display:none}:host{display:grid;grid-template-rows:30fr 60fr 10fr;grid-template-columns:30fr 30fr 20fr 20fr}
+:host ::slotted([name="AAA"]){display:flex;grid-column:1;grid-row:1}
+:host ::slotted([name="EEE"]){display:flex;grid-column:2;grid-row:1}
+:host ::slotted([name="BBB"]){display:flex;grid-column:1 / 3;grid-row:2}
+:host ::slotted([name="DDD"]){display:flex;grid-column:1 / 3;grid-row:3}
+:host ::slotted([name="CCC"]){display:flex;grid-column:3;grid-row:1 / 4}
+:host ::slotted([name="FFF"]){display:flex;grid-column:4;grid-row:1 / 4}
 	`.trim(),
 	);
 });
@@ -232,11 +232,11 @@ test("parallel", () => {
 
 	expect(create_css_grid_layout(test, true)).toEqual(
 		`
-:host { display: grid; gap: 0px; grid-template-rows: 30% 70%; grid-template-columns: 33% 33% 33%; }
-:host ::slotted([slot=AAA]) { grid-column: 1; grid-row: 1; }
-:host ::slotted([slot=BBB]) { grid-column: 1; grid-row: 2; }
-:host ::slotted([slot=DDD]) { grid-column: 2; grid-row: 1 / 3; }
-:host ::slotted([slot=CCC]) { grid-column: 3; grid-row: 1 / 3; }
+:host ::slotted(*){display:none}:host{display:grid;grid-template-rows:30fr 70fr;grid-template-columns:33fr 33fr 33fr}
+:host ::slotted([name="AAA"]){display:flex;grid-column:1;grid-row:1}
+:host ::slotted([name="BBB"]){display:flex;grid-column:1;grid-row:2}
+:host ::slotted([name="DDD"]){display:flex;grid-column:2;grid-row:1 / 3}
+:host ::slotted([name="CCC"]){display:flex;grid-column:3;grid-row:1 / 3}
 	`.trim(),
 	);
 });
@@ -282,11 +282,11 @@ test("Parallel split-panels with different sizes", () => {
 
 	expect(create_css_grid_layout(test, true)).toEqual(
 		`
-:host { display: grid; gap: 0px; grid-template-rows: 30% 40% 30%; grid-template-columns: 50% 50%; }
-:host ::slotted([slot=AAA]) { grid-column: 1; grid-row: 1; }
-:host ::slotted([slot=BBB]) { grid-column: 1; grid-row: 2 / 4; }
-:host ::slotted([slot=CCC]) { grid-column: 2; grid-row: 1 / 3; }
-:host ::slotted([slot=DDD]) { grid-column: 2; grid-row: 3; }
+:host ::slotted(*){display:none}:host{display:grid;grid-template-rows:30fr 40fr 30fr;grid-template-columns:50fr 50fr}
+:host ::slotted([name="AAA"]){display:flex;grid-column:1;grid-row:1}
+:host ::slotted([name="BBB"]){display:flex;grid-column:1;grid-row:2 / 4}
+:host ::slotted([name="CCC"]){display:flex;grid-column:2;grid-row:1 / 3}
+:host ::slotted([name="DDD"]){display:flex;grid-column:2;grid-row:3}
 	`.trim(),
 	);
 });
@@ -343,12 +343,12 @@ test("Deeply alternating split", () => {
 
 	expect(create_css_grid_layout(test, true)).toEqual(
 		`
-:host { display: grid; gap: 0px; grid-template-rows: 15% 15% 70%; grid-template-columns: 30% 30% 40%; }
-:host ::slotted([slot=VfssXzLK]) { grid-column: 1; grid-row: 1 / 3; }
-:host ::slotted([slot=qsAwxKvs]) { grid-column: 2; grid-row: 1; }
-:host ::slotted([slot=AAA]) { grid-column: 2; grid-row: 2; }
-:host ::slotted([slot=BBB]) { grid-column: 1 / 3; grid-row: 3; }
-:host ::slotted([slot=CCC]) { grid-column: 3; grid-row: 1 / 4; }
+:host ::slotted(*){display:none}:host{display:grid;grid-template-rows:15fr 15fr 70fr;grid-template-columns:30fr 30fr 40fr}
+:host ::slotted([name="VfssXzLK"]){display:flex;grid-column:1;grid-row:1 / 3}
+:host ::slotted([name="qsAwxKvs"]){display:flex;grid-column:2;grid-row:1}
+:host ::slotted([name="AAA"]){display:flex;grid-column:2;grid-row:2}
+:host ::slotted([name="BBB"]){display:flex;grid-column:1 / 3;grid-row:3}
+:host ::slotted([name="CCC"]){display:flex;grid-column:3;grid-row:1 / 4}
 	`.trim(),
 	);
 });

@@ -37,8 +37,8 @@ Add the `<regular-layout>` custom element to your HTML:
 
 ```html
 <regular-layout>
-    <div slot="main">Main content</div>
-    <div slot="sidebar">Sidebar content</div>
+    <div name="main">Main content</div>
+    <div name="sidebar">Sidebar content</div>
 </regular-layout>
 ```
 
@@ -67,7 +67,7 @@ Create repositionable panels using `<regular-layout-frame>`:
 
 ```html
 <regular-layout>
-    <regular-layout-frame slot="main">
+    <regular-layout-frame name="main">
         Main content
     </regular-layout-frame>
 </regular-layout>

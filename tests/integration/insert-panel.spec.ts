@@ -14,12 +14,13 @@ import type { Layout } from "../../dist/index.js";
 import {
 	setupLayout,
 	saveLayout,
-	expectSlots,
 	insertPanel,
 } from "../helpers/integration.ts";
 import { LAYOUTS } from "../helpers/fixtures.ts";
 
-test("should insert a single panel into an empty layout", async ({ page }) => {
+test("should insert a single panel into a single panel layout", async ({
+	page,
+}) => {
 	await setupLayout(page, LAYOUTS.SINGLE_AAA);
 	const currentState = await saveLayout(page);
 	expect(currentState).toStrictEqual({
@@ -35,8 +36,6 @@ test("should insert a single panel into an empty layout", async ({ page }) => {
 		child: ["BBB", "AAA"],
 		selected: 0,
 	});
-
-	await expectSlots(page, { contains: ["BBB"] });
 });
 
 test("should insert panel at specific path in split panel", async ({
@@ -111,7 +110,7 @@ test("should insert panel into nested split panel", async ({ page }) => {
 						selected: 0,
 					},
 				],
-				sizes: [0.3333333333333333, 0.3333333333333333, 0.3333333333333333],
+				sizes: [0.19999999999999998, 0.4666666666666666, 0.3333333333333333],
 			},
 			{
 				type: "child-panel",
@@ -136,7 +135,7 @@ test("should split existing panel when inserting at deeper path", async ({
 
 	await page.evaluate(() => {
 		const layout = document.querySelector("regular-layout");
-		layout?.insertPanel("CCC", [1, 1]);
+		layout?.insertPanel("CCC", [1, 1], "vertical");
 	});
 
 	const afterInsert = await page.evaluate(() => {

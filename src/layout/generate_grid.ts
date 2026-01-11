@@ -10,8 +10,7 @@
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 import { GRID_TRACK_COLLAPSE_TOLERANCE } from "./constants.ts";
-import type { Layout } from "./layout_config.ts";
-import { remove_child } from "./remove_child.ts";
+import type { Layout } from "./types.ts";
 
 interface GridCell {
 	child: string;
@@ -21,26 +20,23 @@ interface GridCell {
 	rowEnd: number;
 }
 
-function dedupePositions(positions: number[]): number[] {
-	if (positions.length === 0) {
-		return [];
-	}
-
-	const sorted = positions.sort((a, b) => a - b);
-	const result = [sorted[0]];
-	for (let i = 1; i < sorted.length; i++) {
-		if (
-			Math.abs(sorted[i] - result[result.length - 1]) >
-			GRID_TRACK_COLLAPSE_TOLERANCE
-		) {
-			result.push(sorted[i]);
-		}
+function dedupe_sort(result: number[], pos: number) {
+	if (
+		result.length === 0 ||
+		Math.abs(pos - result[result.length - 1]) > GRID_TRACK_COLLAPSE_TOLERANCE
+	) {
+		result.push(pos);
 	}
 
 	return result;
 }
 
-function collectTrackPositions(
+function dedupe_positions(positions: number[]): number[] {
+	const sorted = positions.sort((a, b) => a - b);
+	return sorted.reduce(dedupe_sort, []);
+}
+
+function collect_track_positions(
 	panel: Layout,
 	orientation: "horizontal" | "vertical",
 	start: number,
@@ -50,51 +46,44 @@ function collectTrackPositions(
 		return [start, end];
 	}
 
+	const positions: number[] = [start, end];
 	if (panel.orientation === orientation) {
-		const positions: number[] = [start, end];
 		let current = start;
+		const range = end - start;
 		for (let i = 0; i < panel.children.length; i++) {
 			const size = panel.sizes[i];
-			const childPositions = collectTrackPositions(
-				panel.children[i],
-				orientation,
-				current,
-				current + size * (end - start),
+			const next = current + size * range;
+			positions.push(
+				...collect_track_positions(
+					panel.children[i],
+					orientation,
+					current,
+					next,
+				),
 			);
 
-			positions.push(...childPositions);
-			current = current + size * (end - start);
+			current = next;
 		}
-
-		return dedupePositions(positions);
 	} else {
-		const allPositions: number[] = [start, end];
 		for (const child of panel.children) {
-			const childPositions = collectTrackPositions(
-				child,
-				orientation,
-				start,
-				end,
+			positions.push(
+				...collect_track_positions(child, orientation, start, end),
 			);
-
-			allPositions.push(...childPositions);
-		}
-
-		return dedupePositions(allPositions);
-	}
-}
-
-function findTrackIndex(positions: number[], value: number): number {
-	for (let i = 0; i < positions.length; i++) {
-		if (Math.abs(positions[i] - value) < GRID_TRACK_COLLAPSE_TOLERANCE) {
-			return i;
 		}
 	}
 
-	throw new Error(`Position ${value} not found in ${positions}`);
+	return dedupe_positions(positions);
 }
 
-function buildCells(
+function find_track_index(positions: number[], value: number): number {
+	const index = positions.findIndex(
+		(pos) => Math.abs(pos - value) < GRID_TRACK_COLLAPSE_TOLERANCE,
+	);
+
+	return index === -1 ? 0 : index;
+}
+
+function build_cells(
 	panel: Layout,
 	colPositions: number[],
 	rowPositions: number[],
@@ -108,22 +97,24 @@ function buildCells(
 		return [
 			{
 				child: panel.child[selected],
-				colStart: findTrackIndex(colPositions, colStart),
-				colEnd: findTrackIndex(colPositions, colEnd),
-				rowStart: findTrackIndex(rowPositions, rowStart),
-				rowEnd: findTrackIndex(rowPositions, rowEnd),
+				colStart: find_track_index(colPositions, colStart),
+				colEnd: find_track_index(colPositions, colEnd),
+				rowStart: find_track_index(rowPositions, rowStart),
+				rowEnd: find_track_index(rowPositions, rowEnd),
 			},
 		];
 	}
 
-	const cells: GridCell[] = [];
 	const { children, sizes, orientation } = panel;
-	if (orientation === "horizontal") {
-		let current = colStart;
-		for (let i = 0; i < children.length; i++) {
-			const next = current + sizes[i] * (colEnd - colStart);
+	const isHorizontal = orientation === "horizontal";
+	let current = isHorizontal ? colStart : rowStart;
+	const range = isHorizontal ? colEnd - colStart : rowEnd - rowStart;
+	const cells: GridCell[] = [];
+	for (let i = 0; i < children.length; i++) {
+		const next = current + sizes[i] * range;
+		if (isHorizontal) {
 			cells.push(
-				...buildCells(
+				...build_cells(
 					children[i],
 					colPositions,
 					rowPositions,
@@ -133,15 +124,9 @@ function buildCells(
 					rowEnd,
 				),
 			);
-
-			current = next;
-		}
-	} else {
-		let current = rowStart;
-		for (let i = 0; i < children.length; i++) {
-			const next = current + sizes[i] * (rowEnd - rowStart);
+		} else {
 			cells.push(
-				...buildCells(
+				...build_cells(
 					children[i],
 					colPositions,
 					rowPositions,
@@ -151,19 +136,19 @@ function buildCells(
 					next,
 				),
 			);
-
-			current = next;
 		}
+
+		current = next;
 	}
 
 	return cells;
 }
 
 const host_template = (rowTemplate: string, colTemplate: string) =>
-	`:host { display: grid; gap: 0px; grid-template-rows: ${rowTemplate}; grid-template-columns: ${colTemplate}; }`;
+	`:host ::slotted(*){display:none}:host{display:grid;grid-template-rows:${rowTemplate};grid-template-columns:${colTemplate}}`;
 
 const child_template = (slot: string, rowPart: string, colPart: string) =>
-	`:host ::slotted([slot=${slot}]) { grid-column: ${colPart}; grid-row: ${rowPart}; }`;
+	`:host ::slotted([name="${slot}"]){display:flex;grid-column:${colPart};grid-row:${rowPart}}`;
 
 /**
  * Generates CSS Grid styles to render a layout tree.
@@ -191,8 +176,8 @@ const child_template = (slot: string, rowPart: string, colPart: string) =>
  * const css = create_css_grid_layout(layout);
  * // Returns CSS like:
  * // :host { display: grid; grid-template-columns: 25% 75%; ... }
- * // :host ::slotted([slot=sidebar]) { grid-column: 1; grid-row: 1; }
- * // :host ::slotted([slot=main]) { grid-column: 2; grid-row: 1; }
+ * // :host ::slotted([name=sidebar]) { grid-column: 1; grid-row: 1; }
+ * // :host ::slotted([name=main]) { grid-column: 2; grid-row: 1; }
  * ```
  */
 export function create_css_grid_layout(
@@ -200,51 +185,36 @@ export function create_css_grid_layout(
 	round: boolean = false,
 	overlay?: [string, string],
 ): string {
-	if (overlay) {
-		layout = remove_child(layout, overlay[0]);
-	}
-
 	if (layout.type === "child-panel") {
 		const selected = layout.selected ?? 0;
 		return `${host_template("100%", "100%")}\n${child_template(layout.child[selected], "1", "1")}`;
 	}
 
-	const colPositions = collectTrackPositions(layout, "horizontal", 0, 1);
-	const colSizes: number[] = [];
-	for (let i = 0; i < colPositions.length - 1; i++) {
-		colSizes.push(colPositions[i + 1] - colPositions[i]);
-	}
+	const createTemplate = (positions: number[]) => {
+		const sizes = positions
+			.slice(0, -1)
+			.map((pos, i) => positions[i + 1] - pos);
+		return sizes
+			.map((s) => `${round ? Math.round(s * 100) : s * 100}fr`)
+			.join(" ");
+	};
 
-	const colTemplate = colSizes
-		.map((s) => `${round ? Math.round(s * 100) : s * 100}%`)
-		.join(" ");
+	const colPositions = collect_track_positions(layout, "horizontal", 0, 1);
+	const colTemplate = createTemplate(colPositions);
+	const rowPositions = collect_track_positions(layout, "vertical", 0, 1);
+	const rowTemplate = createTemplate(rowPositions);
+	const formatGridLine = (start: number, end: number) =>
+		end - start === 1 ? `${start + 1}` : `${start + 1} / ${end + 1}`;
 
-	const rowPositions = collectTrackPositions(layout, "vertical", 0, 1);
-	const rowSizes: number[] = [];
-	for (let i = 0; i < rowPositions.length - 1; i++) {
-		rowSizes.push(rowPositions[i + 1] - rowPositions[i]);
-	}
-
-	const rowTemplate = rowSizes
-		.map((s) => `${round ? Math.round(s * 100) : s * 100}%`)
-		.join(" ");
-
-	const cells = buildCells(layout, colPositions, rowPositions, 0, 1, 0, 1);
+	const cells = build_cells(layout, colPositions, rowPositions, 0, 1, 0, 1);
 	const css = [host_template(rowTemplate, colTemplate)];
 	for (const cell of cells) {
-		const colPart =
-			cell.colEnd - cell.colStart === 1
-				? `${cell.colStart + 1}`
-				: `${cell.colStart + 1} / ${cell.colEnd + 1}`;
-		const rowPart =
-			cell.rowEnd - cell.rowStart === 1
-				? `${cell.rowStart + 1}`
-				: `${cell.rowStart + 1} / ${cell.rowEnd + 1}`;
-
-		css.push(`${child_template(cell.child, rowPart, colPart)}`);
+		const colPart = formatGridLine(cell.colStart, cell.colEnd);
+		const rowPart = formatGridLine(cell.rowStart, cell.rowEnd);
+		css.push(child_template(cell.child, rowPart, colPart));
 		if (cell.child === overlay?.[1]) {
-			css.push(`${child_template(overlay[0], rowPart, colPart)}`);
-			css.push(`:host ::slotted([slot=${overlay[0]}]) { z-index: 1; }`);
+			css.push(child_template(overlay[0], rowPart, colPart));
+			css.push(`:host ::slotted([name=${overlay[0]}]){z-index:1}`);
 		}
 	}
 

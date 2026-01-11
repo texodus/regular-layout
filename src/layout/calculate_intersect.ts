@@ -9,56 +9,8 @@
 // ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-import type {
-	LayoutPath,
-	LayoutDivider,
-	Layout,
-	ViewWindow,
-} from "./layout_config.ts";
-
-/**
- * Determines which panel or divider is located at a given position in the
- * layout.
- *
- * @param row - Vertical position as a fraction (0-1) of the container
- * height
- * @param column - Horizontal position as a fraction (0-1) of the
- * container width
- * @param layout - The layout tree to search
- * @param check_dividers - Whether `LayoutDivider` intersection should be
- * checked, which oyu may not want for e.g. `drop` actions.
- * @returns The panel path if over a panel, a divider if over a resizable
- * boundary, or null if outside all panels
- */
-export function calculate_intersection(
-	column: number,
-	row: number,
-	layout: Layout,
-	check_dividers: false,
-): LayoutPath;
-
-export function calculate_intersection(
-	column: number,
-	row: number,
-	layout: Layout,
-	check_dividers: true,
-): LayoutPath | null | LayoutDivider;
-
-export function calculate_intersection(
-	column: number,
-	row: number,
-	layout: Layout,
-	check_dividers?: boolean,
-): LayoutPath | null | LayoutDivider;
-
-export function calculate_intersection(
-	column: number,
-	row: number,
-	layout: Layout,
-	check_dividers: boolean = true,
-): LayoutPath | null | LayoutDivider {
-	return calculate_intersection_recursive(column, row, layout, check_dividers);
-}
+import { GRID_DIVIDER_SIZE } from "./constants.ts";
+import type { LayoutPath, LayoutDivider, Layout, ViewWindow } from "./types.ts";
 
 const VIEW_WINDOW = {
 	row_start: 0,
@@ -67,11 +19,53 @@ const VIEW_WINDOW = {
 	col_end: 1,
 };
 
+/**
+ * Determines which panel or divider is located at a given position in the
+ * layout.
+ *
+ * @param column - Horizontal position as a fraction (0-1) of the container width
+ * @param row - Vertical position as a fraction (0-1) of the container height
+ * @param layout - The layout tree to search
+ * @param check_dividers - Whether `LayoutDivider` intersection should be
+ * checked, which you may not want for e.g. `drop` actions.
+ * @returns The panel path if over a panel, a divider if over a resizable
+ * boundary, or null if outside all panels
+ */
+export function calculate_intersection(
+	column: number,
+	row: number,
+	layout: Layout,
+	check_dividers?: null,
+): LayoutPath | null;
+
+export function calculate_intersection(
+	column: number,
+	row: number,
+	layout: Layout,
+	check_dividers?: DOMRect,
+): LayoutPath | null | LayoutDivider;
+
+export function calculate_intersection(
+	column: number,
+	row: number,
+	layout: Layout,
+	check_dividers?: DOMRect | null,
+): LayoutPath | null | LayoutDivider;
+
+export function calculate_intersection(
+	column: number,
+	row: number,
+	layout: Layout,
+	check_dividers: DOMRect | null = null,
+): LayoutPath | null | LayoutDivider {
+	return calculate_intersection_recursive(column, row, layout, check_dividers);
+}
+
 function calculate_intersection_recursive(
 	column: number,
 	row: number,
 	panel: Layout,
-	check_dividers: boolean,
+	check_dividers: DOMRect | null,
 	parent_orientation: "horizontal" | "vertical" | null = null,
 	view_window: ViewWindow = structuredClone(VIEW_WINDOW),
 	path: number[] = [],
@@ -83,104 +77,68 @@ function calculate_intersection_recursive(
 	// Base case: if this is a child panel, return its name
 	if (panel.type === "child-panel") {
 		const selected = panel.selected ?? 0;
-		const column_offset =
-			(column - view_window.col_start) /
-			(view_window.col_end - view_window.col_start);
-
-		const row_offset =
-			(row - view_window.row_start) /
-			(view_window.row_end - view_window.row_start);
-
+		const col_width = view_window.col_end - view_window.col_start;
+		const row_height = view_window.row_end - view_window.row_start;
 		return {
 			type: "layout-path",
-			box: undefined,
+			layout: undefined,
 			slot: panel.child[selected],
-			panel: structuredClone(panel),
-			path: path,
-			view_window: view_window,
+			path,
+			view_window,
 			is_edge: false,
 			column,
 			row,
-			column_offset,
-			row_offset,
+			column_offset: (column - view_window.col_start) / col_width,
+			row_offset: (row - view_window.row_start) / row_height,
 			orientation: parent_orientation || "horizontal",
 		};
 	}
 
 	// For split panels, determine which child was hit
-	if (panel.orientation === "vertical") {
-		// Vertical orientation = rows
-		let current_row = view_window.row_start;
-		for (let i = 0; i < panel.children.length; i++) {
-			const total_size = view_window.row_end - view_window.row_start;
-			const next_row = total_size * panel.sizes[i] + current_row;
-			if (check_dividers && Math.abs(row - next_row) < 0.01) {
+	const is_vertical = panel.orientation === "vertical";
+	const position = is_vertical ? row : column;
+	const start_key = is_vertical ? "row_start" : "col_start";
+	const end_key = is_vertical ? "row_end" : "col_end";
+	const rect_dim = is_vertical ? check_dividers?.height : check_dividers?.width;
+	let current_pos = view_window[start_key];
+	const total_size = view_window[end_key] - view_window[start_key];
+	for (let i = 0; i < panel.children.length; i++) {
+		const next_pos = current_pos + total_size * panel.sizes[i];
+
+		// Check if position is on a divider
+		if (check_dividers && rect_dim) {
+			const divider_threshold = GRID_DIVIDER_SIZE / rect_dim;
+			if (Math.abs(position - next_pos) < divider_threshold) {
 				return {
 					path: [...path, i],
-					type: "vertical",
+					type: panel.orientation,
 					view_window: {
 						...view_window,
-						row_start: current_row,
-						row_end: next_row,
+						[start_key]: current_pos,
+						[end_key]: next_pos,
 					},
 				};
 			}
-
-			if (row >= current_row && row < next_row) {
-				return calculate_intersection_recursive(
-					column,
-					row,
-					panel.children[i],
-					check_dividers,
-					"vertical",
-					{
-						...view_window,
-						row_start: current_row,
-						row_end: next_row,
-					},
-					[...path, i],
-				);
-			}
-
-			current_row = next_row;
 		}
-	} else {
-		// Horizontal orientation = columns
-		let current_col = view_window.col_start;
-		for (let i = 0; i < panel.children.length; i++) {
-			const total_size = view_window.col_end - view_window.col_start;
-			const next_col = current_col + total_size * panel.sizes[i];
-			if (check_dividers && Math.abs(column - next_col) < 0.01) {
-				return {
-					path: [...path, i],
-					type: "horizontal",
-					view_window: {
-						...view_window,
-						col_start: current_col,
-						col_end: next_col,
-					},
-				};
-			}
 
-			// Check if the column falls within this child's bounds.
-			if (column >= current_col && column < next_col) {
-				return calculate_intersection_recursive(
-					column,
-					row,
-					panel.children[i],
-					check_dividers,
-					"horizontal",
-					{
-						...view_window,
-						col_start: current_col,
-						col_end: next_col,
-					},
-					[...path, i],
-				);
-			}
-
-			current_col = next_col;
+		// Check if position falls within this child's bounds
+		if (position >= current_pos && position < next_pos) {
+			return calculate_intersection_recursive(
+				column,
+				row,
+				panel.children[i],
+				check_dividers,
+				panel.orientation,
+				{
+					...view_window,
+					[start_key]: current_pos,
+					[end_key]: next_pos,
+				},
+				[...path, i],
+			);
 		}
+
+		current_pos = next_pos;
 	}
 
 	// If we get here, the hit was outside all children (possibly in a gap or

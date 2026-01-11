@@ -13,7 +13,6 @@ import { expect, test } from "@playwright/test";
 import {
 	setupLayout,
 	saveLayout,
-	expectSlots,
 	removePanel,
 } from "../helpers/integration.ts";
 import { LAYOUTS } from "../helpers/fixtures.ts";
@@ -28,11 +27,6 @@ test.describe("removePanel", () => {
 			type: "child-panel",
 			child: ["AAA"],
 			selected: 0,
-		});
-
-		await expectSlots(page, {
-			notContains: ["BBB"],
-			contains: ["AAA"],
 		});
 	});
 

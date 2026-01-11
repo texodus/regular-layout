@@ -9,18 +9,20 @@
 		"url": "https://github.com/texodus/regular-layout"
 	},
 	"browser": "dist/index.js",
+	"main": "dist/index.js",
 	"type": "module",
 	"files": [
 		"dist/**/*",
-		"src/**/*"
+		"src/**/*",
+		"themes/**/*"
 	],
 	"scripts": {
-		"build": "node build.mjs",
-		"build:watch": "node build.mjs --watch",
+		"build": "tsx build.ts",
+		"build:watch": "tsx build.ts --watch",
 		"clean": "rm -rf dist",
 		"test": "playwright test",
-		"example": "npx http-server . -p 8000",
-		"deploy": "node deploy.mjs",
+		"example": "tsx serve.ts",
+		"deploy": "tsx deploy.ts",
 		"lint": "biome lint src tests",
 		"format": "biome format --write src tests",
 		"check": "biome check --write src tests"
@@ -30,7 +32,7 @@
 		"@playwright/test": "^1.57.0",
 		"@types/node": "^22.10.5",
 		"esbuild": "^0.27.2",
-		"http-server": "^14.1.1",
+		"tsx": "^4.21.0",
 		"typescript": "^5.9.3"
 	}
 }

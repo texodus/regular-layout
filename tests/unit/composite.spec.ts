@@ -11,16 +11,18 @@
 
 import { expect, test } from "@playwright/test";
 import { LAYOUTS } from "../helpers/fixtures.ts";
-import { redistribute_panel_sizes } from "../../src/layout/redistribute_panel_sizes.ts";
+import { insert_child } from "../../src/layout/insert_child.ts";
+import type { Layout } from "../../src/layout/types.ts";
 
-test("redistribute depth 1 child", () => {
-	const clone = redistribute_panel_sizes(
-		structuredClone(LAYOUTS.NESTED_BASIC),
-		[0],
-		0.1,
+test("cursor near left edge of same orientation", () => {
+	const result = insert_child(
+		LAYOUTS.NESTED_BASIC,
+		"DDD",
+		[0, 1, 0],
+		"horizontal",
 	);
 
-	expect(clone).toStrictEqual({
+	expect(result).toStrictEqual({
 		type: "split-panel",
 		children: [
 			{
@@ -31,8 +33,19 @@ test("redistribute depth 1 child", () => {
 						child: ["AAA"],
 					},
 					{
-						type: "child-panel",
-						child: ["BBB"],
+						type: "split-panel",
+						orientation: "horizontal",
+						sizes: [0.5, 0.5],
+						children: [
+							{
+								type: "child-panel",
+								child: ["DDD"],
+							},
+							{
+								type: "child-panel",
+								child: ["BBB"],
+							},
+						],
 					},
 				],
 				sizes: [0.3, 0.7],
@@ -43,149 +56,28 @@ test("redistribute depth 1 child", () => {
 				child: ["CCC"],
 			},
 		],
-		sizes: [0.5, 0.5],
-		orientation: "horizontal",
-	});
-});
-
-test("redistribute depth 2 children", () => {
-	const clone = redistribute_panel_sizes(LAYOUTS.NESTED_BASIC, [0, 0], 0.1);
-	expect(clone).toStrictEqual({
-		type: "split-panel",
-		children: [
-			{
-				type: "split-panel",
-				children: [
-					{
-						type: "child-panel",
-						child: ["AAA"],
-					},
-					{
-						type: "child-panel",
-						child: ["BBB"],
-					},
-				],
-				sizes: [0.19999999999999998, 0.7999999999999999],
-				orientation: "vertical",
-			},
-			{
-				type: "child-panel",
-				child: ["CCC"],
-			},
-		],
 		sizes: [0.6, 0.4],
 		orientation: "horizontal",
 	});
 });
 
-test("redistribute with 3 children", () => {
-	const clone = redistribute_panel_sizes(
-		LAYOUTS.NESTED_HORIZONTAL_WITH_VERTICAL_DDD,
-		[0, 0],
-		0.1,
-	);
-	expect(clone).toStrictEqual({
-		type: "split-panel",
-		children: [
-			{
-				type: "split-panel",
-				children: [
-					{
-						type: "child-panel",
-						child: ["AAA"],
-					},
-					{
-						type: "child-panel",
-						child: ["BBB"],
-					},
-					{
-						type: "child-panel",
-						child: ["DDD"],
-					},
-				],
-				sizes: [0.19999999999999998, 0.6857142857142857, 0.1142857142857143],
-				orientation: "vertical",
-			},
-			{
-				type: "child-panel",
-				child: ["CCC"],
-			},
-		],
-		sizes: [0.6, 0.4],
-		orientation: "horizontal",
-	});
-});
+test("cursor near top edge of opposite orientation", () => {
+	const result = insert_child(LAYOUTS.NESTED_BASIC, "DDD", [0], "vertical");
 
-test("redistribute nested spec with 4 children", () => {
-	const clone = redistribute_panel_sizes(
-		LAYOUTS.COMPLEX_FOUR_CHILDREN,
-		[0, 1, 1],
-		0.1,
-	);
-	expect(clone).toStrictEqual({
+	expect(result).toStrictEqual({
 		type: "split-panel",
-		orientation: "horizontal",
-		children: [
-			{
-				type: "split-panel",
-				orientation: "horizontal",
-				children: [
-					{
-						type: "child-panel",
-						child: ["AAA"],
-					},
-					{
-						type: "split-panel",
-						orientation: "vertical",
-						children: [
-							{
-								type: "child-panel",
-								child: ["EEE"],
-							},
-							{
-								type: "child-panel",
-								child: ["BBB"],
-							},
-							{
-								type: "child-panel",
-								child: ["DDD"],
-							},
-							{
-								type: "child-panel",
-								child: ["CCC"],
-							},
-						],
-						sizes: [0.2, 0.2, 0.3, 0.3],
-					},
-				],
-				sizes: [0.5, 0.5],
-			},
-			{
-				type: "child-panel",
-				child: ["FFF"],
-			},
-		],
 		sizes: [0.5, 0.5],
-	});
-});
-
-test("nested aligned splitpanels", () => {
-	const clone = redistribute_panel_sizes(
-		LAYOUTS.NESTED_ALIGNED,
-		[0, 0, 0],
-		0.1,
-	);
-	expect(clone).toStrictEqual({
-		type: "split-panel",
-		orientation: "horizontal",
+		orientation: "vertical",
 		children: [
 			{
+				type: "child-panel",
+				child: ["DDD"],
+			},
+			{
 				type: "split-panel",
-				orientation: "vertical",
 				children: [
 					{
 						type: "split-panel",
-						orientation: "horizontal",
 						children: [
 							{
 								type: "child-panel",
@@ -197,30 +89,70 @@ test("nested aligned splitpanels", () => {
 							},
 						],
 						sizes: [0.3, 0.7],
+						orientation: "vertical",
 					},
 					{
 						type: "child-panel",
-						child: ["DDD"],
+						child: ["CCC"],
 					},
 				],
-				sizes: [0.5, 0.5],
-			},
-			{
-				type: "child-panel",
-				child: ["FFF"],
+				sizes: [0.6, 0.4],
+				orientation: "horizontal",
 			},
 		],
-		sizes: [0.5, 0.5],
 	});
 });
 
-test("nested aligned splitpanels, reversed orientation", () => {
-	const clone = redistribute_panel_sizes(
-		LAYOUTS.NESTED_ALIGNED_REVERSED,
-		[0, 0, 1, 0],
-		0.1,
+test("cursor near bottom edge but with opposite orientation", () => {
+	const result = insert_child(
+		LAYOUTS.NESTED_BASIC,
+		"DDD",
+		[1],
+		"vertical",
+		// true,
 	);
-	expect(clone).toStrictEqual({
+
+	expect(result).toStrictEqual({
+		type: "split-panel",
+		sizes: [0.5, 0.5],
+		orientation: "vertical",
+		children: [
+			{
+				type: "split-panel",
+				children: [
+					{
+						type: "split-panel",
+						children: [
+							{
+								type: "child-panel",
+								child: ["AAA"],
+							},
+							{
+								type: "child-panel",
+								child: ["BBB"],
+							},
+						],
+						sizes: [0.3, 0.7],
+						orientation: "vertical",
+					},
+					{
+						type: "child-panel",
+						child: ["CCC"],
+					},
+				],
+				sizes: [0.6, 0.4],
+				orientation: "horizontal",
+			},
+			{
+				type: "child-panel",
+				child: ["DDD"],
+			},
+		],
+	});
+});
+
+test("", () => {
+	const PANEL: Layout = {
 		type: "split-panel",
 		orientation: "horizontal",
 		children: [
@@ -235,6 +167,7 @@ test("nested aligned splitpanels, reversed orientation", () => {
 							{
 								type: "child-panel",
 								child: ["AAA"],
+								selected: 0,
 							},
 							{
 								type: "split-panel",
@@ -243,85 +176,100 @@ test("nested aligned splitpanels, reversed orientation", () => {
 									{
 										type: "child-panel",
 										child: ["BBB"],
+										selected: 0,
 									},
 									{
 										type: "child-panel",
 										child: ["CCC"],
+										selected: 0,
 									},
 								],
-								sizes: [0.3, 0.7],
+								sizes: [0.5, 0.5],
 							},
 						],
 						sizes: [0.5, 0.5],
 					},
 					{
 						type: "child-panel",
-						child: ["DDD"],
+						child: ["EEE"],
+						selected: 0,
 					},
 				],
 				sizes: [0.5, 0.5],
 			},
 			{
 				type: "child-panel",
-				child: ["FFF"],
+				child: ["FFF", "GGG", "HHH"],
+				selected: 0,
 			},
 		],
 		sizes: [0.5, 0.5],
-	});
-});
+	};
 
-test("nested aligned splitpanels, reversed orientation with asymmetric sizes", () => {
-	const clone = redistribute_panel_sizes(
-		LAYOUTS.NESTED_ALIGNED_ASYMMETRIC,
-		[0, 0, 1, 0],
-		0.1,
-	);
-	expect(clone).toStrictEqual({
+	const result = insert_child(PANEL, "QQQ", [1], "vertical");
+	expect(result).toStrictEqual({
+		sizes: [0.5, 0.5],
 		type: "split-panel",
-		orientation: "horizontal",
+		orientation: "vertical",
 		children: [
 			{
 				type: "split-panel",
-				orientation: "vertical",
+				orientation: "horizontal",
 				children: [
 					{
 						type: "split-panel",
-						orientation: "horizontal",
+						orientation: "vertical",
 						children: [
 							{
-								type: "child-panel",
-								child: ["AAA"],
-							},
-							{
 								type: "split-panel",
-								orientation: "vertical",
+								orientation: "horizontal",
 								children: [
 									{
 										type: "child-panel",
-										child: ["BBB"],
+										child: ["AAA"],
+										selected: 0,
 									},
 									{
-										type: "child-panel",
-										child: ["CCC"],
+										type: "split-panel",
+										orientation: "vertical",
+										children: [
+											{
+												type: "child-panel",
+												child: ["BBB"],
+												selected: 0,
+											},
+											{
+												type: "child-panel",
+												child: ["CCC"],
+												selected: 0,
+											},
+										],
+										sizes: [0.5, 0.5],
 									},
 								],
-								sizes: [0.3666666666666667, 0.6333333333333333],
+								sizes: [0.5, 0.5],
+							},
+							{
+								type: "child-panel",
+								child: ["EEE"],
+								selected: 0,
 							},
 						],
 						sizes: [0.5, 0.5],
 					},
 					{
 						type: "child-panel",
-						child: ["DDD"],
+						child: ["FFF", "GGG", "HHH"],
+						selected: 0,
 					},
 				],
-				sizes: [0.75, 0.25],
+				sizes: [0.5, 0.5],
 			},
 			{
 				type: "child-panel",
-				child: ["FFF"],
+				child: ["QQQ"],
+				// selected: 0,
 			},
 		],
-		sizes: [0.5, 0.5],
 	});
 });

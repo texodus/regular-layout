@@ -24,7 +24,7 @@ test("should switch between tabs by clicking", async ({ page }) => {
 	const getSelectedTab = async (slot: string) => {
 		return await page.evaluate((slot) => {
 			const frame = document.querySelector(
-				`regular-layout-frame[slot=${slot}]`,
+				`regular-layout-frame[name=${slot}]`,
 			);
 			const activeTab = frame?.shadowRoot?.querySelector(
 				'[part~="active-tab"]',
@@ -36,7 +36,7 @@ test("should switch between tabs by clicking", async ({ page }) => {
 	const selectedBefore = await getSelectedTab("AAA");
 	expect(selectedBefore).toBe("AAA");
 	const frameBounds = await page.evaluate(() => {
-		const frame = document.querySelector('regular-layout-frame[slot="AAA"]');
+		const frame = document.querySelector('regular-layout-frame[name="AAA"]');
 		const tabs = frame?.shadowRoot?.querySelectorAll('[part~="tab"]');
 		if (!tabs || tabs.length < 2) return null;
 		const secondTab = tabs[1] as HTMLElement;
@@ -76,7 +76,7 @@ test("should move a panel by dragging a selected tab", async ({ page }) => {
 	}, LAYOUTS.TWO_HORIZONTAL_WITH_TABS);
 
 	const dragCoords = await page.evaluate(() => {
-		const frame = document.querySelector('regular-layout-frame[slot="AAA"]');
+		const frame = document.querySelector('regular-layout-frame[name="AAA"]');
 		const activeTab = frame?.shadowRoot?.querySelector(
 			'[part~="active-tab"]',
 		) as HTMLElement;
@@ -158,7 +158,7 @@ test("should move a panel by dragging a deselected tab", async ({ page }) => {
 	});
 
 	const dragCoords = await page.evaluate(() => {
-		const frame = document.querySelector('regular-layout-frame[slot="AAA"]');
+		const frame = document.querySelector('regular-layout-frame[name="AAA"]');
 		const tabs = frame?.shadowRoot?.querySelectorAll('[part~="tab"]');
 		if (!tabs || tabs.length < 2) return null;
 		const inactiveTab = Array.from(tabs).find(

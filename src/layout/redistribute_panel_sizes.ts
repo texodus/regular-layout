@@ -10,7 +10,7 @@
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 import { MINIMUM_REDISTRIBUTION_SIZE_THRESHOLD } from "./constants.ts";
-import type { Layout } from "./layout_config.ts";
+import type { Layout } from "./types.ts";
 
 /**
  * Adjusts panel sizes during a drag operation on a divider.

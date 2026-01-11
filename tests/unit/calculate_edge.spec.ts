@@ -11,98 +11,94 @@
 
 import { expect, test } from "@playwright/test";
 import { LAYOUTS } from "../helpers/fixtures.ts";
-import { calculate_edge } from "../../src/common/calculate_edge.ts";
-import { calculate_intersection } from "../../src/common/calculate_intersect.ts";
-import type { LayoutPath, TabLayout } from "../../src/common/layout_config.ts";
+import { calculate_edge } from "../../src/layout/calculate_edge.ts";
+import { calculate_intersection } from "../../src/layout/calculate_intersect.ts";
+import type { LayoutPath, TabLayout } from "../../src/layout/types.ts";
 
 test("cursor in center of panel - no split", () => {
-	const drop_target = calculate_intersection(
-		0.3,
-		0.5,
-		LAYOUTS.NESTED_BASIC,
-		false,
-	);
+	const drop_target = calculate_intersection(0.3, 0.5, LAYOUTS.NESTED_BASIC);
+	expect(drop_target).not.toBeNull();
 	const result = calculate_edge(
 		0.3,
 		0.5,
 		LAYOUTS.NESTED_BASIC,
 		"DDD",
-		drop_target,
+		// biome-ignore lint/style/noNonNullAssertion: playwright assertion
+		drop_target!,
 	);
+
 	expect(result.is_edge).toBe(false);
 	expect(result.slot).toBe("BBB");
+	expect(result.path).toStrictEqual([0, 1, 0]);
 });
 
 test("cursor near left edge of vertical split panel", () => {
-	const drop_target = calculate_intersection(
-		0.05,
-		0.3,
-		LAYOUTS.NESTED_BASIC,
-		false,
-	);
+	const drop_target = calculate_intersection(0.1, 0.5, LAYOUTS.NESTED_BASIC);
+	expect(drop_target).not.toBeNull();
 	const result = calculate_edge(
-		0.05,
-		0.3,
+		0.1,
+		0.5,
 		LAYOUTS.NESTED_BASIC,
 		"DDD",
-		drop_target,
+		// biome-ignore lint/style/noNonNullAssertion: playwright assertion
+		drop_target!,
 	);
+
 	expect(result.is_edge).toBe(true);
-	expect(result.slot).toBe("DDD");
+	expect(result.slot).toBe("BBB");
+	expect(result.path).toStrictEqual([0, 1, 0]);
+	expect(result.orientation).toBe("horizontal");
 });
 
 test("cursor near right edge of vertical split panel", () => {
-	const drop_target = calculate_intersection(
-		0.55,
-		0.3,
-		LAYOUTS.NESTED_BASIC,
-		false,
-	);
+	const drop_target = calculate_intersection(0.55, 0.5, LAYOUTS.NESTED_BASIC);
 	const result = calculate_edge(
 		0.55,
-		0.3,
+		0.5,
 		LAYOUTS.NESTED_BASIC,
 		"DDD",
-		drop_target,
+		// biome-ignore lint/style/noNonNullAssertion: playwright assertion
+		drop_target!,
 	);
+
 	expect(result.is_edge).toBe(true);
-	expect(result.slot).toBe("DDD");
+	expect(result.slot).toBe("BBB");
+	expect(result.path).toStrictEqual([0, 1, 1]);
+	expect(result.orientation).toBe("horizontal");
 });
 
 test("cursor near top edge of horizontal split panel", () => {
-	const drop_target = calculate_intersection(
-		0.7,
-		0.05,
-		LAYOUTS.NESTED_BASIC,
-		false,
-	);
+	const drop_target = calculate_intersection(0.7, 0.05, LAYOUTS.NESTED_BASIC);
 	const result = calculate_edge(
 		0.7,
 		0.05,
 		LAYOUTS.NESTED_BASIC,
 		"DDD",
-		drop_target,
+		// biome-ignore lint/style/noNonNullAssertion: playwright assertion
+		drop_target!,
 	);
+
 	expect(result.is_edge).toBe(true);
-	expect(result.slot).toBe("CCC"); // ???
+	expect(result.slot).toBe("CCC");
+	expect(result.path).toStrictEqual([1, 0]);
+	expect(result.orientation).toBe("vertical");
 });
 
 test("cursor near bottom edge of horizontal split panel", () => {
-	const drop_target = calculate_intersection(
-		0.7,
-		0.95,
-		LAYOUTS.NESTED_BASIC,
-		false,
-	);
+	const drop_target = calculate_intersection(0.7, 0.95, LAYOUTS.NESTED_BASIC);
 	const result = calculate_edge(
 		0.7,
 		0.95,
 		LAYOUTS.NESTED_BASIC,
 		"DDD",
-		drop_target,
+		// biome-ignore lint/style/noNonNullAssertion: playwright assertion
+		drop_target!,
 	);
+
 	expect(result.is_edge).toBe(true);
-	expect(result.slot).toBe("CCC"); // ???
+	expect(result.slot).toBe("CCC");
+	expect(result.path).toStrictEqual([1, 1]);
+	expect(result.orientation).toBe("vertical");
 });
 
 test("cursor near left edge but with horizontal orientation", () => {
@@ -110,7 +106,6 @@ test("cursor near left edge but with horizontal orientation", () => {
 		0.05,
 		0.5,
 		LAYOUTS.SINGLE_SPLIT_HORIZONTAL,
-		false,
 	);
 
 	const result = calculate_edge(
@@ -118,11 +113,14 @@ test("cursor near left edge but with horizontal orientation", () => {
 		0.5,
 		LAYOUTS.SINGLE_SPLIT_HORIZONTAL,
 		"BBB",
-		drop_target,
+		// biome-ignore lint/style/noNonNullAssertion: playwright assertion
+		drop_target!,
 	);
 
 	expect(result.is_edge).toBe(true);
-	expect(result.slot).toBe("BBB");
+	expect(result.slot).toBe("AAA");
+	expect(result.path).toStrictEqual([0]);
+	expect(result.orientation).toBe("horizontal");
 });
 
 test("cursor near right edge but with horizontal orientation", () => {
@@ -130,7 +128,6 @@ test("cursor near right edge but with horizontal orientation", () => {
 		0.95,
 		0.5,
 		LAYOUTS.SINGLE_SPLIT_HORIZONTAL,
-		false,
 	);
 
 	const result = calculate_edge(
@@ -138,11 +135,12 @@ test("cursor near right edge but with horizontal orientation", () => {
 		0.5,
 		LAYOUTS.SINGLE_SPLIT_HORIZONTAL,
 		"BBB",
-		drop_target,
+		// biome-ignore lint/style/noNonNullAssertion: playwright assertion
+		drop_target!,
 	);
 
 	expect(result.is_edge).toBe(true);
-	expect(result.slot).toBe("BBB");
+	expect(result.slot).toBe("AAA");
 });
 
 test("cursor near top edge but with vertical orientation", () => {
@@ -150,7 +148,6 @@ test("cursor near top edge but with vertical orientation", () => {
 		0.5,
 		0.05,
 		LAYOUTS.SINGLE_SPLIT_VERTICAL,
-		false,
 	);
 
 	const result = calculate_edge(
@@ -158,11 +155,12 @@ test("cursor near top edge but with vertical orientation", () => {
 		0.05,
 		LAYOUTS.SINGLE_SPLIT_VERTICAL,
 		"BBB",
-		drop_target,
+		// biome-ignore lint/style/noNonNullAssertion: playwright assertion
+		drop_target!,
 	);
 
 	expect(result.is_edge).toBe(true);
-	expect(result.slot).toBe("BBB");
+	expect(result.slot).toBe("AAA");
 });
 
 test("cursor near bottom edge but with vertical orientation", () => {
@@ -170,7 +168,6 @@ test("cursor near bottom edge but with vertical orientation", () => {
 		0.5,
 		0.95,
 		LAYOUTS.SINGLE_SPLIT_VERTICAL,
-		false,
 	);
 
 	const result = calculate_edge(
@@ -178,28 +175,30 @@ test("cursor near bottom edge but with vertical orientation", () => {
 		0.95,
 		LAYOUTS.SINGLE_SPLIT_VERTICAL,
 		"BBB",
-		drop_target,
+		// biome-ignore lint/style/noNonNullAssertion: playwright assertion
+		drop_target!,
 	);
 
 	expect(result.is_edge).toBe(true);
-	expect(result.slot).toBe("BBB");
+	expect(result.slot).toBe("AAA");
 });
 
 test("integrated top edge", () => {
 	const col = 0.51;
-	const row = 0.002;
-	let drop_target = calculate_intersection(col, row, LAYOUTS.SINGLE_AAA, false);
+	const row = 0.15;
+	let drop_target = calculate_intersection(col, row, LAYOUTS.SINGLE_AAA);
 	if (drop_target) {
 		drop_target = calculate_edge(
 			col,
 			row,
 			LAYOUTS.SINGLE_AAA,
 			"BBB",
-			drop_target,
+			// biome-ignore lint/style/noNonNullAssertion: playwright assertion
+			drop_target!,
 		);
 	}
 
-	expect(drop_target.view_window).toStrictEqual({
+	expect(drop_target?.view_window).toStrictEqual({
 		col_end: 1,
 		col_start: 0,
 		row_end: 0.5,
@@ -208,9 +207,9 @@ test("integrated top edge", () => {
 });
 
 test("integrated right edge", () => {
-	const col = 0.998;
+	const col = 0.85;
 	const row = 0.53;
-	let drop_target = calculate_intersection(col, row, LAYOUTS.SINGLE_AAA, false);
+	let drop_target = calculate_intersection(col, row, LAYOUTS.SINGLE_AAA);
 	if (drop_target) {
 		drop_target = calculate_edge(
 			col,
@@ -221,27 +220,61 @@ test("integrated right edge", () => {
 		);
 	}
 
-	expect(drop_target).toStrictEqual({
-		box: undefined,
-		column: 0.998,
-		column_offset: 0.996,
-		is_edge: true,
-		orientation: "horizontal",
-		panel: {
-			child: ["BBB"],
-			type: "child-panel",
-		},
-		path: [1],
-		row: 0.53,
-		row_offset: 0.53,
-		slot: "BBB",
-		type: "layout-path",
-		view_window: {
-			col_end: 1,
-			col_start: 0.5,
-			row_end: 1,
-			row_start: 0,
-		},
+	expect(drop_target?.is_edge).toBe(true);
+	expect(drop_target?.path).toStrictEqual([1]);
+	expect(drop_target?.view_window).toStrictEqual({
+		col_end: 1,
+		col_start: 0.5,
+		row_end: 1,
+		row_start: 0,
+	});
+});
+
+test("integrated far right edge", () => {
+	const col = 0.996;
+	const row = 0.53;
+	let drop_target = calculate_intersection(col, row, LAYOUTS.SINGLE_AAA);
+	if (drop_target) {
+		drop_target = calculate_edge(
+			col,
+			row,
+			LAYOUTS.SINGLE_AAA,
+			"BBB",
+			drop_target,
+		);
+	}
+
+	expect(drop_target?.is_edge).toBe(true);
+	expect(drop_target?.path).toStrictEqual([1]);
+	expect(drop_target?.view_window).toStrictEqual({
+		col_end: 1,
+		col_start: 0.5,
+		row_end: 1,
+		row_start: 0,
+	});
+});
+
+test("integrated far right edge 2", () => {
+	const col = 0.996;
+	const row = 0.53;
+	let drop_target = calculate_intersection(col, row, LAYOUTS.NESTED_BASIC);
+	if (drop_target) {
+		drop_target = calculate_edge(
+			col,
+			row,
+			LAYOUTS.SINGLE_AAA,
+			"BBB",
+			drop_target,
+		);
+	}
+
+	expect(drop_target?.is_edge).toBe(true);
+	expect(drop_target?.path).toStrictEqual([2]);
+	expect(drop_target?.view_window).toStrictEqual({
+		col_end: 1,
+		col_start: 0.5,
+		row_end: 1,
+		row_start: 0,
 	});
 });
 
@@ -250,8 +283,8 @@ test("cursor in top-left corner prioritizes row offset", () => {
 	const drop_target: LayoutPath = {
 		type: "layout-path",
 		slot: "AAA",
-		panel: singlePanel as TabLayout,
 		path: [],
+		layout: undefined,
 		view_window: { row_start: 0, row_end: 1, col_start: 0, col_end: 1 },
 		column: 0.1,
 		row: 0.05,
@@ -259,11 +292,17 @@ test("cursor in top-left corner prioritizes row offset", () => {
 		row_offset: 0.05,
 		orientation: "horizontal",
 		is_edge: false,
-		box: undefined,
 	};
 
 	const result = calculate_edge(0.1, 0.05, singlePanel, "BBB", drop_target);
 	expect(result.is_edge).toBe(true);
+	expect(result.path).toStrictEqual([0]);
+	expect(result.view_window).toStrictEqual({
+		col_end: 1,
+		col_start: 0,
+		row_end: 0.5,
+		row_start: 0,
+	});
 });
 
 test("cursor in bottom-right corner prioritizes row offset", () => {
@@ -271,7 +310,7 @@ test("cursor in bottom-right corner prioritizes row offset", () => {
 	const drop_target: LayoutPath = {
 		type: "layout-path",
 		slot: "AAA",
-		panel: singlePanel as TabLayout,
+		layout: undefined,
 		path: [],
 		view_window: { row_start: 0, row_end: 1, col_start: 0, col_end: 1 },
 		column: 0.9,
@@ -280,7 +319,6 @@ test("cursor in bottom-right corner prioritizes row offset", () => {
 		row_offset: 0.95,
 		orientation: "horizontal",
 		is_edge: false,
-		box: undefined,
 	};
 
 	const result = calculate_edge(0.9, 0.95, singlePanel, "BBB", drop_target);
@@ -293,7 +331,7 @@ test("cursor near edge with offset exactly at tolerance threshold", () => {
 		type: "layout-path",
 		slot: "AAA",
 		path: [],
-		panel: singlePanel as TabLayout,
+		layout: undefined,
 		view_window: { row_start: 0, row_end: 1, col_start: 0, col_end: 1 },
 		column: 0.3,
 		row: 0.5,
@@ -301,11 +339,11 @@ test("cursor near edge with offset exactly at tolerance threshold", () => {
 		row_offset: 0.5,
 		orientation: "horizontal",
 		is_edge: false,
-		box: undefined,
 	};
 
 	const result = calculate_edge(0.3, 0.5, singlePanel, "BBB", drop_target);
 	expect(result.is_edge).toBe(false);
+	expect(result.path).toStrictEqual([0]);
 });
 
 test("cursor near edge with offset just below tolerance threshold", () => {
@@ -313,8 +351,8 @@ test("cursor near edge with offset just below tolerance threshold", () => {
 	const drop_target: LayoutPath = {
 		type: "layout-path",
 		slot: "AAA",
-		panel: singlePanel as TabLayout,
 		path: [],
+		layout: undefined,
 		view_window: { row_start: 0, row_end: 1, col_start: 0, col_end: 1 },
 		column: 0.14,
 		row: 0.5,
@@ -322,7 +360,6 @@ test("cursor near edge with offset just below tolerance threshold", () => {
 		row_offset: 0.5,
 		orientation: "horizontal",
 		is_edge: false,
-		box: undefined,
 	};
 
 	const result = calculate_edge(0.14, 0.5, singlePanel, "BBB", drop_target);
@@ -330,41 +367,64 @@ test("cursor near edge with offset just below tolerance threshold", () => {
 });
 
 test("nested panel with vertical orientation at left edge", () => {
-	const drop_target = calculate_intersection(
-		0.02,
-		0.3,
-		LAYOUTS.NESTED_BASIC,
-		false,
-	);
+	const drop_target = calculate_intersection(0.02, 0.5, LAYOUTS.NESTED_BASIC);
 	const result = calculate_edge(
 		0.02,
-		0.3,
+		0.5,
 		LAYOUTS.NESTED_BASIC,
 		"DDD",
-		drop_target,
+		// biome-ignore lint/style/noNonNullAssertion: playwright assertion
+		drop_target!,
 	);
 	expect(result.is_edge).toBe(true);
-	expect(result.slot).toBe("DDD");
+	expect(result.slot).toBe("BBB");
 	expect(result.path).toEqual([0, 1, 0]);
 });
 
 test("nested panel with vertical orientation at right edge", () => {
-	const drop_target = calculate_intersection(
-		0.58,
-		0.3,
-		LAYOUTS.NESTED_BASIC,
-		false,
-	);
+	const drop_target = calculate_intersection(0.58, 0.5, LAYOUTS.NESTED_BASIC);
 	const result = calculate_edge(
 		0.58,
-		0.3,
+		0.5,
 		LAYOUTS.NESTED_BASIC,
 		"DDD",
-		drop_target,
+		// biome-ignore lint/style/noNonNullAssertion: playwright assertion
+		drop_target!,
 	);
 	expect(result.is_edge).toBe(true);
-	expect(result.slot).toBe("DDD");
+	expect(result.slot).toBe("BBB");
 	expect(result.path).toEqual([0, 1, 1]);
+});
+
+test("nested panel with vertical orientation at right edge2", () => {
+	const drop_target = calculate_intersection(0.58, 0.5, LAYOUTS.NESTED_BASIC);
+	const result = calculate_edge(
+		0.58,
+		0.5,
+		LAYOUTS.NESTED_BASIC,
+		"DDD",
+		// biome-ignore lint/style/noNonNullAssertion: playwright assertion
+		drop_target!,
+	);
+	expect(result.is_edge).toBe(true);
+	expect(result.slot).toBe("BBB");
+	expect(result.path).toEqual([0, 1, 1]);
+});
+
+test("summertime", () => {
+	const drop_target = calculate_intersection(0.8, 0.5, LAYOUTS.NESTED_BASIC);
+	const result = calculate_edge(
+		0.8,
+		0.5,
+		LAYOUTS.NESTED_BASIC,
+		"DDD",
+		// biome-ignore lint/style/noNonNullAssertion: playwright assertion
+		drop_target!,
+	);
+
+	expect(result.is_edge).toBe(false);
+	expect(result.slot).toBe("CCC");
+	expect(result.path).toEqual([1, 0]);
 });
 
 test("complex layout with multiple nested panels", () => {
@@ -372,7 +432,6 @@ test("complex layout with multiple nested panels", () => {
 		0.02,
 		0.3,
 		LAYOUTS.COMPLEX_NESTED_ABC,
-		false,
 	);
 
 	const result = calculate_edge(
@@ -380,28 +439,10 @@ test("complex layout with multiple nested panels", () => {
 		0.3,
 		LAYOUTS.COMPLEX_NESTED_ABC,
 		"DDD",
-		drop_target,
+		// biome-ignore lint/style/noNonNullAssertion: playwright assertion
+		drop_target!,
 	);
 
 	expect(result.is_edge).toBe(true);
-	expect(result.slot).toBe("DDD");
-});
-
-test("preserves drop_target properties when no split occurs", () => {
-	const drop_target = calculate_intersection(
-		0.3,
-		0.3,
-		LAYOUTS.NESTED_BASIC,
-		false,
-	);
-	const result = calculate_edge(
-		0.3,
-		0.3,
-		LAYOUTS.NESTED_BASIC,
-		"DDD",
-		drop_target,
-	);
-	expect(result.view_window).toBeDefined();
-	expect(result.path).toBeDefined();
-	expect(result.orientation).toBeDefined();
+	expect(result.slot).toBe("A");
 });

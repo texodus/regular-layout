@@ -10,11 +10,7 @@
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 import { expect, test } from "@playwright/test";
-import {
-	setupLayout,
-	getLayoutBounds,
-	hasClass,
-} from "../helpers/integration.ts";
+import { setupLayout, getLayoutBounds } from "../helpers/integration.ts";
 import { LAYOUTS } from "../helpers/fixtures.ts";
 
 test("should apply overlay class to dragged panel in absolute mode", async ({
@@ -38,8 +34,8 @@ test("should apply overlay class to dragged panel in absolute mode", async ({
 	);
 
 	// Verify AAA panel has overlay class
-	const hasOverlayClass = await hasClass(page, "AAA", "overlay");
-	expect(hasOverlayClass).toBe(true);
+	const panel = await page.locator("[name=AAA]");
+	expect(panel).toHaveClass("overlay");
 });
 
 test("should dispatch regular-layout-update event in absolute mode", async ({
@@ -99,9 +95,9 @@ test("should handle custom className in absolute mode", async ({ page }) => {
 		{ x, y },
 	);
 
-	const hasCustomClass = await hasClass(page, "AAA", "custom-drag-class");
-	expect(hasCustomClass).toBe(true);
+	const panel = await page.locator("[name=AAA]");
+	expect(panel).toHaveClass("custom-drag-class");
 
-	const hasDefaultClass = await hasClass(page, "AAA", "overlay");
-	expect(hasDefaultClass).toBe(false);
+	const panel2 = await page.locator("[name=AAA]");
+	expect(panel2).not.toHaveClass("overlay");
 });

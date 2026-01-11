@@ -40,6 +40,11 @@ export interface ViewWindow {
  * Child panels are arranged either horizontally (side by side) or vertically
  * (stacked), via the `orientation` property `"horizzontal"` and `"vertical"`
  * (respectively).
+ *
+ * While the type structure of `SplitLayout` allows nesting levels with the same
+ * `orientation`, calling `RegularLayout.restore` with such a `Layout` will be
+ * flattened to the equivalent layout with every child guaranteed to have the
+ * opposite `orientation` as its parent.
  */
 export interface SplitLayout {
 	type: "split-panel";
@@ -78,7 +83,6 @@ export interface LayoutDivider {
 export interface LayoutPath<T = undefined> {
 	type: "layout-path";
 	slot: string;
-	panel: TabLayout;
 	path: number[];
 	view_window: ViewWindow;
 	column: number;
@@ -87,24 +91,7 @@ export interface LayoutPath<T = undefined> {
 	row_offset: number;
 	orientation: Orientation;
 	is_edge: boolean;
-	box: T;
-}
-
-/**
- * Recursively iterates over all child panel names in the layout tree, yielding
- * panel names in depth-first order.
- *
- * @param panel - The layout tree to iterate over
- * @returns Generator yielding child panel names
- */
-export function* iter_panel_children(panel: Layout): Generator<string> {
-	if (panel.type === "split-panel") {
-		for (const child of panel.children) {
-			yield* iter_panel_children(child);
-		}
-	} else {
-		yield panel.child[panel.selected || 0];
-	}
+	layout: T;
 }
 
 /**

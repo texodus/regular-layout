@@ -19,8 +19,8 @@
  *
  * ```html
  * <regular-layout>
- *   <regular-layout-frame slot="sidebar">Sidebar content</regular-layout-frame>
- *   <regular-layout-frame slot="main">Main content</regular-layout-frame>
+ *   <regular-layout-frame name="sidebar">Sidebar content</regular-layout-frame>
+ *   <regular-layout-frame name="main">Main content</regular-layout-frame>
  * </regular-layout>
  * ```
  *
@@ -59,11 +59,7 @@
  * @packageDocumentation
  */
 
-export type {
-	LayoutPath,
-	Layout,
-	LayoutDivider,
-} from "./common/layout_config.ts";
+export type * from "./layout/types.ts";
 
 export { RegularLayout } from "./regular-layout.ts";
 export { RegularLayoutFrame } from "./regular-layout-frame.ts";

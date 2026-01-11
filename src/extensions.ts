@@ -11,10 +11,12 @@
 
 import { RegularLayout } from "./regular-layout.ts";
 import { RegularLayoutFrame } from "./regular-layout-frame.ts";
-import type { Layout } from "./common/layout_config.ts";
+import type { Layout } from "./layout/types.ts";
+import { RegularLayoutTab } from "./regular-layout-tab.ts";
 
 customElements.define("regular-layout", RegularLayout);
 customElements.define("regular-layout-frame", RegularLayoutFrame);
+customElements.define("regular-layout-tab", RegularLayoutTab);
 
 declare global {
 	interface Document {
@@ -28,9 +30,15 @@ declare global {
 			options?: ElementCreationOptions,
 		): RegularLayoutFrame;
 
+		createElement(
+			tagName: "regular-layout-tab",
+			options?: ElementCreationOptions,
+		): RegularLayoutTab;
+
 		querySelector<E extends Element = Element>(selectors: string): E | null;
 		querySelector(selectors: "regular-layout"): RegularLayout | null;
 		querySelector(selectors: "regular-layout-frame"): RegularLayoutFrame | null;
+		querySelector(selectors: "regular-layout-tab"): RegularLayoutTab | null;
 	}
 
 	interface CustomElementRegistry {
@@ -63,6 +71,4 @@ declare global {
 	}
 }
 
-export interface RegularLayoutEvent extends CustomEvent {
-	detail: Layout;
-}
+export type RegularLayoutEvent = CustomEvent<Layout>;

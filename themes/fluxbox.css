@@ -1,0 +1,110 @@
+/* ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+ * ░░░░░░░░▄▀░█▀▄░█▀▀░█▀▀░█░█░█░░░█▀█░█▀▄░░░░░█░░░█▀█░█░█░█▀█░█░█░▀█▀░▀▄░░░░░░░░
+ * ░░░░░░░▀▄░░█▀▄░█▀▀░█░█░█░█░█░░░█▀█░█▀▄░▀▀▀░█░░░█▀█░░█░░█░█░█░█░░█░░░▄▀░░░░░░░
+ * ░░░░░░░░░▀░▀░▀░▀▀▀░▀▀▀░▀▀▀░▀▀▀░▀░▀░▀░▀░░░░░▀▀▀░▀░▀░░▀░░▀▀▀░▀▀▀░░▀░░▀░░░░░░░░░
+ * ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+ * ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+ * ┃  *  Copyright (c) 2026, the Regular Layout Authors. This file is part  *  ┃
+ * ┃  *  of the Regular Layout library, distributed under the terms of the  *  ┃
+ * ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
+ * ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+ */
+
+regular-layout.fluxbox {
+    background-color: #DBDFE6;
+    font-family: "ui-sans-serif", "Helvetica", "Arial", sans-serif;
+    padding: 16px;
+}
+
+/* Frame */
+regular-layout.fluxbox regular-layout-frame {
+    position: relative;
+    box-sizing: border-box;
+    margin: 8px;
+    background: #FFFFFF;
+    border: 1px solid #9DACBE;
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+regular-layout.fluxbox regular-layout-frame::part(close) {
+    border: 1px solid #8A96A3;
+    height: 14px;
+    background: linear-gradient(to bottom, #E8ECEF 0%, #CDD5DD 100%);
+    align-self: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0px;
+    width: 14px;
+    margin-right: 2px;
+}
+
+regular-layout.fluxbox regular-layout-frame::part(close):hover {
+    background: linear-gradient(to bottom, #F0F3F5 0%, #D8DFE6 100%);
+}
+
+regular-layout.fluxbox regular-layout-frame::part(close):active {
+    background: linear-gradient(to bottom, #C5CFD9 0%, #B3BEC9 100%);
+}
+
+regular-layout.fluxbox regular-layout-frame::part(close):before {
+    content: "×";
+    font-size: 14px;
+    font-weight: normal;
+    color: #444444;
+    line-height: 1;
+}
+
+regular-layout.fluxbox regular-layout-frame::part(titlebar) {
+    display: flex;
+    align-items: stretch;
+    padding-right: 0px;
+    height: 22px;
+}
+
+regular-layout.fluxbox regular-layout-frame::part(tab) {
+    display: flex;
+    flex: 1 1 150px;
+    align-items: center;
+    padding: 0 8px;
+    cursor: pointer;
+    text-overflow: ellipsis;
+    background: linear-gradient(to bottom, #C7D1DB 0%, #B3BEC9 100%);
+    color: #4A4A4A;
+    font-size: 11px;
+    font-weight: normal;
+    border-right: 1px solid #9DACBE;
+    opacity: 0.85;
+}
+
+regular-layout.fluxbox regular-layout-frame::part(tab):hover {
+    background: linear-gradient(to bottom, #D2DBE4 0%, #BEC9D4 100%);
+}
+
+regular-layout.fluxbox regular-layout-frame::part(active-tab) {
+    background: linear-gradient(to bottom, #E0E7EF 0%, #D1DAE3 100%);
+    color: #1A1A1A;
+    opacity: 1;
+    font-weight: 500;
+}
+
+regular-layout.fluxbox:has(.overlay)>* {
+    opacity: 0.7;
+}
+
+regular-layout.fluxbox:has(.overlay)>.overlay {
+    opacity: 1;
+}
+
+/* Frame in Overlay Mode */
+regular-layout.fluxbox regular-layout-frame.overlay {
+    margin: 0;
+    background-color: rgba(155, 172, 190, 0.25);
+    border: 1px solid #6B7C8F;
+    box-shadow: none;
+    transition:
+        top 0.1s ease-in-out,
+        height 0.1s ease-in-out,
+        width 0.1s ease-in-out,
+        left 0.1s ease-in-out;
+}
