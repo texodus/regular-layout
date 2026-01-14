@@ -14,6 +14,7 @@ import { LAYOUTS } from "../helpers/fixtures.ts";
 
 import { create_css_grid_layout } from "../../src/layout/generate_grid.ts";
 import type { Layout } from "../../src/layout/types.ts";
+import { DEFAULT_PHYSICS } from "../../src/layout/constants.ts";
 
 const RESULT = `
 :host ::slotted(*){display:none}:host{display:grid;grid-template-rows:30fr 70fr;grid-template-columns:60fr 40fr}
@@ -23,7 +24,10 @@ const RESULT = `
 `.trim();
 
 test("simple test", async () => {
-	const css = create_css_grid_layout(LAYOUTS.NESTED_BASIC, true);
+	const css = create_css_grid_layout(LAYOUTS.NESTED_BASIC, undefined, {
+		...DEFAULT_PHYSICS,
+		SHOULD_ROUND: true,
+	});
 	expect(css).toBe(RESULT);
 });
 
@@ -33,7 +37,12 @@ test("single child panel", () => {
 		child: ["ONLY"],
 	};
 
-	expect(create_css_grid_layout(singleChild, true)).toEqual(
+	expect(
+		create_css_grid_layout(singleChild, undefined, {
+			...DEFAULT_PHYSICS,
+			SHOULD_ROUND: true,
+		}),
+	).toEqual(
 		`:host ::slotted(*){display:none}:host{display:grid;grid-template-rows:100%;grid-template-columns:100%}\n:host ::slotted([name="ONLY"]){display:flex;grid-column:1;grid-row:1}`,
 	);
 });
@@ -66,7 +75,12 @@ test("regressions", () => {
 		orientation: "horizontal",
 	};
 
-	expect(create_css_grid_layout(test, true)).toEqual(
+	expect(
+		create_css_grid_layout(test, undefined, {
+			...DEFAULT_PHYSICS,
+			SHOULD_ROUND: true,
+		}),
+	).toEqual(
 		`
 :host ::slotted(*){display:none}:host{display:grid;grid-template-rows:80fr 20fr;grid-template-columns:60fr 40fr}
 :host ::slotted([name="AAA"]){display:flex;grid-column:1;grid-row:1}
@@ -119,7 +133,12 @@ test("deeply nested css grid", () => {
 		orientation: "horizontal",
 	};
 
-	expect(create_css_grid_layout(test, true)).toEqual(
+	expect(
+		create_css_grid_layout(test, undefined, {
+			...DEFAULT_PHYSICS,
+			SHOULD_ROUND: true,
+		}),
+	).toEqual(
 		`
 :host ::slotted(*){display:none}:host{display:grid;grid-template-rows:30fr 60fr 10fr;grid-template-columns:30fr 30fr 40fr}
 :host ::slotted([name="AAA"]){display:flex;grid-column:1;grid-row:1}
@@ -185,7 +204,12 @@ test("Deeply nested CSS grid part 2", () => {
 		orientation: "horizontal",
 	};
 
-	expect(create_css_grid_layout(test, true)).toEqual(
+	expect(
+		create_css_grid_layout(test, undefined, {
+			...DEFAULT_PHYSICS,
+			SHOULD_ROUND: true,
+		}),
+	).toEqual(
 		`
 :host ::slotted(*){display:none}:host{display:grid;grid-template-rows:30fr 60fr 10fr;grid-template-columns:30fr 30fr 20fr 20fr}
 :host ::slotted([name="AAA"]){display:flex;grid-column:1;grid-row:1}
@@ -230,7 +254,12 @@ test("parallel", () => {
 		orientation: "horizontal",
 	};
 
-	expect(create_css_grid_layout(test, true)).toEqual(
+	expect(
+		create_css_grid_layout(test, undefined, {
+			...DEFAULT_PHYSICS,
+			SHOULD_ROUND: true,
+		}),
+	).toEqual(
 		`
 :host ::slotted(*){display:none}:host{display:grid;grid-template-rows:30fr 70fr;grid-template-columns:33fr 33fr 33fr}
 :host ::slotted([name="AAA"]){display:flex;grid-column:1;grid-row:1}
@@ -280,7 +309,12 @@ test("Parallel split-panels with different sizes", () => {
 		orientation: "horizontal",
 	};
 
-	expect(create_css_grid_layout(test, true)).toEqual(
+	expect(
+		create_css_grid_layout(test, undefined, {
+			...DEFAULT_PHYSICS,
+			SHOULD_ROUND: true,
+		}),
+	).toEqual(
 		`
 :host ::slotted(*){display:none}:host{display:grid;grid-template-rows:30fr 40fr 30fr;grid-template-columns:50fr 50fr}
 :host ::slotted([name="AAA"]){display:flex;grid-column:1;grid-row:1}
@@ -341,7 +375,12 @@ test("Deeply alternating split", () => {
 		orientation: "horizontal",
 	};
 
-	expect(create_css_grid_layout(test, true)).toEqual(
+	expect(
+		create_css_grid_layout(test, undefined, {
+			...DEFAULT_PHYSICS,
+			SHOULD_ROUND: true,
+		}),
+	).toEqual(
 		`
 :host ::slotted(*){display:none}:host{display:grid;grid-template-rows:15fr 15fr 70fr;grid-template-columns:30fr 30fr 40fr}
 :host ::slotted([name="VfssXzLK"]){display:flex;grid-column:1;grid-row:1 / 3}

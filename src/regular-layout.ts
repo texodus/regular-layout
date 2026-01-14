@@ -34,9 +34,9 @@ import { updateOverlaySheet } from "./layout/generate_overlay.ts";
 import { calculate_edge } from "./layout/calculate_edge.ts";
 import { flatten } from "./layout/flatten.ts";
 import {
-	CUSTOM_EVENT_NAME_PREFIX,
-	OVERLAY_CLASSNAME,
-	OVERLAY_DEFAULT,
+	DEFAULT_PHYSICS,
+	type PhysicsUpdate,
+	type Physics,
 } from "./layout/constants.ts";
 
 /**
@@ -80,9 +80,11 @@ export class RegularLayout extends HTMLElement {
 	private _drag_target?: [LayoutDivider, number, number];
 	private _cursor_override: boolean;
 	private _dimensions?: { box: DOMRect; style: CSSStyleDeclaration };
+	private _physics: Physics;
 
 	constructor() {
 		super();
+		this._physics = DEFAULT_PHYSICS;
 		this._panel = structuredClone(EMPTY_PANEL);
 
 		// Why does this implementation use a `<slot>` at all? We must use
@@ -130,12 +132,12 @@ export class RegularLayout extends HTMLElement {
 		y: number,
 		check_dividers: boolean = false,
 	): LayoutPath<Layout> | null => {
-		const [col, row, box] = this.relativeCoordinates(x, y, false);
+		const [col, row, rect] = this.relativeCoordinates(x, y, false);
 		const panel = calculate_intersection(
 			col,
 			row,
 			this._panel,
-			check_dividers ? box : null,
+			check_dividers ? { rect, size: this._physics.GRID_DIVIDER_SIZE } : null,
 		);
 
 		if (panel?.type === "layout-path") {
@@ -163,31 +165,47 @@ export class RegularLayout extends HTMLElement {
 		x: number,
 		y: number,
 		{ slot }: LayoutPath<unknown>,
-		className: string = OVERLAY_CLASSNAME,
-		mode: OverlayMode = OVERLAY_DEFAULT,
+		className: string = this._physics.OVERLAY_CLASSNAME,
+		mode: OverlayMode = this._physics.OVERLAY_DEFAULT,
 	) => {
 		const panel = remove_child(this._panel, slot);
 		Array.from(this.children)
-			.find((x) => x.getAttribute("name") === slot)
+			.find((x) => x.getAttribute(this._physics.CHILD_ATTRIBUTE_NAME) === slot)
 			?.classList.add(className);
 
 		const [col, row, box, style] = this.relativeCoordinates(x, y, false);
 		let drop_target = calculate_intersection(col, row, panel);
 		if (drop_target) {
-			drop_target = calculate_edge(col, row, panel, slot, drop_target, box);
+			drop_target = calculate_edge(
+				col,
+				row,
+				panel,
+				slot,
+				drop_target,
+				box,
+				this._physics,
+			);
 		}
 
 		if (mode === "grid" && drop_target) {
 			const path: [string, string] = [slot, drop_target?.slot];
-			const css = create_css_grid_layout(panel, false, path);
+			const css = create_css_grid_layout(panel, path, this._physics);
 			this._stylesheet.replaceSync(css);
 		} else if (mode === "absolute") {
-			const grid_css = create_css_grid_layout(panel);
-			const overlay_css = updateOverlaySheet(slot, box, style, drop_target);
+			const grid_css = create_css_grid_layout(panel, undefined, this._physics);
+
+			const overlay_css = updateOverlaySheet(
+				slot,
+				box,
+				style,
+				drop_target,
+				this._physics,
+			);
+
 			this._stylesheet.replaceSync([grid_css, overlay_css].join("\n"));
 		}
 
-		const event_name = `${CUSTOM_EVENT_NAME_PREFIX}-before-update`;
+		const event_name = `${this._physics.CUSTOM_EVENT_NAME_PREFIX}-before-update`;
 		const event = new CustomEvent<Layout>(event_name, { detail: panel });
 		this.dispatchEvent(event);
 	};
@@ -208,12 +226,16 @@ export class RegularLayout extends HTMLElement {
 		x: number,
 		y: number,
 		drag_target: LayoutPath<Layout>,
-		className: string = OVERLAY_CLASSNAME,
+		className: string = this._physics.OVERLAY_CLASSNAME,
 	) => {
 		let panel = this._panel;
 		panel = remove_child(panel, drag_target.slot);
 		Array.from(this.children)
-			.find((x) => x.getAttribute("name") === drag_target.slot)
+			.find(
+				(x) =>
+					x.getAttribute(this._physics.CHILD_ATTRIBUTE_NAME) ===
+					drag_target.slot,
+			)
 			?.classList.remove(className);
 
 		const [col, row, box] = this.relativeCoordinates(x, y, false);
@@ -226,6 +248,7 @@ export class RegularLayout extends HTMLElement {
 				drag_target.slot,
 				drop_target,
 				box,
+				this._physics,
 			);
 		}
 
@@ -323,9 +346,10 @@ export class RegularLayout extends HTMLElement {
 	 */
 	restore = (layout: Layout, _is_flattened: boolean = false) => {
 		this._panel = !_is_flattened ? flatten(layout) : layout;
-		const css = create_css_grid_layout(this._panel);
+		const css = create_css_grid_layout(this._panel, undefined, this._physics);
+
 		this._stylesheet.replaceSync(css);
-		const event_name = `${CUSTOM_EVENT_NAME_PREFIX}-update`;
+		const event_name = `${this._physics.CUSTOM_EVENT_NAME_PREFIX}-update`;
 		const event = new CustomEvent<Layout>(event_name, { detail: this._panel });
 		this.dispatchEvent(event);
 	};
@@ -345,6 +369,27 @@ export class RegularLayout extends HTMLElement {
 	save = (): Layout => {
 		return structuredClone(this._panel);
 	};
+
+	/**
+	 * Override this instance's global constants.
+	 *
+	 * @param physics
+	 */
+	restorePhysics(physics: PhysicsUpdate) {
+		this._physics = Object.freeze({
+			...this._physics,
+			...physics,
+		});
+	}
+
+	/**
+	 * Get this instance's constants.
+	 *
+	 * @returns The current constants
+	 */
+	savePhysics(): Physics {
+		return this._physics;
+	}
 
 	/**
 	 * Converts screen coordinates to relative layout coordinates.
@@ -388,13 +433,16 @@ export class RegularLayout extends HTMLElement {
 	};
 
 	private onPointerDown = (event: PointerEvent) => {
-		if (event.target === this) {
-			const [col, row, box] = this.relativeCoordinates(
+		if (!this._physics.GRID_DIVIDER_CHECK_TARGET || event.target === this) {
+			const [col, row, rect] = this.relativeCoordinates(
 				event.clientX,
 				event.clientY,
 			);
 
-			const hit = calculate_intersection(col, row, this._panel, box);
+			const hit = calculate_intersection(col, row, this._panel, {
+				rect,
+				size: this._physics.GRID_DIVIDER_SIZE,
+			});
 			if (hit && hit.type !== "layout-path") {
 				this._drag_target = [hit, col, row];
 				this.setPointerCapture(event.pointerId);
@@ -414,22 +462,37 @@ export class RegularLayout extends HTMLElement {
 			const [{ path, type }, old_col, old_row] = this._drag_target;
 			const offset = type === "horizontal" ? old_col - col : old_row - row;
 			const panel = redistribute_panel_sizes(this._panel, path, offset);
-			this._stylesheet.replaceSync(create_css_grid_layout(panel));
-		} else if (event.target === this) {
-			const [col, row, box] = this.relativeCoordinates(
-				event.clientX,
-				event.clientY,
-				false,
+			this._stylesheet.replaceSync(
+				create_css_grid_layout(panel, undefined, this._physics),
 			);
+		}
 
-			const divider = calculate_intersection(col, row, this._panel, box);
-			if (divider?.type === "vertical") {
-				this._cursor_stylesheet.replaceSync(":host{cursor:row-resize");
-				this._cursor_override = true;
-			} else if (divider?.type === "horizontal") {
-				this._cursor_stylesheet.replaceSync(":host{cursor:col-resize");
-				this._cursor_override = true;
+		if (this._physics.GRID_DIVIDER_CHECK_TARGET && event.target !== this) {
+			if (this._cursor_override) {
+				this._cursor_override = false;
+				this._cursor_stylesheet.replaceSync("");
 			}
+
+			return;
+		}
+
+		const [col, row, rect] = this.relativeCoordinates(
+			event.clientX,
+			event.clientY,
+			false,
+		);
+
+		const divider = calculate_intersection(col, row, this._panel, {
+			rect,
+			size: this._physics.GRID_DIVIDER_SIZE,
+		});
+
+		if (divider?.type === "vertical") {
+			this._cursor_stylesheet.replaceSync(":host{cursor:row-resize");
+			this._cursor_override = true;
+		} else if (divider?.type === "horizontal") {
+			this._cursor_stylesheet.replaceSync(":host{cursor:col-resize");
+			this._cursor_override = true;
 		} else if (this._cursor_override) {
 			this._cursor_override = false;
 			this._cursor_stylesheet.replaceSync("");

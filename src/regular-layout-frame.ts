@@ -9,7 +9,6 @@
 // ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-import { MIN_DRAG_DISTANCE, OVERLAY_CLASSNAME } from "./layout/constants.ts";
 import type { Layout, LayoutPath } from "./layout/types.ts";
 import type { RegularLayoutEvent } from "./extensions.ts";
 import type { RegularLayout } from "./regular-layout.ts";
@@ -115,6 +114,8 @@ export class RegularLayoutFrame extends HTMLElement {
 
 	private onPointerMove = (event: PointerEvent): void => {
 		if (this._drag_state) {
+			const physics = this._layout.savePhysics();
+
 			// Only initiate a drag if the cursor has moved sufficiently.
 			if (!this._drag_moved) {
 				const [current_col, current_row, box] =
@@ -122,7 +123,7 @@ export class RegularLayoutFrame extends HTMLElement {
 
 				const dx = (current_col - this._drag_state.column) * box.width;
 				const dy = (current_row - this._drag_state.row) * box.height;
-				if (Math.sqrt(dx * dx + dy * dy) <= MIN_DRAG_DISTANCE) {
+				if (Math.sqrt(dx * dx + dy * dy) <= physics.MIN_DRAG_DISTANCE) {
 					return;
 				}
 			}
@@ -132,7 +133,7 @@ export class RegularLayoutFrame extends HTMLElement {
 				event.clientX,
 				event.clientY,
 				this._drag_state,
-				OVERLAY_CLASSNAME,
+				physics.OVERLAY_CLASSNAME,
 			);
 		}
 	};
@@ -143,7 +144,6 @@ export class RegularLayoutFrame extends HTMLElement {
 				event.clientX,
 				event.clientY,
 				this._drag_state,
-				OVERLAY_CLASSNAME,
 			);
 		}
 
@@ -165,7 +165,10 @@ export class RegularLayoutFrame extends HTMLElement {
 	};
 
 	private drawTabs = (event: RegularLayoutEvent) => {
-		const slot = this.getAttribute("name");
+		const slot = this.getAttribute(
+			this._layout.savePhysics().CHILD_ATTRIBUTE_NAME,
+		);
+
 		if (!slot) {
 			return;
 		}

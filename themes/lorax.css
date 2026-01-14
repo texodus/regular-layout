@@ -18,7 +18,7 @@ regular-layout.lorax {
 regular-layout.lorax regular-layout-frame {
     margin: 3px;
     margin-top: 27px;
-    border-radius: 0 0 6px 6px;
+    border-radius: 0 6px 6px 6px;
     border: 1px solid #666;
     box-shadow: 0px 6px 6px -4px rgba(150, 150, 180);
 }
@@ -30,6 +30,7 @@ regular-layout.lorax regular-layout-frame::part(titlebar) {
     margin-right: -1px;
     margin-bottom: 0px;
     margin-top: -24px;
+    padding-right: 6px;
 }
 
 regular-layout.lorax regular-layout-frame::part(tab) {
