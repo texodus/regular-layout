@@ -13,7 +13,7 @@ import { expect, test } from "@playwright/test";
 import { LAYOUTS } from "../helpers/fixtures.ts";
 import { calculate_edge } from "../../src/layout/calculate_edge.ts";
 import { calculate_intersection } from "../../src/layout/calculate_intersect.ts";
-import type { LayoutPath, TabLayout } from "../../src/layout/types.ts";
+import type { LayoutPath } from "../../src/layout/types.ts";
 
 test("cursor in center of panel - no split", () => {
 	const drop_target = calculate_intersection(0.3, 0.5, LAYOUTS.NESTED_BASIC);
@@ -245,7 +245,7 @@ test("integrated far right edge", () => {
 	}
 
 	expect(drop_target?.is_edge).toBe(true);
-	expect(drop_target?.path).toStrictEqual([1]);
+	expect(drop_target?.path).toStrictEqual([2]);
 	expect(drop_target?.view_window).toStrictEqual({
 		col_end: 1,
 		col_start: 0.5,

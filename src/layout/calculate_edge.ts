@@ -9,7 +9,7 @@
 // ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-import { SPLIT_EDGE_TOLERANCE, SPLIT_ROOT_EDGE_TOLERANCE } from "./constants";
+import { DEFAULT_PHYSICS, type Physics } from "./constants";
 import { insert_child } from "./insert_child";
 import type { Layout, LayoutPath, Orientation, ViewWindow } from "./types";
 
@@ -33,39 +33,47 @@ export function calculate_edge(
 	slot: string,
 	drop_target: LayoutPath,
 	box?: DOMRect,
+	physics: Physics = DEFAULT_PHYSICS,
 ): LayoutPath {
 	// Check root edges first
-	if (col < SPLIT_ROOT_EDGE_TOLERANCE) {
+	if (col < physics.SPLIT_ROOT_EDGE_TOLERANCE) {
 		return insert_root_edge(panel, slot, drop_target, [0], true, "horizontal");
 	}
 
-	if (col > 1 - SPLIT_ROOT_EDGE_TOLERANCE) {
+	if (col > 1 - physics.SPLIT_ROOT_EDGE_TOLERANCE) {
 		return insert_root_edge(
 			panel,
 			slot,
 			drop_target,
-			drop_target.path.length > 0 ? drop_target.path : [],
+			drop_target.path.length > 0 ? drop_target.path : [1],
 			false,
 			"horizontal",
 		);
 	}
 
-	if (row < SPLIT_ROOT_EDGE_TOLERANCE) {
+	if (row < physics.SPLIT_ROOT_EDGE_TOLERANCE) {
 		return insert_root_edge(panel, slot, drop_target, [0], true, "vertical");
 	}
 
-	if (row > 1 - SPLIT_ROOT_EDGE_TOLERANCE) {
-		return insert_root_edge(panel, slot, drop_target, [], false, "vertical");
+	if (row > 1 - physics.SPLIT_ROOT_EDGE_TOLERANCE) {
+		return insert_root_edge(
+			panel,
+			slot,
+			drop_target,
+			drop_target.path.length > 0 ? drop_target.path : [1],
+			false,
+			"vertical",
+		);
 	}
 
 	// Check panel edges
 	const is_column_edge =
-		drop_target.column_offset < SPLIT_EDGE_TOLERANCE ||
-		drop_target.column_offset > 1 - SPLIT_EDGE_TOLERANCE;
+		drop_target.column_offset < physics.SPLIT_EDGE_TOLERANCE ||
+		drop_target.column_offset > 1 - physics.SPLIT_EDGE_TOLERANCE;
 
 	const is_row_edge =
-		drop_target.row_offset < SPLIT_EDGE_TOLERANCE ||
-		drop_target.row_offset > 1 - SPLIT_EDGE_TOLERANCE;
+		drop_target.row_offset < physics.SPLIT_EDGE_TOLERANCE ||
+		drop_target.row_offset > 1 - physics.SPLIT_EDGE_TOLERANCE;
 
 	// If both edges triggered, choose closer axis
 	if (is_column_edge && is_row_edge) {
@@ -86,8 +94,8 @@ export function calculate_edge(
 			slot,
 			drop_target,
 			use_column
-				? drop_target.column_offset < SPLIT_EDGE_TOLERANCE
-				: drop_target.row_offset < SPLIT_EDGE_TOLERANCE,
+				? drop_target.column_offset < physics.SPLIT_EDGE_TOLERANCE
+				: drop_target.row_offset < physics.SPLIT_EDGE_TOLERANCE,
 			use_column ? "horizontal" : "vertical",
 		);
 	}
@@ -97,7 +105,7 @@ export function calculate_edge(
 			panel,
 			slot,
 			drop_target,
-			drop_target.column_offset < SPLIT_EDGE_TOLERANCE,
+			drop_target.column_offset < physics.SPLIT_EDGE_TOLERANCE,
 			"horizontal",
 		);
 	}
@@ -107,7 +115,7 @@ export function calculate_edge(
 			panel,
 			slot,
 			drop_target,
-			drop_target.row_offset < SPLIT_EDGE_TOLERANCE,
+			drop_target.row_offset < physics.SPLIT_EDGE_TOLERANCE,
 			"vertical",
 		);
 	}

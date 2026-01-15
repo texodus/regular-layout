@@ -9,7 +9,7 @@
 // ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-import { MINIMUM_REDISTRIBUTION_SIZE_THRESHOLD } from "./constants.ts";
+import { DEFAULT_PHYSICS } from "./constants.ts";
 import type { Layout } from "./types.ts";
 
 /**
@@ -33,6 +33,7 @@ export function redistribute_panel_sizes(
 	panel: Layout,
 	path: number[],
 	delta: number,
+	physics = DEFAULT_PHYSICS,
 ): Layout {
 	// Clone the entire panel structure
 	const result = structuredClone(panel);
@@ -55,7 +56,12 @@ export function redistribute_panel_sizes(
 
 		// It would be fun to remove this condition.
 		if (index < current.sizes.length - 1) {
-			current.sizes = add_and_redistribute(current.sizes, index, delta);
+			current.sizes = add_and_redistribute(
+				physics,
+				current.sizes,
+				index,
+				delta,
+			);
 		}
 	}
 
@@ -63,6 +69,7 @@ export function redistribute_panel_sizes(
 }
 
 function add_and_redistribute(
+	physics: typeof DEFAULT_PHYSICS,
 	arr: number[],
 	index: number,
 	delta: number,
@@ -83,7 +90,7 @@ function add_and_redistribute(
 		Math.sign(delta) *
 		Math.min(
 			Math.abs(delta),
-			(1 - MINIMUM_REDISTRIBUTION_SIZE_THRESHOLD) *
+			(1 - physics.MINIMUM_REDISTRIBUTION_SIZE_THRESHOLD) *
 				(delta > 0 ? before_total : after_total),
 		);
 

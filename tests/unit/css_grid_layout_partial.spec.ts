@@ -13,6 +13,7 @@ import { expect, test } from "@playwright/test";
 
 import { create_css_grid_layout } from "../../src/layout/generate_grid.ts";
 import type { Layout } from "../../src/layout/types.ts";
+import { DEFAULT_PHYSICS } from "../../src/layout/constants.ts";
 
 test("Deeply alternating split with grid-based overlay", () => {
 	const test: Layout = {
@@ -64,7 +65,12 @@ test("Deeply alternating split with grid-based overlay", () => {
 		orientation: "horizontal",
 	};
 
-	expect(create_css_grid_layout(test, false, ["BBB", "AAA"])).toEqual(
+	expect(
+		create_css_grid_layout(test, ["BBB", "AAA"], {
+			...DEFAULT_PHYSICS,
+			SHOULD_ROUND: true,
+		}),
+	).toEqual(
 		`
 :host ::slotted(*){display:none}:host{display:grid;grid-template-rows:15fr 15fr 70fr;grid-template-columns:30fr 30fr 40fr}
 :host ::slotted([name="AAA"]){display:flex;grid-column:1;grid-row:1 / 3}

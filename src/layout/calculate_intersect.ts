@@ -9,7 +9,6 @@
 // ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-import { GRID_DIVIDER_SIZE } from "./constants.ts";
 import type { LayoutPath, LayoutDivider, Layout, ViewWindow } from "./types.ts";
 
 const VIEW_WINDOW = {
@@ -42,21 +41,21 @@ export function calculate_intersection(
 	column: number,
 	row: number,
 	layout: Layout,
-	check_dividers?: DOMRect,
+	check_dividers?: { rect: DOMRect; size: number },
 ): LayoutPath | null | LayoutDivider;
 
 export function calculate_intersection(
 	column: number,
 	row: number,
 	layout: Layout,
-	check_dividers?: DOMRect | null,
+	check_dividers?: { rect: DOMRect; size: number } | null,
 ): LayoutPath | null | LayoutDivider;
 
 export function calculate_intersection(
 	column: number,
 	row: number,
 	layout: Layout,
-	check_dividers: DOMRect | null = null,
+	check_dividers: { rect: DOMRect; size: number } | null = null,
 ): LayoutPath | null | LayoutDivider {
 	return calculate_intersection_recursive(column, row, layout, check_dividers);
 }
@@ -65,7 +64,7 @@ function calculate_intersection_recursive(
 	column: number,
 	row: number,
 	panel: Layout,
-	check_dividers: DOMRect | null,
+	check_dividers: { rect: DOMRect; size: number } | null,
 	parent_orientation: "horizontal" | "vertical" | null = null,
 	view_window: ViewWindow = structuredClone(VIEW_WINDOW),
 	path: number[] = [],
@@ -99,7 +98,10 @@ function calculate_intersection_recursive(
 	const position = is_vertical ? row : column;
 	const start_key = is_vertical ? "row_start" : "col_start";
 	const end_key = is_vertical ? "row_end" : "col_end";
-	const rect_dim = is_vertical ? check_dividers?.height : check_dividers?.width;
+	const rect_dim = is_vertical
+		? check_dividers?.rect?.height
+		: check_dividers?.rect?.width;
+
 	let current_pos = view_window[start_key];
 	const total_size = view_window[end_key] - view_window[start_key];
 	for (let i = 0; i < panel.children.length; i++) {
@@ -107,7 +109,7 @@ function calculate_intersection_recursive(
 
 		// Check if position is on a divider
 		if (check_dividers && rect_dim) {
-			const divider_threshold = GRID_DIVIDER_SIZE / rect_dim;
+			const divider_threshold = check_dividers.size / rect_dim;
 			if (Math.abs(position - next_pos) < divider_threshold) {
 				return {
 					path: [...path, i],

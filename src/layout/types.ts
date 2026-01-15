@@ -34,6 +34,7 @@ export interface ViewWindow {
 	col_end: number;
 }
 
+
 /**
  * A split panel that divides space among multiple child layouts
  * .

@@ -16,6 +16,10 @@ const add = document.querySelector("#add") as HTMLButtonElement;
 const save = document.querySelector("#save") as HTMLButtonElement;
 const restore = document.querySelector("#restore") as HTMLButtonElement;
 const clear = document.querySelector("#clear") as HTMLButtonElement;
+
+// biome-ignore lint/style/noNonNullAssertion: demo
+const layout = document.querySelector("regular-layout")!;
+
 add.addEventListener("click", () => {
 	// Note: this *demo* implementation leaks `div` elements, because they
 	// are not removed from the light DOM by `clear` or `restore`. You must
@@ -36,12 +40,11 @@ add.addEventListener("click", () => {
 
 themes.addEventListener("change", (_event) => {
 	layout.className = themes.value;
-})
+});
 
 const req = await fetch("./layout.json");
 let state = await req.json();
 
-const layout = document.querySelector("regular-layout") as any;
 layout.restore(state);
 save.addEventListener("click", () => {
 	state = layout.save();

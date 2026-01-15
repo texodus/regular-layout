@@ -12,6 +12,7 @@
 import { expect, test } from "@playwright/test";
 import { calculate_intersection } from "../../src/layout/calculate_intersect.ts";
 import { LAYOUTS } from "../helpers/fixtures.ts";
+import { DEFAULT_PHYSICS } from "../../src/layout/constants.ts";
 
 test("AAA", () => {
 	const result = calculate_intersection(0.1, 0.1, LAYOUTS.NESTED_BASIC);
@@ -81,9 +82,13 @@ test("CCC", () => {
 
 test("gap", () => {
 	const result = calculate_intersection(0.6, 0.1, LAYOUTS.NESTED_BASIC, {
-		width: 100,
-		height: 100,
-	} as DOMRect);
+		size: DEFAULT_PHYSICS.GRID_DIVIDER_SIZE,
+		rect: {
+			width: 100,
+			height: 100,
+		} as DOMRect,
+	});
+
 	expect(result).toStrictEqual({
 		path: [0],
 		type: "horizontal",
@@ -98,9 +103,12 @@ test("gap", () => {
 
 test("nested gap", () => {
 	const result = calculate_intersection(0.1, 0.3, LAYOUTS.NESTED_BASIC, {
-		width: 100,
-		height: 100,
-	} as DOMRect);
+		size: DEFAULT_PHYSICS.GRID_DIVIDER_SIZE,
+		rect: {
+			width: 100,
+			height: 100,
+		} as DOMRect,
+	});
 	expect(result).toStrictEqual({
 		path: [0, 0],
 		type: "vertical",
@@ -115,9 +123,12 @@ test("nested gap", () => {
 
 test("single AAA", () => {
 	const result = calculate_intersection(0.1, 0.3, LAYOUTS.SINGLE_AAA, {
-		width: 100,
-		height: 100,
-	} as DOMRect);
+		size: DEFAULT_PHYSICS.GRID_DIVIDER_SIZE,
+		rect: {
+			width: 100,
+			height: 100,
+		} as DOMRect,
+	});
 	expect(result).toStrictEqual({
 		layout: undefined,
 		column: 0.1,

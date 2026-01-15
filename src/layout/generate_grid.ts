@@ -9,7 +9,7 @@
 // ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-import { GRID_TRACK_COLLAPSE_TOLERANCE } from "./constants.ts";
+import { DEFAULT_PHYSICS, type Physics } from "./constants.ts";
 import type { Layout } from "./types.ts";
 
 interface GridCell {
@@ -20,10 +20,11 @@ interface GridCell {
 	rowEnd: number;
 }
 
-function dedupe_sort(result: number[], pos: number) {
+function dedupe_sort(physics: Physics, result: number[], pos: number) {
 	if (
 		result.length === 0 ||
-		Math.abs(pos - result[result.length - 1]) > GRID_TRACK_COLLAPSE_TOLERANCE
+		Math.abs(pos - result[result.length - 1]) >
+			physics.GRID_TRACK_COLLAPSE_TOLERANCE
 	) {
 		result.push(pos);
 	}
@@ -31,9 +32,9 @@ function dedupe_sort(result: number[], pos: number) {
 	return result;
 }
 
-function dedupe_positions(positions: number[]): number[] {
+function dedupe_positions(physics: Physics, positions: number[]): number[] {
 	const sorted = positions.sort((a, b) => a - b);
-	return sorted.reduce(dedupe_sort, []);
+	return sorted.reduce(dedupe_sort.bind(undefined, physics), []);
 }
 
 function collect_track_positions(
@@ -41,6 +42,7 @@ function collect_track_positions(
 	orientation: "horizontal" | "vertical",
 	start: number,
 	end: number,
+	physics: Physics,
 ): number[] {
 	if (panel.type === "child-panel") {
 		return [start, end];
@@ -59,6 +61,7 @@ function collect_track_positions(
 					orientation,
 					current,
 					next,
+					physics,
 				),
 			);
 
@@ -67,17 +70,21 @@ function collect_track_positions(
 	} else {
 		for (const child of panel.children) {
 			positions.push(
-				...collect_track_positions(child, orientation, start, end),
+				...collect_track_positions(child, orientation, start, end, physics),
 			);
 		}
 	}
 
-	return dedupe_positions(positions);
+	return dedupe_positions(physics, positions);
 }
 
-function find_track_index(positions: number[], value: number): number {
+function find_track_index(
+	physics: Physics,
+	positions: number[],
+	value: number,
+): number {
 	const index = positions.findIndex(
-		(pos) => Math.abs(pos - value) < GRID_TRACK_COLLAPSE_TOLERANCE,
+		(pos) => Math.abs(pos - value) < physics.GRID_TRACK_COLLAPSE_TOLERANCE,
 	);
 
 	return index === -1 ? 0 : index;
@@ -91,16 +98,17 @@ function build_cells(
 	colEnd: number,
 	rowStart: number,
 	rowEnd: number,
+	physics: Physics,
 ): GridCell[] {
 	if (panel.type === "child-panel") {
 		const selected = panel.selected ?? 0;
 		return [
 			{
 				child: panel.child[selected],
-				colStart: find_track_index(colPositions, colStart),
-				colEnd: find_track_index(colPositions, colEnd),
-				rowStart: find_track_index(rowPositions, rowStart),
-				rowEnd: find_track_index(rowPositions, rowEnd),
+				colStart: find_track_index(physics, colPositions, colStart),
+				colEnd: find_track_index(physics, colPositions, colEnd),
+				rowStart: find_track_index(physics, rowPositions, rowStart),
+				rowEnd: find_track_index(physics, rowPositions, rowEnd),
 			},
 		];
 	}
@@ -122,6 +130,7 @@ function build_cells(
 					next,
 					rowStart,
 					rowEnd,
+					physics,
 				),
 			);
 		} else {
@@ -134,6 +143,7 @@ function build_cells(
 					colEnd,
 					current,
 					next,
+					physics,
 				),
 			);
 		}
@@ -147,8 +157,13 @@ function build_cells(
 const host_template = (rowTemplate: string, colTemplate: string) =>
 	`:host ::slotted(*){display:none}:host{display:grid;grid-template-rows:${rowTemplate};grid-template-columns:${colTemplate}}`;
 
-const child_template = (slot: string, rowPart: string, colPart: string) =>
-	`:host ::slotted([name="${slot}"]){display:flex;grid-column:${colPart};grid-row:${rowPart}}`;
+const child_template = (
+	physics: Physics,
+	slot: string,
+	rowPart: string,
+	colPart: string,
+) =>
+	`:host ::slotted([${physics.CHILD_ATTRIBUTE_NAME}="${slot}"]){display:flex;grid-column:${colPart};grid-row:${rowPart}}`;
 
 /**
  * Generates CSS Grid styles to render a layout tree.
@@ -182,12 +197,15 @@ const child_template = (slot: string, rowPart: string, colPart: string) =>
  */
 export function create_css_grid_layout(
 	layout: Layout,
-	round: boolean = false,
 	overlay?: [string, string],
+	physics: Physics = DEFAULT_PHYSICS,
 ): string {
 	if (layout.type === "child-panel") {
 		const selected = layout.selected ?? 0;
-		return `${host_template("100%", "100%")}\n${child_template(layout.child[selected], "1", "1")}`;
+		return [
+			host_template("100%", "100%"),
+			child_template(physics, layout.child[selected], "1", "1"),
+		].join("\n");
 	}
 
 	const createTemplate = (positions: number[]) => {
@@ -195,26 +213,52 @@ export function create_css_grid_layout(
 			.slice(0, -1)
 			.map((pos, i) => positions[i + 1] - pos);
 		return sizes
-			.map((s) => `${round ? Math.round(s * 100) : s * 100}fr`)
+			.map((s) => `${physics.SHOULD_ROUND ? Math.round(s * 100) : s * 100}fr`)
 			.join(" ");
 	};
 
-	const colPositions = collect_track_positions(layout, "horizontal", 0, 1);
+	const colPositions = collect_track_positions(
+		layout,
+		"horizontal",
+		0,
+		1,
+		physics,
+	);
+
 	const colTemplate = createTemplate(colPositions);
-	const rowPositions = collect_track_positions(layout, "vertical", 0, 1);
+	const rowPositions = collect_track_positions(
+		layout,
+		"vertical",
+		0,
+		1,
+		physics,
+	);
+
 	const rowTemplate = createTemplate(rowPositions);
 	const formatGridLine = (start: number, end: number) =>
 		end - start === 1 ? `${start + 1}` : `${start + 1} / ${end + 1}`;
 
-	const cells = build_cells(layout, colPositions, rowPositions, 0, 1, 0, 1);
+	const cells = build_cells(
+		layout,
+		colPositions,
+		rowPositions,
+		0,
+		1,
+		0,
+		1,
+		physics,
+	);
+
 	const css = [host_template(rowTemplate, colTemplate)];
 	for (const cell of cells) {
 		const colPart = formatGridLine(cell.colStart, cell.colEnd);
 		const rowPart = formatGridLine(cell.rowStart, cell.rowEnd);
-		css.push(child_template(cell.child, rowPart, colPart));
+		css.push(child_template(physics, cell.child, rowPart, colPart));
 		if (cell.child === overlay?.[1]) {
-			css.push(child_template(overlay[0], rowPart, colPart));
-			css.push(`:host ::slotted([name=${overlay[0]}]){z-index:1}`);
+			css.push(child_template(physics, overlay[0], rowPart, colPart));
+			css.push(
+				`:host ::slotted([${physics.CHILD_ATTRIBUTE_NAME}=${overlay[0]}]){z-index:1}`,
+			);
 		}
 	}
 

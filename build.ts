@@ -30,6 +30,7 @@ const browserConfig: esbuild.BuildOptions = {
 	minify: true,
 	minifyWhitespace: true,
 	minifyIdentifiers: true,
+	mangleProps: /^[_#]/,
 	outfile: "dist/index.js",
 	platform: "browser",
 	format: "esm",
