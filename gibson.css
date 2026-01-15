@@ -74,7 +74,7 @@ regular-layout.gibson regular-layout-frame::part(tab) {
     flex: 1 1 150px;
     max-width: 200px;
     align-items: center;
-    padding: 0 0 0 12px;
+    padding: 0 5px 0 12px;
     cursor: pointer;
     text-overflow: ellipsis;
     background: rgba(255, 0, 255, 0.1);
