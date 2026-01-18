@@ -13,7 +13,7 @@ import { expect, test } from "@playwright/test";
 import { LAYOUTS } from "../helpers/fixtures.ts";
 import { calculate_edge } from "../../src/layout/calculate_edge.ts";
 import { calculate_intersection } from "../../src/layout/calculate_intersect.ts";
-import type { LayoutPath } from "../../src/layout/types.ts";
+import type { Layout, LayoutPath } from "../../src/layout/types.ts";
 
 test("cursor in center of panel - no split", () => {
 	const drop_target = calculate_intersection(0.3, 0.5, LAYOUTS.NESTED_BASIC);
@@ -284,7 +284,7 @@ test("cursor in top-left corner prioritizes row offset", () => {
 		type: "layout-path",
 		slot: "AAA",
 		path: [],
-		layout: undefined,
+		layout: undefined as unknown as Layout,
 		view_window: { row_start: 0, row_end: 1, col_start: 0, col_end: 1 },
 		column: 0.1,
 		row: 0.05,
@@ -310,7 +310,7 @@ test("cursor in bottom-right corner prioritizes row offset", () => {
 	const drop_target: LayoutPath = {
 		type: "layout-path",
 		slot: "AAA",
-		layout: undefined,
+		layout: undefined as unknown as Layout,
 		path: [],
 		view_window: { row_start: 0, row_end: 1, col_start: 0, col_end: 1 },
 		column: 0.9,
@@ -322,7 +322,61 @@ test("cursor in bottom-right corner prioritizes row offset", () => {
 	};
 
 	const result = calculate_edge(0.9, 0.95, singlePanel, "BBB", drop_target);
-	expect(result.is_edge).toBe(true);
+	expect(result).toStrictEqual({
+		column: 0.9,
+		column_offset: 0.9,
+		is_edge: true,
+		layout: undefined,
+		orientation: "vertical",
+		path: [1],
+		row: 0.95,
+		row_offset: 0.95,
+		slot: "AAA",
+		type: "layout-path",
+		view_window: {
+			col_end: 1,
+			col_start: 0,
+			row_end: 1,
+			row_start: 0.5,
+		},
+	});
+});
+
+test("cursor in bottom-right corner prioritizes column offset", () => {
+	const singlePanel = LAYOUTS.SINGLE_AAA;
+	const drop_target: LayoutPath = {
+		type: "layout-path",
+		slot: "AAA",
+		layout: undefined as unknown as Layout,
+		path: [],
+		view_window: { row_start: 0, row_end: 1, col_start: 0, col_end: 1 },
+		column: 0.95,
+		row: 0.9,
+		column_offset: 0.95,
+		row_offset: 0.9,
+		orientation: "horizontal",
+		is_edge: false,
+	};
+
+	const result = calculate_edge(0.95, 0.9, singlePanel, "BBB", drop_target);
+	expect(result).toStrictEqual({
+		column: 0.95,
+		column_offset: 0.95,
+		is_edge: true,
+		layout: undefined,
+		orientation: "horizontal",
+		path: [1],
+		row: 0.9,
+		row_offset: 0.9,
+		slot: "AAA",
+		type: "layout-path",
+		view_window: {
+			col_end: 1,
+			col_start: 0.5,
+			row_end: 1,
+			row_start: 0,
+		},
+	});
 });
 
 test("cursor near edge with offset exactly at tolerance threshold", () => {
@@ -331,7 +385,7 @@ test("cursor near edge with offset exactly at tolerance threshold", () => {
 		type: "layout-path",
 		slot: "AAA",
 		path: [],
-		layout: undefined,
+		layout: undefined as unknown as Layout,
 		view_window: { row_start: 0, row_end: 1, col_start: 0, col_end: 1 },
 		column: 0.3,
 		row: 0.5,
@@ -352,7 +406,7 @@ test("cursor near edge with offset just below tolerance threshold", () => {
 		type: "layout-path",
 		slot: "AAA",
 		path: [],
-		layout: undefined,
+		layout: undefined as unknown as Layout,
 		view_window: { row_start: 0, row_end: 1, col_start: 0, col_end: 1 },
 		column: 0.14,
 		row: 0.5,
@@ -411,7 +465,7 @@ test("nested panel with vertical orientation at right edge2", () => {
 	expect(result.path).toEqual([0, 1, 1]);
 });
 
-test("summertime", () => {
+test("arbitrary regression", () => {
 	const drop_target = calculate_intersection(0.8, 0.5, LAYOUTS.NESTED_BASIC);
 	const result = calculate_edge(
 		0.8,

@@ -19,7 +19,7 @@ test("AAA", () => {
 	expect(result).toStrictEqual({
 		slot: "AAA",
 		path: [0, 0],
-		layout: undefined,
+		layout: { type: "child-panel", child: ["AAA"] },
 		type: "layout-path",
 		is_edge: false,
 		orientation: "vertical",
@@ -41,7 +41,7 @@ test("BBB", () => {
 	expect(result).toStrictEqual({
 		slot: "BBB",
 		path: [0, 1],
-		layout: undefined,
+		layout: { type: "child-panel", child: ["BBB"] },
 		type: "layout-path",
 		is_edge: false,
 		orientation: "vertical",
@@ -63,7 +63,7 @@ test("CCC", () => {
 	expect(result).toStrictEqual({
 		slot: "CCC",
 		path: [1],
-		layout: undefined,
+		layout: { type: "child-panel", child: ["CCC"] },
 		type: "layout-path",
 		is_edge: false,
 		orientation: "horizontal",
@@ -130,7 +130,7 @@ test("single AAA", () => {
 		} as DOMRect,
 	});
 	expect(result).toStrictEqual({
-		layout: undefined,
+		layout: { type: "child-panel", child: ["AAA"] },
 		column: 0.1,
 		column_offset: 0.1,
 		is_edge: false,

@@ -9,7 +9,7 @@
 // ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-import type { Layout, LayoutPath } from "./layout/types.ts";
+import type { LayoutPath } from "./layout/types.ts";
 import type { RegularLayoutEvent } from "./extensions.ts";
 import type { RegularLayout } from "./regular-layout.ts";
 import type { RegularLayoutTab } from "./regular-layout-tab.ts";
@@ -28,6 +28,8 @@ const HTML_TEMPLATE = `
 	<div part="titlebar"></div>
 	<slot part="container"></slot>
 `;
+
+type DragState = { moved?: boolean; path: LayoutPath };
 
 /**
  * A custom element that represents a draggable panel within a
@@ -55,29 +57,31 @@ const HTML_TEMPLATE = `
  * ```
  */
 export class RegularLayoutFrame extends HTMLElement {
-	private _shadowRoot: ShadowRoot;
-	private _container_sheet: CSSStyleSheet;
+	private _shadowRoot!: ShadowRoot;
+	private _container_sheet!: CSSStyleSheet;
 	private _layout!: RegularLayout;
 	private _header!: HTMLElement;
-	private _drag_state: LayoutPath<Layout> | null = null;
-	private _drag_moved: boolean = false;
+	private _drag: DragState | null = null;
 	private _tab_to_index_map: WeakMap<RegularLayoutTab, number> = new WeakMap();
-	constructor() {
-		super();
-		this._container_sheet = new CSSStyleSheet();
-		this._container_sheet.replaceSync(CSS);
-		this._shadowRoot = this.attachShadow({ mode: "open" });
-		this._shadowRoot.adoptedStyleSheets = [this._container_sheet];
-	}
 
+	/**
+	 * Initializes this elements. Override this method and
+	 * `disconnectedCallback` to modify how this subclass renders the Shadow
+	 * DOM and registers events.
+	 */
 	connectedCallback() {
+		this._container_sheet ??= new CSSStyleSheet();
+		this._container_sheet.replaceSync(CSS);
+		this._shadowRoot ??= this.attachShadow({ mode: "open" });
+		this._shadowRoot.adoptedStyleSheets = [this._container_sheet];
 		this._shadowRoot.innerHTML = HTML_TEMPLATE;
 		this._layout = this.parentElement as RegularLayout;
 		this._header = this._shadowRoot.children[0] as HTMLElement;
 		this._header.addEventListener("pointerdown", this.onPointerDown);
-		this._header.addEventListener("pointermove", this.onPointerMove);
-		this._header.addEventListener("pointerup", this.onPointerUp);
-		this._header.addEventListener("lostpointercapture", this.onPointerLost);
+		this.addEventListener("pointermove", this.onPointerMove);
+		this.addEventListener("pointerup", this.onPointerUp);
+		this.addEventListener("pointercancel", this.onPointerCancel);
+		this.addEventListener("lostpointercapture", this.onPointerLost);
 		this._layout.addEventListener("regular-layout-update", this.drawTabs);
 		this._layout.addEventListener(
 			"regular-layout-before-update",
@@ -85,11 +89,15 @@ export class RegularLayoutFrame extends HTMLElement {
 		);
 	}
 
+	/**
+	 * Destroys this element.
+	 */
 	disconnectedCallback() {
 		this._header.removeEventListener("pointerdown", this.onPointerDown);
-		this._header.removeEventListener("pointermove", this.onPointerMove);
-		this._header.removeEventListener("pointerup", this.onPointerUp);
-		this._header.removeEventListener("lostpointercapture", this.onPointerLost);
+		this.removeEventListener("pointermove", this.onPointerMove);
+		this.removeEventListener("pointerup", this.onPointerUp);
+		this.removeEventListener("pointercancel", this.onPointerUp);
+		this.removeEventListener("lostpointercapture", this.onPointerLost);
 		this._layout.removeEventListener("regular-layout-update", this.drawTabs);
 		this._layout.removeEventListener(
 			"regular-layout-before-update",
@@ -100,75 +108,52 @@ export class RegularLayoutFrame extends HTMLElement {
 	private onPointerDown = (event: PointerEvent): void => {
 		const elem = event.target as RegularLayoutTab;
 		if (elem.part.contains("tab")) {
-			this._drag_state = this._layout.calculateIntersect(
-				event.clientX,
-				event.clientY,
-			);
-
-			if (this._drag_state) {
-				this._header.setPointerCapture(event.pointerId);
+			const path = this._layout.calculateIntersect(event);
+			if (path) {
+				this._drag = { path };
+				this.setPointerCapture(event.pointerId);
 				event.preventDefault();
+			} else {
+				this._drag = null;
 			}
 		}
 	};
 
 	private onPointerMove = (event: PointerEvent): void => {
-		if (this._drag_state) {
+		if (this._drag) {
 			const physics = this._layout.savePhysics();
-
-			// Only initiate a drag if the cursor has moved sufficiently.
-			if (!this._drag_moved) {
-				const [current_col, current_row, box] =
-					this._layout.relativeCoordinates(event.clientX, event.clientY);
-
-				const dx = (current_col - this._drag_state.column) * box.width;
-				const dy = (current_row - this._drag_state.row) * box.height;
-				if (Math.sqrt(dx * dx + dy * dy) <= physics.MIN_DRAG_DISTANCE) {
+			if (!this._drag.moved) {
+				const diff = this._layout.diffCoordinates(event, this._drag.path);
+				if (diff <= physics.MIN_DRAG_DISTANCE) {
 					return;
 				}
 			}
 
-			this._drag_moved = true;
-			this._layout.setOverlayState(
-				event.clientX,
-				event.clientY,
-				this._drag_state,
-				physics.OVERLAY_CLASSNAME,
-			);
+			this._drag.moved = true;
+			this._layout.setOverlayState(event, this._drag.path);
 		}
 	};
 
 	private onPointerUp = (event: PointerEvent): void => {
-		if (this._drag_state && this._drag_moved) {
-			this._layout.clearOverlayState(
-				event.clientX,
-				event.clientY,
-				this._drag_state,
-			);
+		if (this._drag?.moved) {
+			this._layout.clearOverlayState(event, this._drag.path);
 		}
+	};
 
-		// TODO This may be handled by `onPointerLost`, not sure if this is
-		// browser-specific behavior ...
-		this._header.releasePointerCapture(event.pointerId);
-		this._drag_state = null;
-		this._drag_moved = false;
+	private onPointerCancel = (_: PointerEvent): void => {
+		if (this._drag?.moved) {
+			this._layout.clearOverlayState(null, this._drag.path);
+		}
 	};
 
 	private onPointerLost = (event: PointerEvent): void => {
-		if (this._drag_state) {
-			this._layout.clearOverlayState(-1, -1, this._drag_state);
-		}
-
-		this._header.releasePointerCapture(event.pointerId);
-		this._drag_state = null;
-		this._drag_moved = false;
+		this.releasePointerCapture(event.pointerId);
+		this._drag = null;
 	};
 
 	private drawTabs = (event: RegularLayoutEvent) => {
-		const slot = this.getAttribute(
-			this._layout.savePhysics().CHILD_ATTRIBUTE_NAME,
-		);
-
+		const attr = this._layout.savePhysics().CHILD_ATTRIBUTE_NAME;
+		const slot = this.getAttribute(attr);
 		if (!slot) {
 			return;
 		}

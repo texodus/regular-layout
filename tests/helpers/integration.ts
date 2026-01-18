@@ -95,29 +95,6 @@ export async function removePanel(
 }
 
 /**
- * Calls setOverlayState with the given coordinates and options.
- */
-export async function setOverlayState(
-	page: Page,
-	x: number,
-	y: number,
-	slot: string,
-	className?: string,
-	mode?: "grid" | "absolute",
-): Promise<void> {
-	await page.evaluate(
-		({ x, y, slot, className, mode }) => {
-			const layout = document.querySelector("regular-layout");
-			const layoutPath = layout?.calculateIntersect(x, y);
-			if (layoutPath) {
-				layout?.setOverlayState(x, y, { ...layoutPath, slot }, className, mode);
-			}
-		},
-		{ x, y, slot, className, mode },
-	);
-}
-
-/**
  * Gets the layout bounds for testing overlay coordinates.
  */
 export async function getLayoutBounds(page: Page): Promise<{
