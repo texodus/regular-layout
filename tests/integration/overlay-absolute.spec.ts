@@ -25,9 +25,14 @@ test("should apply overlay class to dragged panel in absolute mode", async ({
 	await page.evaluate(
 		({ x, y }) => {
 			const layout = document.querySelector("regular-layout");
-			const layoutPath = layout?.calculateIntersect(x, y);
+			const layoutPath = layout?.calculateIntersect({ clientX: x, clientY: y });
 			if (layoutPath) {
-				layout?.setOverlayState(x, y, layoutPath, "overlay", "absolute");
+				layout?.setOverlayState(
+					{ clientX: x, clientY: y },
+					layoutPath,
+					"overlay",
+					"absolute",
+				);
 			}
 		},
 		{ x, y },
@@ -57,9 +62,18 @@ test("should dispatch regular-layout-update event in absolute mode", async ({
 					{ once: true },
 				);
 
-				const layoutPath = layout?.calculateIntersect(x, y);
+				const layoutPath = layout?.calculateIntersect({
+					clientX: x,
+					clientY: y,
+				});
+				
 				if (layoutPath) {
-					layout?.setOverlayState(x, y, layoutPath, "overlay", "absolute");
+					layout?.setOverlayState(
+						{ clientX: x, clientY: y },
+						layoutPath,
+						"overlay",
+						"absolute",
+					);
 				} else {
 					resolve(false);
 				}
@@ -81,11 +95,10 @@ test("should handle custom className in absolute mode", async ({ page }) => {
 	await page.evaluate(
 		({ x, y }) => {
 			const layout = document.querySelector("regular-layout");
-			const layoutPath = layout?.calculateIntersect(x, y);
+			const layoutPath = layout?.calculateIntersect({ clientX: x, clientY: y });
 			if (layoutPath) {
 				layout?.setOverlayState(
-					x,
-					y,
+					{ clientX: x, clientY: y },
 					layoutPath,
 					"custom-drag-class",
 					"absolute",

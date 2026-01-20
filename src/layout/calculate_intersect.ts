@@ -80,7 +80,7 @@ function calculate_intersection_recursive(
 		const row_height = view_window.row_end - view_window.row_start;
 		return {
 			type: "layout-path",
-			layout: undefined,
+			layout: panel,
 			slot: panel.child[selected],
 			path,
 			view_window,

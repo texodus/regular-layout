@@ -40,6 +40,16 @@ import {
 } from "./layout/constants.ts";
 
 /**
+ * An interface which models the fields of `PointerEvent` that
+ * `<regular-layour>` actually uses, making it easier to sub out with an
+ * JavaScript object lieral when you don't have a `PointerEvent` handy.
+ */
+export interface PointerEventCoordinates {
+	clientX: number;
+	clientY: number;
+}
+
+/**
  * A Web Component that provides a resizable panel layout system.
  * Panels are arranged using CSS Grid and can be resized by dragging dividers.
  *
@@ -71,6 +81,22 @@ import {
  * layout.restore(state);
  * ```
  *
+ * @remarks
+ *
+ * Why does this implementation use a `<slot>` at all? We must use
+ * `<slot>` and the Shadow DOM to scope the grid CSS rules to each
+ * instance of `<regular-layout>` (without e.g. giving them unique
+ * `"id"` and injecting into `document,head`), and we can only select
+ * `::slotted` light DOM children from `adoptedStyleSheets` on the
+ * `ShadowRoot`.
+ *
+ * Why does this implementation use a single `<slot>` and the child
+ * `"name"` attribute, as opposed to a named `<slot name="my_slot">`
+ * and the built-in `"slot"` child attribute? Children with a `"slot"`
+ * attribute don't fallback to the un-named `<slot>`, so using the
+ * latter implementation would require synchronizing the light DOM
+ * and shadow DOM slots/slotted children continuously.
+ *
  */
 export class RegularLayout extends HTMLElement {
 	private _shadowRoot: ShadowRoot;
@@ -86,17 +112,6 @@ export class RegularLayout extends HTMLElement {
 		super();
 		this._physics = DEFAULT_PHYSICS;
 		this._panel = structuredClone(EMPTY_PANEL);
-
-		// Why does this implementation use a `<slot>` at all? We must use
-		// `<slot>` and the Shadow DOM to scope the grid CSS rules to each
-		// instance of `<regular-layout>` (without e.g. giving them unique
-		// `"id"` and injecting into `document,head`), and we can only select
-		// `::slotted` light DOM children from `adoptedStyleSheets` on the
-		// `ShadowRoot`.
-
-		// In addition, this model uses a single un-named `<slot>` to host all
-		// light-DOM children, and the child's `"name"` attribute to identify
-		// its position in the `Layout`. Alternatively, using named
 		this._shadowRoot = this.attachShadow({ mode: "open" });
 		this._shadowRoot.innerHTML = `<slot></slot>`;
 		this._stylesheet = new CSSStyleSheet();
@@ -123,36 +138,23 @@ export class RegularLayout extends HTMLElement {
 	/**
 	 * Determines which panel is at a given screen coordinate.
 	 *
-	 * @param column - X coordinate in screen pixels.
-	 * @param row - Y coordinate in screen pixels.
+	 * @param coordinates - `PointerEvent`, `MouseEvent`, or just X and Y
+	 *     coordinates in screen pixels.
 	 * @returns Panel information if a panel is at that position, null otherwise.
 	 */
 	calculateIntersect = (
-		x: number,
-		y: number,
-		check_dividers: boolean = false,
-	): LayoutPath<Layout> | null => {
-		const [col, row, rect] = this.relativeCoordinates(x, y, false);
-		const panel = calculate_intersection(
-			col,
-			row,
-			this._panel,
-			check_dividers ? { rect, size: this._physics.GRID_DIVIDER_SIZE } : null,
-		);
-
-		if (panel?.type === "layout-path") {
-			return { ...panel, layout: this.save() };
-		}
-
-		return null;
+		coordinates: PointerEventCoordinates,
+	): LayoutPath | null => {
+		const [col, row, _] = this.relativeCoordinates(coordinates, false);
+		return calculate_intersection(col, row, this._panel);
 	};
 
 	/**
 	 * Sets the visual overlay state during drag-and-drop operations.
 	 * Displays a preview of where a panel would be placed at the given coordinates.
 	 *
-	 * @param x - X coordinate in screen pixels.
-	 * @param y - Y coordinate in screen pixels.
+	 * @param event - `PointerEvent`, `MouseEvent`, or just X and Y
+	 *     coordinates in screen pixels.
 	 * @param dragTarget - A `LayoutPath` (presumably from `calculateIntersect`)
 	 *     which points to the drag element in the current layout.
 	 * @param className - The CSS class name to use for the overlay panel
@@ -162,18 +164,20 @@ export class RegularLayout extends HTMLElement {
 	 *     "absolute".
 	 */
 	setOverlayState = (
-		x: number,
-		y: number,
-		{ slot }: LayoutPath<unknown>,
+		event: PointerEventCoordinates,
+		{ slot }: LayoutPath,
 		className: string = this._physics.OVERLAY_CLASSNAME,
 		mode: OverlayMode = this._physics.OVERLAY_DEFAULT,
 	) => {
 		const panel = remove_child(this._panel, slot);
-		Array.from(this.children)
-			.find((x) => x.getAttribute(this._physics.CHILD_ATTRIBUTE_NAME) === slot)
-			?.classList.add(className);
+		const query = `:scope > [${this._physics.CHILD_ATTRIBUTE_NAME}="${slot}"]`;
+		const drag_element = this.querySelector(query);
+		if (drag_element) {
+			drag_element.classList.add(className);
+		}
 
-		const [col, row, box, style] = this.relativeCoordinates(x, y, false);
+		// TODO: Don't recalculate box (but this currently protects against resize).
+		const [col, row, box, style] = this.relativeCoordinates(event, true);
 		let drop_target = calculate_intersection(col, row, panel);
 		if (drop_target) {
 			drop_target = calculate_edge(
@@ -193,7 +197,6 @@ export class RegularLayout extends HTMLElement {
 			this._stylesheet.replaceSync(css);
 		} else if (mode === "absolute") {
 			const grid_css = create_css_grid_layout(panel, undefined, this._physics);
-
 			const overlay_css = updateOverlaySheet(
 				slot,
 				box,
@@ -206,15 +209,15 @@ export class RegularLayout extends HTMLElement {
 		}
 
 		const event_name = `${this._physics.CUSTOM_EVENT_NAME_PREFIX}-before-update`;
-		const event = new CustomEvent<Layout>(event_name, { detail: panel });
-		this.dispatchEvent(event);
+		const custom_event = new CustomEvent<Layout>(event_name, { detail: panel });
+		this.dispatchEvent(custom_event);
 	};
 
 	/**
 	 * Clears the overlay state and commits the panel placement.
 	 *
-	 * @param x - X coordinate in screen pixels.
-	 * @param y - Y coordinate in screen pixels.
+	 * @param event - `PointerEvent`, `MouseEvent`, or just X and Y
+	 *     coordinates in screen pixels.
 	 * @param dragTarget - A `LayoutPath` (presumably from `calculateIntersect`)
 	 *     which points to the drag element in the current layout.
 	 * @param className - The CSS class name to use for the overlay panel
@@ -223,46 +226,53 @@ export class RegularLayout extends HTMLElement {
 	 *     passed to `setOverlayState`. Defaults to "absolute".
 	 */
 	clearOverlayState = (
-		x: number,
-		y: number,
-		drag_target: LayoutPath<Layout>,
+		event: PointerEventCoordinates | null,
+		{ slot, layout }: LayoutPath,
 		className: string = this._physics.OVERLAY_CLASSNAME,
 	) => {
 		let panel = this._panel;
-		panel = remove_child(panel, drag_target.slot);
-		Array.from(this.children)
-			.find(
-				(x) =>
-					x.getAttribute(this._physics.CHILD_ATTRIBUTE_NAME) ===
-					drag_target.slot,
-			)
-			?.classList.remove(className);
+		panel = remove_child(panel, slot);
+		const query = `:scope > [${this._physics.CHILD_ATTRIBUTE_NAME}="${slot}"]`;
+		const drag_element = this.querySelector(query);
+		if (drag_element) {
+			drag_element.classList.remove(className);
+		}
 
-		const [col, row, box] = this.relativeCoordinates(x, y, false);
+		if (event === null) {
+			this.restore(layout);
+			return;
+		}
+
+		const [col, row, box] = this.relativeCoordinates(event, false);
 		let drop_target = calculate_intersection(col, row, panel);
 		if (drop_target) {
 			drop_target = calculate_edge(
 				col,
 				row,
 				panel,
-				drag_target.slot,
+				slot,
 				drop_target,
 				box,
 				this._physics,
 			);
 		}
 
-		const { path, orientation } = drop_target ? drop_target : drag_target;
-		const new_layout = drop_target
-			? insert_child(
-					panel,
-					drag_target.slot,
-					path,
-					drop_target?.is_edge ? orientation : undefined,
-				)
-			: drag_target.layout;
+		if (drop_target) {
+			const orientation = drop_target?.is_edge
+				? drop_target.orientation
+				: undefined;
 
-		this.restore(new_layout);
+			const new_layout = insert_child(
+				panel,
+				slot,
+				drop_target.path,
+				orientation,
+			);
+
+			this.restore(new_layout);
+		} else {
+			this.restore(layout);
+		}
 	};
 
 	/**
@@ -312,6 +322,7 @@ export class RegularLayout extends HTMLElement {
 			if (layout.child.includes(name)) {
 				return layout;
 			}
+
 			return null;
 		}
 
@@ -347,7 +358,6 @@ export class RegularLayout extends HTMLElement {
 	restore = (layout: Layout, _is_flattened: boolean = false) => {
 		this._panel = !_is_flattened ? flatten(layout) : layout;
 		const css = create_css_grid_layout(this._panel, undefined, this._physics);
-
 		this._stylesheet.replaceSync(css);
 		const event_name = `${this._physics.CUSTOM_EVENT_NAME_PREFIX}-update`;
 		const event = new CustomEvent<Layout>(event_name, { detail: this._panel });
@@ -397,16 +407,15 @@ export class RegularLayout extends HTMLElement {
 	 * Transforms absolute pixel positions into normalized coordinates (0-1 range)
 	 * relative to the layout's bounding box.
 	 *
-	 * @param clientX - X coordinate in screen pixels (client space).
-	 * @param clientY - Y coordinate in screen pixels (client space).
+	 * @param coordinates - `PointerEvent`, `MouseEvent`, or just X and Y
+	 *     coordinates in screen pixels.
 	 * @returns A tuple containing:
 	 *   - col: Normalized X coordinate (0 = left edge, 1 = right edge)
 	 *   - row: Normalized Y coordinate (0 = top edge, 1 = bottom edge)
 	 *   - box: The layout element's bounding rectangle
 	 */
 	relativeCoordinates = (
-		clientX: number,
-		clientY: number,
+		event: PointerEventCoordinates,
 		recalculate_bounds: boolean = true,
 	): [number, number, DOMRect, CSSStyleDeclaration] => {
 		if (recalculate_bounds || !this._dimensions) {
@@ -419,12 +428,13 @@ export class RegularLayout extends HTMLElement {
 		const box = this._dimensions.box;
 		const style = this._dimensions.style;
 		const col =
-			(clientX - box.left - parseFloat(style.paddingLeft)) /
+			(event.clientX - box.left - parseFloat(style.paddingLeft)) /
 			(box.width -
 				parseFloat(style.paddingLeft) -
 				parseFloat(style.paddingRight));
+
 		const row =
-			(clientY - box.top - parseFloat(style.paddingTop)) /
+			(event.clientY - box.top - parseFloat(style.paddingTop)) /
 			(box.height -
 				parseFloat(style.paddingTop) -
 				parseFloat(style.paddingBottom));
@@ -432,17 +442,31 @@ export class RegularLayout extends HTMLElement {
 		return [col, row, box, style];
 	};
 
+	/**
+	 * Calculates the Euclidean distance in pixels between the current pointer
+	 * coordinates and a drag target's position within the layout.
+	 *
+	 * @param coordinates - The current pointer event coordinates.
+	 * @param drag_target - The layout path representing the drag target
+	 * 	   position.
+	 * @returns The distance in pixels between the coordinates and the drag
+	 *     target.
+	 */
+	diffCoordinates = (
+		event: PointerEventCoordinates,
+		drag_target: LayoutPath,
+	): number => {
+		const [column, row, box] = this.relativeCoordinates(event, false);
+		const dx = (column - drag_target.column) * box.width;
+		const dy = (row - drag_target.row) * box.height;
+		return Math.sqrt(dx ** 2 + dy ** 2);
+	};
+
 	private onPointerDown = (event: PointerEvent) => {
 		if (!this._physics.GRID_DIVIDER_CHECK_TARGET || event.target === this) {
-			const [col, row, rect] = this.relativeCoordinates(
-				event.clientX,
-				event.clientY,
-			);
-
-			const hit = calculate_intersection(col, row, this._panel, {
-				rect,
-				size: this._physics.GRID_DIVIDER_SIZE,
-			});
+			const [col, row, rect] = this.relativeCoordinates(event);
+			const size = this._physics.GRID_DIVIDER_SIZE;
+			const hit = calculate_intersection(col, row, this._panel, { rect, size });
 			if (hit && hit.type !== "layout-path") {
 				this._drag_target = [hit, col, row];
 				this.setPointerCapture(event.pointerId);
@@ -453,12 +477,7 @@ export class RegularLayout extends HTMLElement {
 
 	private onPointerMove = (event: PointerEvent) => {
 		if (this._drag_target) {
-			const [col, row] = this.relativeCoordinates(
-				event.clientX,
-				event.clientY,
-				false,
-			);
-
+			const [col, row] = this.relativeCoordinates(event, false);
 			const [{ path, type }, old_col, old_row] = this._drag_target;
 			const offset = type === "horizontal" ? old_col - col : old_row - row;
 			const panel = redistribute_panel_sizes(this._panel, path, offset);
@@ -476,12 +495,7 @@ export class RegularLayout extends HTMLElement {
 			return;
 		}
 
-		const [col, row, rect] = this.relativeCoordinates(
-			event.clientX,
-			event.clientY,
-			false,
-		);
-
+		const [col, row, rect] = this.relativeCoordinates(event, false);
 		const divider = calculate_intersection(col, row, this._panel, {
 			rect,
 			size: this._physics.GRID_DIVIDER_SIZE,
@@ -502,12 +516,7 @@ export class RegularLayout extends HTMLElement {
 	private onPointerUp = (event: PointerEvent) => {
 		if (this._drag_target) {
 			this.releasePointerCapture(event.pointerId);
-			const [col, row] = this.relativeCoordinates(
-				event.clientX,
-				event.clientY,
-				false,
-			);
-
+			const [col, row] = this.relativeCoordinates(event, false);
 			const [{ path, type }, old_col, old_row] = this._drag_target;
 			const offset = type === "horizontal" ? old_col - col : old_row - row;
 			const panel = redistribute_panel_sizes(this._panel, path, offset);

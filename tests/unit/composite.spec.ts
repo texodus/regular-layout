@@ -151,7 +151,7 @@ test("cursor near bottom edge but with opposite orientation", () => {
 	});
 });
 
-test("", () => {
+test("arbitrary regression also", () => {
 	const PANEL: Layout = {
 		type: "split-panel",
 		orientation: "horizontal",

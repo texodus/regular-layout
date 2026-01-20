@@ -87,7 +87,9 @@ export function calculate_edge(
 			(box?.height || 1) *
 			(drop_target.view_window.row_end - drop_target.view_window.row_start);
 
-		const use_column = col_distance * col_scale > row_distance * row_scale;
+		const use_column =
+			col_scale / 2 - col_distance * col_scale <
+			row_scale / 2 - row_distance * row_scale;
 
 		return insert_axis(
 			panel,

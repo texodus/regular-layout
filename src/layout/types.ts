@@ -34,7 +34,6 @@ export interface ViewWindow {
 	col_end: number;
 }
 
-
 /**
  * A split panel that divides space among multiple child layouts
  * .
@@ -76,12 +75,8 @@ export interface LayoutDivider {
 
 /**
  * Represents a panel location result from hit detection.
- *
- * Contains both the panel identifier and its grid position in relative units.
- * The generic parameter `T` allows DOM-only properties (e.g. `DOMRect`) to be
- * shared in this cross-platform module.
  */
-export interface LayoutPath<T = undefined> {
+export interface LayoutPath {
 	type: "layout-path";
 	slot: string;
 	path: number[];
@@ -92,7 +87,7 @@ export interface LayoutPath<T = undefined> {
 	row_offset: number;
 	orientation: Orientation;
 	is_edge: boolean;
-	layout: T;
+	layout: Layout;
 }
 
 /**

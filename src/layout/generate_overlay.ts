@@ -16,7 +16,7 @@ export function updateOverlaySheet(
 	slot: string,
 	box: DOMRect,
 	style: CSSStyleDeclaration,
-	drag_target: LayoutPath<undefined> | null,
+	drag_target: LayoutPath | null,
 	physics = DEFAULT_PHYSICS,
 ) {
 	if (!drag_target) {

@@ -16,16 +16,19 @@ import { LAYOUTS } from "../helpers/fixtures.ts";
 test("should update CSS with grid preview in grid mode", async ({ page }) => {
 	await setupLayout(page, LAYOUTS.TWO_HORIZONTAL_EQUAL);
 	const bounds = await getLayoutBounds(page);
-
 	const x = bounds.x + bounds.width * 0.75;
 	const y = bounds.y + bounds.height * 0.5;
-
 	await page.evaluate(
 		({ x, y }) => {
 			const layout = document.querySelector("regular-layout");
-			const layoutPath = layout?.calculateIntersect(x, y);
+			const layoutPath = layout?.calculateIntersect({ clientX: x, clientY: y });
 			if (layoutPath) {
-				layout?.setOverlayState(x, y, layoutPath, "overlay", "grid");
+				layout?.setOverlayState(
+					{ clientX: x, clientY: y },
+					layoutPath,
+					"overlay",
+					"grid",
+				);
 			}
 		},
 		{ x, y },
@@ -37,7 +40,7 @@ test("should update CSS with grid preview in grid mode", async ({ page }) => {
 		return stylesheet?.cssRules.length || 0;
 	});
 
-	expect(cssRules).toBeGreaterThan(0);
+	expect(cssRules).toBe(3);
 });
 
 test("should dispatch regular-layout-update event in grid mode", async ({
@@ -45,10 +48,8 @@ test("should dispatch regular-layout-update event in grid mode", async ({
 }) => {
 	await setupLayout(page, LAYOUTS.TWO_HORIZONTAL_EQUAL);
 	const bounds = await getLayoutBounds(page);
-
 	const x = bounds.x + bounds.width * 0.25;
 	const y = bounds.y + bounds.height * 0.5;
-
 	const eventReceived = await page.evaluate(
 		({ x, y }) => {
 			return new Promise<boolean>((resolve) => {
@@ -61,9 +62,18 @@ test("should dispatch regular-layout-update event in grid mode", async ({
 					{ once: true },
 				);
 
-				const layoutPath = layout?.calculateIntersect(x, y);
+				const layoutPath = layout?.calculateIntersect({
+					clientX: x,
+					clientY: y,
+				});
+
 				if (layoutPath) {
-					layout?.setOverlayState(x, y, layoutPath, "overlay", "grid");
+					layout?.setOverlayState(
+						{ clientX: x, clientY: y },
+						layoutPath,
+						"overlay",
+						"grid",
+					);
 				} else {
 					resolve(false);
 				}
