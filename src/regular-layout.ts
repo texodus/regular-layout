@@ -124,12 +124,14 @@ export class RegularLayout extends HTMLElement {
 	}
 
 	connectedCallback() {
+		this.addEventListener("dblclick", this.onDblClick);
 		this.addEventListener("pointerdown", this.onPointerDown);
 		this.addEventListener("pointerup", this.onPointerUp);
 		this.addEventListener("pointermove", this.onPointerMove);
 	}
 
 	disconnectedCallback() {
+		this.removeEventListener("dblclick", this.onDblClick);
 		this.removeEventListener("pointerdown", this.onPointerDown);
 		this.removeEventListener("pointerup", this.onPointerUp);
 		this.removeEventListener("pointermove", this.onPointerMove);
@@ -319,7 +321,7 @@ export class RegularLayout extends HTMLElement {
 	 */
 	getPanel = (name: string, layout: Layout = this._panel): TabLayout | null => {
 		if (layout.type === "child-panel") {
-			if (layout.child.includes(name)) {
+			if (layout.tabs.includes(name)) {
 				return layout;
 			}
 
@@ -460,6 +462,24 @@ export class RegularLayout extends HTMLElement {
 		const dx = (column - drag_target.column) * box.width;
 		const dy = (row - drag_target.row) * box.height;
 		return Math.sqrt(dx ** 2 + dy ** 2);
+	};
+
+	private onDblClick = (event: MouseEvent) => {
+		const [col, row, rect] = this.relativeCoordinates(event, false);
+		const divider = calculate_intersection(col, row, this._panel, {
+			rect,
+			size: this._physics.GRID_DIVIDER_SIZE,
+		});
+
+		if (divider?.type === "horizontal" || divider?.type === "vertical") {
+			const panel = redistribute_panel_sizes(
+				this._panel,
+				divider.path,
+				undefined,
+			);
+
+			this.restore(panel, true);
+		}
 	};
 
 	private onPointerDown = (event: PointerEvent) => {

@@ -1,74 +1,59 @@
 {
-    "type": "split-panel",
-    "orientation": "horizontal",
-    "children": [
+  "type": "split-panel",
+  "orientation": "horizontal",
+  "children": [
+    {
+      "type": "split-panel",
+      "orientation": "vertical",
+      "children": [
         {
-            "type": "split-panel",
-            "orientation": "vertical",
-            "children": [
+          "type": "split-panel",
+          "orientation": "horizontal",
+          "children": [
+            {
+              "type": "child-panel",
+              "tabs": ["AAA"]
+            },
+            {
+              "type": "split-panel",
+              "orientation": "vertical",
+              "children": [
                 {
-                    "type": "split-panel",
-                    "orientation": "horizontal",
-                    "children": [
-                        {
-                            "type": "child-panel",
-                            "child": ["AAA"]
-                        },
-                        {
-                            "type": "split-panel",
-                            "orientation": "vertical",
-                            "children": [
-                                {
-                                    "type": "child-panel",
-                                    "child": ["BBB"]
-                                },
-                                {
-                                    "type": "child-panel",
-                                    "child": ["CCC"]
-                                }
-                            ],
-                            "sizes": [
-                                0.5,
-                                0.5
-                            ]
-                        }
-                    ],
-                    "sizes": [
-                        0.5,
-                        0.5
-                    ]
+                  "type": "child-panel",
+                  "tabs": ["BBB"]
                 },
                 {
-                    "type": "split-panel",
-                    "orientation": "horizontal",
-                    "children": [
-                        {
-                            "type": "child-panel",
-                            "child": ["DDD"]
-                        },
-                        {
-                            "type": "child-panel",
-                            "child": ["EEE"]
-                        }
-                    ],
-                    "sizes": [
-                        0.5,
-                        0.5
-                    ]
+                  "type": "child-panel",
+                  "tabs": ["CCC"]
                 }
-            ],
-            "sizes": [
-                0.5,
-                0.5
-            ]
+              ],
+              "sizes": [0.5, 0.5]
+            }
+          ],
+          "sizes": [0.5, 0.5]
         },
         {
-            "type": "child-panel",
-            "child": ["FFF", "GGG", "HHH"]
+          "type": "split-panel",
+          "orientation": "horizontal",
+          "children": [
+            {
+              "type": "child-panel",
+              "tabs": ["DDD"]
+            },
+            {
+              "type": "child-panel",
+              "tabs": ["EEE"]
+            }
+          ],
+          "sizes": [0.5, 0.5]
         }
-    ],
-    "sizes": [
-        0.5,
-        0.5
-    ]
+      ],
+      "sizes": [0.5, 0.5]
+    },
+    {
+      "type": "child-panel",
+      "tabs": ["FFF", "GGG", "HHH"]
+    }
+  ],
+  "sizes": [0.5, 0.5]
 }

@@ -32,7 +32,7 @@ import type { Layout } from "./types.ts";
 export function redistribute_panel_sizes(
 	panel: Layout,
 	path: number[],
-	delta: number,
+	delta: number | undefined,
 	physics = DEFAULT_PHYSICS,
 ): Layout {
 	// Clone the entire panel structure
@@ -41,7 +41,7 @@ export function redistribute_panel_sizes(
 	// Find the orientation of the insertion panel,
 	// and scale the delta on the respective axis if aligned.
 	let current: Layout = result;
-	const deltas = { horizontal: delta, vertical: delta };
+	const deltas = { horizontal: delta || 0, vertical: delta || 0 };
 	for (let i = 0; i < path.length - 1; i++) {
 		if (current.type === "split-panel") {
 			deltas[current.orientation] /= current.sizes[path[i]];
@@ -51,17 +51,21 @@ export function redistribute_panel_sizes(
 
 	// Apply the redistribution at the final path index
 	if (current.type === "split-panel") {
-		const delta = deltas[current.orientation];
-		const index = path[path.length - 1];
+		if (delta === undefined) {
+			current.sizes = current.sizes.map((_) => 1 / current.sizes.length);
+		} else {
+			const delta = deltas[current.orientation];
+			const index = path[path.length - 1];
 
-		// It would be fun to remove this condition.
-		if (index < current.sizes.length - 1) {
-			current.sizes = add_and_redistribute(
-				physics,
-				current.sizes,
-				index,
-				delta,
-			);
+			// It would be fun to remove this condition.
+			if (index < current.sizes.length - 1) {
+				current.sizes = add_and_redistribute(
+					physics,
+					current.sizes,
+					index,
+					delta,
+				);
+			}
 		}
 	}
 

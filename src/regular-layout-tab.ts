@@ -40,11 +40,11 @@ export class RegularLayoutTab extends HTMLElement {
 				(index === this._tab_panel?.selected);
 
 			const index_changed =
-				tab_changed || this._tab_panel?.child[index] !== tab_panel.child[index];
+				tab_changed || this._tab_panel?.tabs[index] !== tab_panel.tabs[index];
 
 			if (index_changed) {
 				const selected = tab_panel.selected === index;
-				const slot = tab_panel.child[index];
+				const slot = tab_panel.tabs[index];
 				this.children[0].textContent = slot;
 
 				if (selected) {
@@ -56,7 +56,7 @@ export class RegularLayoutTab extends HTMLElement {
 				}
 			}
 		} else {
-			const slot = tab_panel.child[index];
+			const slot = tab_panel.tabs[index];
 			const selected = tab_panel.selected === index;
 			const parts = selected ? "active-close close" : "close";
 			this.innerHTML = `<div part="title"></div><button part="${parts}"></button>`;
@@ -78,7 +78,7 @@ export class RegularLayoutTab extends HTMLElement {
 
 	private onTabClose = (_: Event) => {
 		if (this._tab_panel !== undefined && this._index !== undefined) {
-			this._layout?.removePanel(this._tab_panel.child[this._index]);
+			this._layout?.removePanel(this._tab_panel.tabs[this._index]);
 		}
 	};
 
@@ -90,7 +90,7 @@ export class RegularLayoutTab extends HTMLElement {
 		) {
 			const new_layout = this._layout?.save();
 			const new_tab_panel = this._layout?.getPanel(
-				this._tab_panel.child[this._index],
+				this._tab_panel.tabs[this._index],
 				new_layout,
 			);
 

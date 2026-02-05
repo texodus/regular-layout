@@ -25,7 +25,7 @@ test("should save and restore various layout types", async ({ page }) => {
 	const currentState = await saveLayout(page);
 	expect(currentState).toStrictEqual({
 		type: "child-panel",
-		child: ["AAA"],
+		tabs: ["AAA"],
 		selected: 0,
 	});
 
@@ -38,12 +38,12 @@ test("should save and restore various layout types", async ({ page }) => {
 		children: [
 			{
 				type: "child-panel",
-				child: ["AAA"],
+				tabs: ["AAA"],
 				selected: 0,
 			},
 			{
 				type: "child-panel",
-				child: ["BBB"],
+				tabs: ["BBB"],
 				selected: 0,
 			},
 		],
@@ -63,12 +63,12 @@ test("should save and restore various layout types", async ({ page }) => {
 				children: [
 					{
 						type: "child-panel",
-						child: ["AAA"],
+						tabs: ["AAA"],
 						selected: 0,
 					},
 					{
 						type: "child-panel",
-						child: ["BBB"],
+						tabs: ["BBB"],
 						selected: 0,
 					},
 				],
@@ -76,7 +76,7 @@ test("should save and restore various layout types", async ({ page }) => {
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 				selected: 0,
 			},
 		],
@@ -114,12 +114,12 @@ test("should save returns a deep clone, not a reference", async ({ page }) => {
 		children: [
 			{
 				type: "child-panel",
-				child: ["AAA"],
+				tabs: ["AAA"],
 				selected: 0,
 			},
 			{
 				type: "child-panel",
-				child: ["BBB"],
+				tabs: ["BBB"],
 				selected: 0,
 			},
 		],
@@ -136,17 +136,17 @@ test("should save and restore preserve exact size ratios", async ({ page }) => {
 		children: [
 			{
 				type: "child-panel",
-				child: ["AAA"],
+				tabs: ["AAA"],
 				selected: 0,
 			},
 			{
 				type: "child-panel",
-				child: ["BBB"],
+				tabs: ["BBB"],
 				selected: 0,
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 				selected: 0,
 			},
 		],
@@ -187,18 +187,18 @@ test("should flatten nested split panels with same orientation", async ({
 				children: [
 					{
 						type: "child-panel",
-						child: ["AAA"],
+						tabs: ["AAA"],
 					},
 					{
 						type: "child-panel",
-						child: ["BBB"],
+						tabs: ["BBB"],
 					},
 				],
 				sizes: [0.3, 0.7],
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 			},
 		],
 		sizes: [0.6, 0.4],
@@ -214,17 +214,17 @@ test("should flatten nested split panels with same orientation", async ({
 		children: [
 			{
 				type: "child-panel",
-				child: ["AAA"],
+				tabs: ["AAA"],
 				selected: 0,
 			},
 			{
 				type: "child-panel",
-				child: ["BBB"],
+				tabs: ["BBB"],
 				selected: 0,
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 				selected: 0,
 			},
 		],
@@ -238,7 +238,7 @@ test("should flatten nested split panels with same orientation", async ({
 		children: [
 			{
 				type: "child-panel",
-				child: ["AAA"],
+				tabs: ["AAA"],
 			},
 			{
 				type: "split-panel",
@@ -246,11 +246,11 @@ test("should flatten nested split panels with same orientation", async ({
 				children: [
 					{
 						type: "child-panel",
-						child: ["BBB"],
+						tabs: ["BBB"],
 					},
 					{
 						type: "child-panel",
-						child: ["CCC"],
+						tabs: ["CCC"],
 					},
 				],
 				sizes: [0.5, 0.5],
@@ -269,17 +269,17 @@ test("should flatten nested split panels with same orientation", async ({
 		children: [
 			{
 				type: "child-panel",
-				child: ["AAA"],
+				tabs: ["AAA"],
 				selected: 0,
 			},
 			{
 				type: "child-panel",
-				child: ["BBB"],
+				tabs: ["BBB"],
 				selected: 0,
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 				selected: 0,
 			},
 		],
@@ -301,7 +301,7 @@ test("should flatten nested split panels with same orientation, not at the root"
 				children: [
 					{
 						type: "child-panel",
-						child: ["AAA"],
+						tabs: ["AAA"],
 					},
 					{
 						type: "split-panel",
@@ -309,11 +309,11 @@ test("should flatten nested split panels with same orientation, not at the root"
 						children: [
 							{
 								type: "child-panel",
-								child: ["BBB"],
+								tabs: ["BBB"],
 							},
 							{
 								type: "child-panel",
-								child: ["DDD"],
+								tabs: ["DDD"],
 							},
 						],
 						sizes: [0.3, 0.7],
@@ -323,7 +323,7 @@ test("should flatten nested split panels with same orientation, not at the root"
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 			},
 		],
 		sizes: [0.6, 0.4],
@@ -343,17 +343,17 @@ test("should flatten nested split panels with same orientation, not at the root"
 				children: [
 					{
 						type: "child-panel",
-						child: ["AAA"],
+						tabs: ["AAA"],
 						selected: 0,
 					},
 					{
 						type: "child-panel",
-						child: ["BBB"],
+						tabs: ["BBB"],
 						selected: 0,
 					},
 					{
 						type: "child-panel",
-						child: ["DDD"],
+						tabs: ["DDD"],
 						selected: 0,
 					},
 				],
@@ -361,7 +361,7 @@ test("should flatten nested split panels with same orientation, not at the root"
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 				selected: 0,
 			},
 		],

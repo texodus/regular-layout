@@ -25,7 +25,7 @@ test("should insert a single panel into a single panel layout", async ({
 	const currentState = await saveLayout(page);
 	expect(currentState).toStrictEqual({
 		type: "child-panel",
-		child: ["AAA"],
+		tabs: ["AAA"],
 		selected: 0,
 	});
 
@@ -33,7 +33,7 @@ test("should insert a single panel into a single panel layout", async ({
 	const currentState2 = await saveLayout(page);
 	expect(currentState2).toStrictEqual({
 		type: "child-panel",
-		child: ["BBB", "AAA"],
+		tabs: ["BBB", "AAA"],
 		selected: 0,
 	});
 });
@@ -50,17 +50,17 @@ test("should insert panel at specific path in split panel", async ({
 		children: [
 			{
 				type: "child-panel",
-				child: ["AAA"],
+				tabs: ["AAA"],
 				selected: 0,
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 				selected: 0,
 			},
 			{
 				type: "child-panel",
-				child: ["BBB"],
+				tabs: ["BBB"],
 				selected: 0,
 			},
 		],
@@ -96,17 +96,17 @@ test("should insert panel into nested split panel", async ({ page }) => {
 				children: [
 					{
 						type: "child-panel",
-						child: ["AAA"],
+						tabs: ["AAA"],
 						selected: 0,
 					},
 					{
 						type: "child-panel",
-						child: ["BBB"],
+						tabs: ["BBB"],
 						selected: 0,
 					},
 					{
 						type: "child-panel",
-						child: ["DDD"],
+						tabs: ["DDD"],
 						selected: 0,
 					},
 				],
@@ -114,7 +114,7 @@ test("should insert panel into nested split panel", async ({ page }) => {
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 				selected: 0,
 			},
 		],
@@ -149,7 +149,7 @@ test("should split existing panel when inserting at deeper path", async ({
 		children: [
 			{
 				type: "child-panel",
-				child: ["AAA"],
+				tabs: ["AAA"],
 				selected: 0,
 			},
 			{
@@ -158,12 +158,12 @@ test("should split existing panel when inserting at deeper path", async ({
 				children: [
 					{
 						type: "child-panel",
-						child: ["BBB"],
+						tabs: ["BBB"],
 						selected: 0,
 					},
 					{
 						type: "child-panel",
-						child: ["CCC"],
+						tabs: ["CCC"],
 						selected: 0,
 					},
 				],

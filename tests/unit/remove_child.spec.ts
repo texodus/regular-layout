@@ -20,11 +20,11 @@ test("remove child from nested split panel", () => {
 		children: [
 			{
 				type: "child-panel",
-				child: ["BBB"],
+				tabs: ["BBB"],
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 			},
 		],
 		sizes: [0.6, 0.4],
@@ -39,11 +39,11 @@ test("remove child from top-level split panel", () => {
 		children: [
 			{
 				type: "child-panel",
-				child: ["AAA"],
+				tabs: ["AAA"],
 			},
 			{
 				type: "child-panel",
-				child: ["BBB"],
+				tabs: ["BBB"],
 			},
 		],
 		sizes: [0.3, 0.7],
@@ -55,14 +55,14 @@ test("remove child from top-level tab panel", () => {
 	const result = remove_child(
 		{
 			type: "child-panel",
-			child: ["AAA", "CCC"],
+			tabs: ["AAA", "CCC"],
 		},
 		"AAA",
 	);
 
 	expect(result).toStrictEqual({
 		type: "child-panel",
-		child: ["CCC"],
+		tabs: ["CCC"],
 	});
 });
 
@@ -73,11 +73,11 @@ test("remove child from split panel with 3 children", () => {
 		children: [
 			{
 				type: "child-panel",
-				child: ["AAA"],
+				tabs: ["AAA"],
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 			},
 		],
 		sizes: [0.28571428571428575, 0.7142857142857143],
@@ -95,11 +95,11 @@ test("remove deeply nested child", () => {
 				children: [
 					{
 						type: "child-panel",
-						child: ["AAA"],
+						tabs: ["AAA"],
 					},
 					{
 						type: "child-panel",
-						child: ["CCC"],
+						tabs: ["CCC"],
 					},
 				],
 				sizes: [0.5, 0.5],
@@ -107,7 +107,7 @@ test("remove deeply nested child", () => {
 			},
 			{
 				type: "child-panel",
-				child: ["DDD"],
+				tabs: ["DDD"],
 			},
 		],
 		sizes: [0.7, 0.3],
