@@ -24,7 +24,7 @@ test("Deeply alternating split partial", () => {
 				children: [
 					{
 						type: "child-panel",
-						child: ["AAA"],
+						tabs: ["AAA"],
 					},
 					{
 						type: "split-panel",
@@ -32,11 +32,11 @@ test("Deeply alternating split partial", () => {
 						children: [
 							{
 								type: "child-panel",
-								child: ["CCC"],
+								tabs: ["CCC"],
 							},
 							{
 								type: "child-panel",
-								child: ["DDD"],
+								tabs: ["DDD"],
 							},
 						],
 						sizes: [0.5, 0.5],
@@ -50,15 +50,15 @@ test("Deeply alternating split partial", () => {
 				children: [
 					{
 						type: "child-panel",
-						child: ["FFF"],
+						tabs: ["FFF"],
 					},
 					{
 						type: "child-panel",
-						child: ["BBB"],
+						tabs: ["BBB"],
 					},
 					{
 						type: "child-panel",
-						child: ["EEE"],
+						tabs: ["EEE"],
 					},
 				],
 				sizes: [0.3, 0.3, 0.4],
@@ -73,7 +73,7 @@ test("Deeply alternating split partial", () => {
 		children: [
 			{
 				type: "child-panel",
-				child: ["AAA"],
+				tabs: ["AAA"],
 				selected: 0,
 			},
 			{
@@ -82,12 +82,12 @@ test("Deeply alternating split partial", () => {
 				children: [
 					{
 						type: "child-panel",
-						child: ["CCC"],
+						tabs: ["CCC"],
 						selected: 0,
 					},
 					{
 						type: "child-panel",
-						child: ["DDD"],
+						tabs: ["DDD"],
 						selected: 0,
 					},
 				],
@@ -95,17 +95,17 @@ test("Deeply alternating split partial", () => {
 			},
 			{
 				type: "child-panel",
-				child: ["FFF"],
+				tabs: ["FFF"],
 				selected: 0,
 			},
 			{
 				type: "child-panel",
-				child: ["BBB"],
+				tabs: ["BBB"],
 				selected: 0,
 			},
 			{
 				type: "child-panel",
-				child: ["EEE"],
+				tabs: ["EEE"],
 				selected: 0,
 			},
 		],
@@ -124,11 +124,11 @@ test("Nested split panels with a single child", () => {
 				children: [
 					{
 						type: "child-panel",
-						child: ["AAA", "BBB", "CCC"],
+						tabs: ["AAA", "BBB", "CCC"],
 					},
 					{
 						type: "child-panel",
-						child: ["DDD"],
+						tabs: ["DDD"],
 					},
 				],
 				sizes: [0.5, 0.5],
@@ -143,12 +143,12 @@ test("Nested split panels with a single child", () => {
 		children: [
 			{
 				type: "child-panel",
-				child: ["AAA", "BBB", "CCC"],
+				tabs: ["AAA", "BBB", "CCC"],
 				selected: 0,
 			},
 			{
 				type: "child-panel",
-				child: ["DDD"],
+				tabs: ["DDD"],
 				selected: 0,
 			},
 		],

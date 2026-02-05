@@ -163,12 +163,12 @@ export class RegularLayoutFrame extends HTMLElement {
 		if (!new_tab_panel) {
 			new_tab_panel = {
 				type: "child-panel",
-				child: [slot],
+				tabs: [slot],
 				selected: 0,
 			};
 		}
 
-		for (let i = 0; i < new_tab_panel.child.length; i++) {
+		for (let i = 0; i < new_tab_panel.tabs.length; i++) {
 			if (i >= this._header.children.length) {
 				const new_tab = document.createElement("regular-layout-tab");
 				new_tab.populate(this._layout, new_tab_panel, i);
@@ -180,7 +180,7 @@ export class RegularLayoutFrame extends HTMLElement {
 			}
 		}
 
-		const last_index = new_tab_panel.child.length;
+		const last_index = new_tab_panel.tabs.length;
 		for (let j = this._header.children.length - 1; j >= last_index; j--) {
 			this._header.removeChild(this._header.children[j]);
 		}

@@ -25,7 +25,7 @@ test.describe("removePanel", () => {
 		const currentState = await saveLayout(page);
 		expect(currentState).toStrictEqual({
 			type: "child-panel",
-			child: ["AAA"],
+			tabs: ["AAA"],
 			selected: 0,
 		});
 	});
@@ -40,12 +40,12 @@ test.describe("removePanel", () => {
 			children: [
 				{
 					type: "child-panel",
-					child: ["AAA"],
+					tabs: ["AAA"],
 					selected: 0,
 				},
 				{
 					type: "child-panel",
-					child: ["CCC"],
+					tabs: ["CCC"],
 					selected: 0,
 				},
 			],
@@ -63,12 +63,12 @@ test.describe("removePanel", () => {
 			children: [
 				{
 					type: "child-panel",
-					child: ["BBB"],
+					tabs: ["BBB"],
 					selected: 0,
 				},
 				{
 					type: "child-panel",
-					child: ["CCC"],
+					tabs: ["CCC"],
 					selected: 0,
 				},
 			],
@@ -90,12 +90,12 @@ test.describe("removePanel", () => {
 					children: [
 						{
 							type: "child-panel",
-							child: ["AAA"],
+							tabs: ["AAA"],
 							selected: 0,
 						},
 						{
 							type: "child-panel",
-							child: ["CCC"],
+							tabs: ["CCC"],
 							selected: 0,
 						},
 					],
@@ -103,7 +103,7 @@ test.describe("removePanel", () => {
 				},
 				{
 					type: "child-panel",
-					child: ["DDD"],
+					tabs: ["DDD"],
 					selected: 0,
 				},
 			],
@@ -135,17 +135,17 @@ test.describe("tabs", () => {
 			children: [
 				{
 					type: "child-panel",
-					child: ["AAA"],
+					tabs: ["AAA"],
 					selected: 0,
 				},
 				{
 					type: "child-panel",
-					child: ["DDD", "EEE"],
+					tabs: ["DDD", "EEE"],
 					selected: 0,
 				},
 				{
 					type: "child-panel",
-					child: ["CCC"],
+					tabs: ["CCC"],
 					selected: 0,
 				},
 			],

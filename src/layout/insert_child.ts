@@ -33,7 +33,7 @@ export function insert_child(
 ): Layout {
 	const createChildPanel = (childId: string): Layout => ({
 		type: "child-panel",
-		child: [childId],
+		tabs: [childId],
 	});
 
 	if (path.length === 0) {
@@ -42,7 +42,7 @@ export function insert_child(
 			// Add to existing child-panel as a tab
 			return {
 				type: "child-panel",
-				child: [child, ...panel.child],
+				tabs: [child, ...panel.tabs],
 			};
 		} else if (orientation) {
 			// When inserting at edge of root, wrap the entire panel in a new split
@@ -105,13 +105,13 @@ export function insert_child(
 			restPath.length === 0 &&
 			orientation === undefined &&
 			index >= 0 &&
-			index <= panel.child.length
+			index <= panel.tabs.length
 		) {
-			const newChild = [...panel.child];
+			const newChild = [...panel.tabs];
 			newChild.splice(index, 0, child);
 			return {
 				...panel,
-				child: newChild,
+				tabs: newChild,
 			};
 		}
 

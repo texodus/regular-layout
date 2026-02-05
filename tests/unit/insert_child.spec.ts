@@ -28,11 +28,11 @@ test("insert into root split panel", () => {
 				children: [
 					{
 						type: "child-panel",
-						child: ["AAA"],
+						tabs: ["AAA"],
 					},
 					{
 						type: "child-panel",
-						child: ["BBB"],
+						tabs: ["BBB"],
 					},
 				],
 				sizes: [0.3, 0.7],
@@ -40,11 +40,11 @@ test("insert into root split panel", () => {
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 			},
 			{
 				type: "child-panel",
-				child: ["DDD"],
+				tabs: ["DDD"],
 			},
 		],
 		sizes: [0.39999999999999997, 0.26666666666666666, 0.3333333333333333],
@@ -68,7 +68,7 @@ test("insert into root split panel edge", () => {
 		children: [
 			{
 				type: "child-panel",
-				child: ["DDD"],
+				tabs: ["DDD"],
 			},
 			{
 				type: "split-panel",
@@ -78,11 +78,11 @@ test("insert into root split panel edge", () => {
 						children: [
 							{
 								type: "child-panel",
-								child: ["AAA"],
+								tabs: ["AAA"],
 							},
 							{
 								type: "child-panel",
-								child: ["BBB"],
+								tabs: ["BBB"],
 							},
 						],
 						sizes: [0.3, 0.7],
@@ -90,7 +90,7 @@ test("insert into root split panel edge", () => {
 					},
 					{
 						type: "child-panel",
-						child: ["CCC"],
+						tabs: ["CCC"],
 					},
 				],
 				sizes: [0.6, 0.4],
@@ -107,18 +107,18 @@ test("insert into root split panel edge along the same orientation", () => {
 		children: [
 			{
 				type: "child-panel",
-				child: ["DDD"],
+				tabs: ["DDD"],
 			},
 			{
 				type: "split-panel",
 				children: [
 					{
 						type: "child-panel",
-						child: ["AAA"],
+						tabs: ["AAA"],
 					},
 					{
 						type: "child-panel",
-						child: ["BBB"],
+						tabs: ["BBB"],
 					},
 				],
 				sizes: [0.3, 0.7],
@@ -126,7 +126,7 @@ test("insert into root split panel edge along the same orientation", () => {
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 			},
 		],
 		sizes: [0.3333333333333333, 0.39999999999999997, 0.26666666666666666],
@@ -144,11 +144,11 @@ test("stack split panel", () => {
 				children: [
 					{
 						type: "child-panel",
-						child: ["AAA"],
+						tabs: ["AAA"],
 					},
 					{
 						type: "child-panel",
-						child: ["DDD", "BBB"],
+						tabs: ["DDD", "BBB"],
 					},
 				],
 				sizes: [0.3, 0.7],
@@ -156,7 +156,7 @@ test("stack split panel", () => {
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 			},
 		],
 		sizes: [0.6, 0.4],
@@ -168,7 +168,7 @@ test("stack split panel single child after", () => {
 	const result = insert_child(LAYOUTS.SINGLE_AAA, "DDD", [1]);
 	expect(result).toStrictEqual({
 		type: "child-panel",
-		child: ["AAA", "DDD"],
+		tabs: ["AAA", "DDD"],
 	});
 });
 
@@ -176,7 +176,7 @@ test("stack split panel single child before", () => {
 	const result = insert_child(LAYOUTS.SINGLE_AAA, "DDD", [0]);
 	expect(result).toStrictEqual({
 		type: "child-panel",
-		child: ["DDD", "AAA"],
+		tabs: ["DDD", "AAA"],
 	});
 });
 
@@ -188,11 +188,11 @@ test("stack split panel two horizontal before", () => {
 		children: [
 			{
 				type: "child-panel",
-				child: ["DDD", "AAA"],
+				tabs: ["DDD", "AAA"],
 			},
 			{
 				type: "child-panel",
-				child: ["BBB"],
+				tabs: ["BBB"],
 			},
 		],
 		sizes: [0.3, 0.7],
@@ -207,11 +207,11 @@ test("stack split panel two horizontal after", () => {
 		children: [
 			{
 				type: "child-panel",
-				child: ["AAA", "DDD"],
+				tabs: ["AAA", "DDD"],
 			},
 			{
 				type: "child-panel",
-				child: ["BBB"],
+				tabs: ["BBB"],
 			},
 		],
 		sizes: [0.3, 0.7],
@@ -226,11 +226,11 @@ test("stack nested basic after", () => {
 		children: [
 			{
 				type: "child-panel",
-				child: ["AAA", "DDD"],
+				tabs: ["AAA", "DDD"],
 			},
 			{
 				type: "child-panel",
-				child: ["BBB"],
+				tabs: ["BBB"],
 			},
 		],
 		sizes: [0.3, 0.7],
@@ -253,11 +253,11 @@ test("stack nested basic after 5", () => {
 				children: [
 					{
 						type: "child-panel",
-						child: ["AAA"],
+						tabs: ["AAA"],
 					},
 					{
 						type: "child-panel",
-						child: ["BBB"],
+						tabs: ["BBB"],
 					},
 				],
 				sizes: [0.3, 0.7],
@@ -265,7 +265,7 @@ test("stack nested basic after 5", () => {
 			},
 			{
 				type: "child-panel",
-				child: ["DDD", "CCC"],
+				tabs: ["DDD", "CCC"],
 			},
 		],
 		sizes: [0.6, 0.4],
@@ -281,15 +281,15 @@ test("stack nested basic after 4", () => {
 		children: [
 			{
 				type: "child-panel",
-				child: ["AAA"],
+				tabs: ["AAA"],
 			},
 			{
 				type: "child-panel",
-				child: ["DDD"],
+				tabs: ["DDD"],
 			},
 			{
 				type: "child-panel",
-				child: ["BBB"],
+				tabs: ["BBB"],
 			},
 		],
 		sizes: [0.3333333333333333, 0.3333333333333333, 0.3333333333333333],
@@ -306,11 +306,11 @@ test("append top level split-panel", () => {
 				children: [
 					{
 						type: "child-panel",
-						child: ["AAA"],
+						tabs: ["AAA"],
 					},
 					{
 						type: "child-panel",
-						child: ["BBB"],
+						tabs: ["BBB"],
 					},
 				],
 				sizes: [0.3, 0.7],
@@ -318,11 +318,11 @@ test("append top level split-panel", () => {
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 			},
 			{
 				type: "child-panel",
-				child: ["DDD"],
+				tabs: ["DDD"],
 			},
 		],
 		sizes: [0.39999999999999997, 0.26666666666666666, 0.3333333333333333],
@@ -340,11 +340,11 @@ test("insert into top level split-panel", () => {
 				children: [
 					{
 						type: "child-panel",
-						child: ["AAA"],
+						tabs: ["AAA"],
 					},
 					{
 						type: "child-panel",
-						child: ["BBB"],
+						tabs: ["BBB"],
 					},
 				],
 				sizes: [0.3, 0.7],
@@ -352,11 +352,11 @@ test("insert into top level split-panel", () => {
 			},
 			{
 				type: "child-panel",
-				child: ["DDD"],
+				tabs: ["DDD"],
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 			},
 		],
 		sizes: [0.39999999999999997, 0.3333333333333333, 0.26666666666666666],
@@ -374,11 +374,11 @@ test("insert into top level split-panel 2", () => {
 				children: [
 					{
 						type: "child-panel",
-						child: ["AAA"],
+						tabs: ["AAA"],
 					},
 					{
 						type: "child-panel",
-						child: ["BBB"],
+						tabs: ["BBB"],
 					},
 				],
 				sizes: [0.3, 0.7],
@@ -386,7 +386,7 @@ test("insert into top level split-panel 2", () => {
 			},
 			{
 				type: "child-panel",
-				child: ["DDD", "CCC"],
+				tabs: ["DDD", "CCC"],
 			},
 		],
 		sizes: [0.6, 0.4],
@@ -405,18 +405,18 @@ test("insert at path splitting a child panel", () => {
 				children: [
 					{
 						type: "child-panel",
-						child: ["AAA"],
+						tabs: ["AAA"],
 					},
 					{
 						type: "child-panel",
-						child: ["BBB"],
+						tabs: ["BBB"],
 					},
 				],
 				sizes: [0.3, 0.7],
 			},
 			{
 				type: "child-panel",
-				child: ["CCC", "DDD"],
+				tabs: ["CCC", "DDD"],
 			},
 		],
 		sizes: [0.6, 0.4],
@@ -434,15 +434,15 @@ test("insert into nested split panel", () => {
 				children: [
 					{
 						type: "child-panel",
-						child: ["AAA"],
+						tabs: ["AAA"],
 					},
 					{
 						type: "child-panel",
-						child: ["BBB"],
+						tabs: ["BBB"],
 					},
 					{
 						type: "child-panel",
-						child: ["DDD"],
+						tabs: ["DDD"],
 					},
 				],
 				sizes: [0.19999999999999998, 0.4666666666666666, 0.3333333333333333],
@@ -450,7 +450,7 @@ test("insert into nested split panel", () => {
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 			},
 		],
 		sizes: [0.6, 0.4],
@@ -468,11 +468,11 @@ test("split a nested child panel", () => {
 				children: [
 					{
 						type: "child-panel",
-						child: ["AAA", "DDD"],
+						tabs: ["AAA", "DDD"],
 					},
 					{
 						type: "child-panel",
-						child: ["BBB"],
+						tabs: ["BBB"],
 					},
 				],
 				sizes: [0.3, 0.7],
@@ -480,7 +480,7 @@ test("split a nested child panel", () => {
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 			},
 		],
 		sizes: [0.6, 0.4],
@@ -492,7 +492,7 @@ test("insert into single child panel", () => {
 	const result = insert_child(LAYOUTS.SINGLE_ONLY, "SECOND", []);
 	expect(result).toStrictEqual({
 		type: "child-panel",
-		child: ["SECOND", "ONLY"],
+		tabs: ["SECOND", "ONLY"],
 	});
 });
 
@@ -507,7 +507,7 @@ test("insert into single child panel, on the top edge", () => {
 
 	expect(result).toStrictEqual({
 		type: "child-panel",
-		child: ["SECOND", "ONLY"],
+		tabs: ["SECOND", "ONLY"],
 	});
 });
 
@@ -527,11 +527,11 @@ test("insert into single child panel, on the top edge with split", () => {
 		children: [
 			{
 				type: "child-panel",
-				child: ["SECOND"],
+				tabs: ["SECOND"],
 			},
 			{
 				type: "child-panel",
-				child: ["ONLY"],
+				tabs: ["ONLY"],
 			},
 		],
 	});
@@ -548,7 +548,7 @@ test("insert into single child panel, on the left edge", () => {
 
 	expect(result).toStrictEqual({
 		type: "child-panel",
-		child: ["ONLY", "SECOND"],
+		tabs: ["ONLY", "SECOND"],
 	});
 });
 
@@ -566,11 +566,11 @@ test("insert into single child panel, on the bottom edge", () => {
 		children: [
 			{
 				type: "child-panel",
-				child: ["ONLY"],
+				tabs: ["ONLY"],
 			},
 			{
 				type: "child-panel",
-				child: ["SECOND"],
+				tabs: ["SECOND"],
 			},
 		],
 		sizes: [0.5, 0.5],
@@ -591,11 +591,11 @@ test("insert into single child panel, on the right edge", () => {
 		children: [
 			{
 				type: "child-panel",
-				child: ["ONLY"],
+				tabs: ["ONLY"],
 			},
 			{
 				type: "child-panel",
-				child: ["SECOND"],
+				tabs: ["SECOND"],
 			},
 		],
 		sizes: [0.5, 0.5],
@@ -606,7 +606,7 @@ test("insert into a child-panel root, on the top edge", () => {
 	const result = insert_child(LAYOUTS.SINGLE_AAA, "BBB", [0]);
 	expect(result).toStrictEqual({
 		type: "child-panel",
-		child: ["BBB", "AAA"],
+		tabs: ["BBB", "AAA"],
 	});
 });
 
@@ -618,11 +618,11 @@ test("insert into a child-panel root, on the top edge with split", () => {
 		children: [
 			{
 				type: "child-panel",
-				child: ["BBB"],
+				tabs: ["BBB"],
 			},
 			{
 				type: "child-panel",
-				child: ["AAA"],
+				tabs: ["AAA"],
 			},
 		],
 		sizes: [0.5, 0.5],
@@ -633,7 +633,7 @@ test("insert into SINGLE_TABS", () => {
 	const result = insert_child(LAYOUTS.SINGLE_TABS, "DDD", [1]);
 	expect(result).toStrictEqual({
 		type: "child-panel",
-		child: ["AAA", "DDD", "BBB", "CCC"],
+		tabs: ["AAA", "DDD", "BBB", "CCC"],
 		selected: 0,
 	});
 });
@@ -654,12 +654,12 @@ test("insert with split path into SINGLE_TABS", () => {
 		children: [
 			{
 				type: "child-panel",
-				child: ["AAA", "BBB", "CCC"],
+				tabs: ["AAA", "BBB", "CCC"],
 				selected: 0,
 			},
 			{
 				type: "child-panel",
-				child: ["DDD"],
+				tabs: ["DDD"],
 				// selected: 0,
 			},
 		],

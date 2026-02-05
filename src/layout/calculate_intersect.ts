@@ -81,7 +81,7 @@ function calculate_intersection_recursive(
 		return {
 			type: "layout-path",
 			layout: panel,
-			slot: panel.child[selected],
+			slot: panel.tabs[selected],
 			path,
 			view_window,
 			is_edge: false,

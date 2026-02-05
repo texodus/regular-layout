@@ -62,7 +62,7 @@ test("should switch between tabs by clicking", async ({ page }) => {
 
 	expect(layoutState).toMatchObject({
 		type: "child-panel",
-		child: ["AAA", "BBB", "CCC"],
+		tabs: ["AAA", "BBB", "CCC"],
 		selected: 1,
 	});
 });
@@ -113,16 +113,16 @@ test("should move a panel by dragging a selected tab", async ({ page }) => {
 		children: [
 			{
 				type: "child-panel",
-				child: ["BBB"],
+				tabs: ["BBB"],
 				selected: 0,
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 			},
 			{
 				type: "child-panel",
-				child: ["AAA"],
+				tabs: ["AAA"],
 			},
 		],
 	});
@@ -147,12 +147,12 @@ test("should move a panel by dragging a deselected tab", async ({ page }) => {
 		children: [
 			{
 				type: "child-panel",
-				child: ["AAA", "BBB"],
+				tabs: ["AAA", "BBB"],
 				selected: 0,
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 			},
 		],
 	});
@@ -197,16 +197,16 @@ test("should move a panel by dragging a deselected tab", async ({ page }) => {
 		children: [
 			{
 				type: "child-panel",
-				child: ["AAA"],
+				tabs: ["AAA"],
 				selected: 0,
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 			},
 			{
 				type: "child-panel",
-				child: ["BBB"],
+				tabs: ["BBB"],
 			},
 		],
 	});

@@ -58,7 +58,7 @@ export interface SplitLayout {
  */
 export interface TabLayout {
 	type: "child-panel";
-	child: string[];
+	tabs: string[];
 	selected?: number;
 }
 

@@ -18,19 +18,19 @@ export const LAYOUTS = {
 	/** Single panel with AAA */
 	SINGLE_AAA: {
 		type: "child-panel",
-		child: ["AAA"],
+		tabs: ["AAA"],
 	} as Layout,
 
 	/** Single panel with BBB */
 	SINGLE_BBB: {
 		type: "child-panel",
-		child: ["BBB"],
+		tabs: ["BBB"],
 	} as Layout,
 
 	/** Single panel with multiple tabs */
 	SINGLE_TABS: {
 		type: "child-panel",
-		child: ["AAA", "BBB", "CCC"],
+		tabs: ["AAA", "BBB", "CCC"],
 		selected: 0,
 	} as Layout,
 
@@ -41,11 +41,11 @@ export const LAYOUTS = {
 		children: [
 			{
 				type: "child-panel",
-				child: ["AAA"],
+				tabs: ["AAA"],
 			},
 			{
 				type: "child-panel",
-				child: ["BBB"],
+				tabs: ["BBB"],
 			},
 		],
 		sizes: [0.3, 0.7],
@@ -58,11 +58,11 @@ export const LAYOUTS = {
 		children: [
 			{
 				type: "child-panel",
-				child: ["AAA"],
+				tabs: ["AAA"],
 			},
 			{
 				type: "child-panel",
-				child: ["BBB"],
+				tabs: ["BBB"],
 			},
 		],
 		sizes: [0.5, 0.5],
@@ -75,15 +75,15 @@ export const LAYOUTS = {
 		children: [
 			{
 				type: "child-panel",
-				child: ["AAA"],
+				tabs: ["AAA"],
 			},
 			{
 				type: "child-panel",
-				child: ["BBB"],
+				tabs: ["BBB"],
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 			},
 		],
 		sizes: [0.3, 0.3, 0.4],
@@ -98,11 +98,11 @@ export const LAYOUTS = {
 				children: [
 					{
 						type: "child-panel",
-						child: ["AAA"],
+						tabs: ["AAA"],
 					},
 					{
 						type: "child-panel",
-						child: ["BBB"],
+						tabs: ["BBB"],
 					},
 				],
 				sizes: [0.3, 0.7],
@@ -110,7 +110,7 @@ export const LAYOUTS = {
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 			},
 		],
 		sizes: [0.6, 0.4],
@@ -128,18 +128,18 @@ export const LAYOUTS = {
 				children: [
 					{
 						type: "child-panel",
-						child: ["AAA"],
+						tabs: ["AAA"],
 					},
 					{
 						type: "child-panel",
-						child: ["BBB"],
+						tabs: ["BBB"],
 					},
 				],
 				sizes: [0.3, 0.7],
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 			},
 		],
 		sizes: [0.6, 0.4],
@@ -156,11 +156,11 @@ export const LAYOUTS = {
 				children: [
 					{
 						type: "child-panel",
-						child: ["AAA"],
+						tabs: ["AAA"],
 					},
 					{
 						type: "child-panel",
-						child: ["BBB"],
+						tabs: ["BBB"],
 					},
 				],
 				sizes: [0.3, 0.7],
@@ -171,11 +171,11 @@ export const LAYOUTS = {
 				children: [
 					{
 						type: "child-panel",
-						child: ["CCC"],
+						tabs: ["CCC"],
 					},
 					{
 						type: "child-panel",
-						child: ["DDD"],
+						tabs: ["DDD"],
 					},
 				],
 				sizes: [0.5, 0.5],
@@ -187,7 +187,7 @@ export const LAYOUTS = {
 	/** Single panel with DDD */
 	SINGLE_DDD: {
 		type: "child-panel",
-		child: ["DDD"],
+		tabs: ["DDD"],
 	} as Layout,
 
 	/** Two panels horizontal split (50/50) */
@@ -197,11 +197,11 @@ export const LAYOUTS = {
 		children: [
 			{
 				type: "child-panel",
-				child: ["AAA"],
+				tabs: ["AAA"],
 			},
 			{
 				type: "child-panel",
-				child: ["BBB"],
+				tabs: ["BBB"],
 			},
 		],
 		sizes: [0.5, 0.5],
@@ -214,15 +214,15 @@ export const LAYOUTS = {
 		children: [
 			{
 				type: "child-panel",
-				child: ["AAA"],
+				tabs: ["AAA"],
 			},
 			{
 				type: "child-panel",
-				child: ["BBB"],
+				tabs: ["BBB"],
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 			},
 		],
 		sizes: [0.2, 0.3, 0.5],
@@ -235,15 +235,15 @@ export const LAYOUTS = {
 		children: [
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 			},
 			{
 				type: "child-panel",
-				child: ["DDD"],
+				tabs: ["DDD"],
 			},
 			{
 				type: "child-panel",
-				child: ["EEE"],
+				tabs: ["EEE"],
 			},
 		],
 		sizes: [0.3, 0.3, 0.4],
@@ -256,15 +256,15 @@ export const LAYOUTS = {
 		children: [
 			{
 				type: "child-panel",
-				child: ["AAA"],
+				tabs: ["AAA"],
 			},
 			{
 				type: "child-panel",
-				child: ["BBB"],
+				tabs: ["BBB"],
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 			},
 		],
 		sizes: [0.123456789, 0.456789123, 0.419754088],
@@ -277,15 +277,15 @@ export const LAYOUTS = {
 		children: [
 			{
 				type: "child-panel",
-				child: ["AAA"],
+				tabs: ["AAA"],
 			},
 			{
 				type: "child-panel",
-				child: ["BBB"],
+				tabs: ["BBB"],
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 			},
 		],
 		sizes: [0.3, 0.4, 0.3],
@@ -306,25 +306,25 @@ export const LAYOUTS = {
 						children: [
 							{
 								type: "child-panel",
-								child: ["AAA"],
+								tabs: ["AAA"],
 							},
 							{
 								type: "child-panel",
-								child: ["BBB"],
+								tabs: ["BBB"],
 							},
 						],
 						sizes: [0.4, 0.6],
 					},
 					{
 						type: "child-panel",
-						child: ["CCC"],
+						tabs: ["CCC"],
 					},
 				],
 				sizes: [0.5, 0.5],
 			},
 			{
 				type: "child-panel",
-				child: ["DDD"],
+				tabs: ["DDD"],
 			},
 		],
 		sizes: [0.7, 0.3],
@@ -337,15 +337,15 @@ export const LAYOUTS = {
 		children: [
 			{
 				type: "child-panel",
-				child: ["AAA"],
+				tabs: ["AAA"],
 			},
 			{
 				type: "child-panel",
-				child: ["BBB", "DDD", "EEE"],
+				tabs: ["BBB", "DDD", "EEE"],
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 			},
 		],
 		sizes: [0.2, 0.3, 0.5],
@@ -358,12 +358,12 @@ export const LAYOUTS = {
 		children: [
 			{
 				type: "child-panel",
-				child: ["AAA", "BBB"],
+				tabs: ["AAA", "BBB"],
 				selected: 0,
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 			},
 		],
 		sizes: [0.5, 0.5],
@@ -372,20 +372,20 @@ export const LAYOUTS = {
 	/** Single panel with tabs (AAA, BBB, CCC) with selected index */
 	SINGLE_TABS_WITH_SELECTED: {
 		type: "child-panel",
-		child: ["AAA", "BBB", "CCC"],
+		tabs: ["AAA", "BBB", "CCC"],
 		selected: 0,
 	} as Layout,
 
 	/** Single panel with one child (ONLY) */
 	SINGLE_ONLY: {
 		type: "child-panel",
-		child: ["ONLY"],
+		tabs: ["ONLY"],
 	} as Layout,
 
 	/** Single panel with one child (SECOND) */
 	SINGLE_SECOND: {
 		type: "child-panel",
-		child: ["SECOND"],
+		tabs: ["SECOND"],
 	} as Layout,
 
 	/** Single panel horizontal split with one child (AAA) */
@@ -396,7 +396,7 @@ export const LAYOUTS = {
 		children: [
 			{
 				type: "child-panel",
-				child: ["AAA"],
+				tabs: ["AAA"],
 			},
 		],
 	} as Layout,
@@ -409,7 +409,7 @@ export const LAYOUTS = {
 		children: [
 			{
 				type: "child-panel",
-				child: ["AAA"],
+				tabs: ["AAA"],
 			},
 		],
 	} as Layout,
@@ -425,7 +425,7 @@ export const LAYOUTS = {
 				children: [
 					{
 						type: "child-panel",
-						child: ["AAA"],
+						tabs: ["AAA"],
 					},
 					{
 						type: "split-panel",
@@ -433,19 +433,19 @@ export const LAYOUTS = {
 						children: [
 							{
 								type: "child-panel",
-								child: ["EEE"],
+								tabs: ["EEE"],
 							},
 							{
 								type: "child-panel",
-								child: ["BBB"],
+								tabs: ["BBB"],
 							},
 							{
 								type: "child-panel",
-								child: ["DDD"],
+								tabs: ["DDD"],
 							},
 							{
 								type: "child-panel",
-								child: ["CCC"],
+								tabs: ["CCC"],
 							},
 						],
 						sizes: [0.25, 0.25, 0.25, 0.25],
@@ -455,7 +455,7 @@ export const LAYOUTS = {
 			},
 			{
 				type: "child-panel",
-				child: ["FFF"],
+				tabs: ["FFF"],
 			},
 		],
 		sizes: [0.5, 0.5],
@@ -476,25 +476,25 @@ export const LAYOUTS = {
 						children: [
 							{
 								type: "child-panel",
-								child: ["AAA"],
+								tabs: ["AAA"],
 							},
 							{
 								type: "child-panel",
-								child: ["BBB"],
+								tabs: ["BBB"],
 							},
 						],
 						sizes: [0.5, 0.5],
 					},
 					{
 						type: "child-panel",
-						child: ["DDD"],
+						tabs: ["DDD"],
 					},
 				],
 				sizes: [0.5, 0.5],
 			},
 			{
 				type: "child-panel",
-				child: ["FFF"],
+				tabs: ["FFF"],
 			},
 		],
 		sizes: [0.5, 0.5],
@@ -515,7 +515,7 @@ export const LAYOUTS = {
 						children: [
 							{
 								type: "child-panel",
-								child: ["AAA"],
+								tabs: ["AAA"],
 							},
 							{
 								type: "split-panel",
@@ -523,11 +523,11 @@ export const LAYOUTS = {
 								children: [
 									{
 										type: "child-panel",
-										child: ["BBB"],
+										tabs: ["BBB"],
 									},
 									{
 										type: "child-panel",
-										child: ["CCC"],
+										tabs: ["CCC"],
 									},
 								],
 								sizes: [0.5, 0.5],
@@ -537,14 +537,14 @@ export const LAYOUTS = {
 					},
 					{
 						type: "child-panel",
-						child: ["DDD"],
+						tabs: ["DDD"],
 					},
 				],
 				sizes: [0.5, 0.5],
 			},
 			{
 				type: "child-panel",
-				child: ["FFF"],
+				tabs: ["FFF"],
 			},
 		],
 		sizes: [0.5, 0.5],
@@ -565,7 +565,7 @@ export const LAYOUTS = {
 						children: [
 							{
 								type: "child-panel",
-								child: ["AAA"],
+								tabs: ["AAA"],
 							},
 							{
 								type: "split-panel",
@@ -573,11 +573,11 @@ export const LAYOUTS = {
 								children: [
 									{
 										type: "child-panel",
-										child: ["BBB"],
+										tabs: ["BBB"],
 									},
 									{
 										type: "child-panel",
-										child: ["CCC"],
+										tabs: ["CCC"],
 									},
 								],
 								sizes: [0.5, 0.5],
@@ -587,14 +587,14 @@ export const LAYOUTS = {
 					},
 					{
 						type: "child-panel",
-						child: ["DDD"],
+						tabs: ["DDD"],
 					},
 				],
 				sizes: [0.75, 0.25],
 			},
 			{
 				type: "child-panel",
-				child: ["FFF"],
+				tabs: ["FFF"],
 			},
 		],
 		sizes: [0.5, 0.5],
@@ -606,15 +606,15 @@ export const LAYOUTS = {
 		children: [
 			{
 				type: "child-panel",
-				child: ["AAA"],
+				tabs: ["AAA"],
 			},
 			{
 				type: "child-panel",
-				child: ["BBB"],
+				tabs: ["BBB"],
 			},
 			{
 				type: "child-panel",
-				child: ["DDD"],
+				tabs: ["DDD"],
 			},
 		],
 		sizes: [0.3, 0.6, 0.1],
@@ -630,15 +630,15 @@ export const LAYOUTS = {
 				children: [
 					{
 						type: "child-panel",
-						child: ["AAA"],
+						tabs: ["AAA"],
 					},
 					{
 						type: "child-panel",
-						child: ["BBB"],
+						tabs: ["BBB"],
 					},
 					{
 						type: "child-panel",
-						child: ["DDD"],
+						tabs: ["DDD"],
 					},
 				],
 				sizes: [0.3, 0.6, 0.1],
@@ -646,7 +646,7 @@ export const LAYOUTS = {
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 			},
 		],
 		sizes: [0.6, 0.4],
@@ -659,15 +659,15 @@ export const LAYOUTS = {
 		children: [
 			{
 				type: "child-panel",
-				child: ["AAA"],
+				tabs: ["AAA"],
 			},
 			{
 				type: "child-panel",
-				child: ["BBB"],
+				tabs: ["BBB"],
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 			},
 		],
 		sizes: [0.2, 0.3, 0.5],
@@ -687,17 +687,17 @@ export const LAYOUTS = {
 				children: [
 					{
 						type: "child-panel",
-						child: ["A"],
+						tabs: ["A"],
 					},
 					{
 						type: "child-panel",
-						child: ["B"],
+						tabs: ["B"],
 					},
 				],
 			},
 			{
 				type: "child-panel",
-				child: ["C"],
+				tabs: ["C"],
 			},
 		],
 	} as Layout,

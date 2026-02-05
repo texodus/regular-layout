@@ -28,11 +28,11 @@ test("redistribute depth 1 child", () => {
 				children: [
 					{
 						type: "child-panel",
-						child: ["AAA"],
+						tabs: ["AAA"],
 					},
 					{
 						type: "child-panel",
-						child: ["BBB"],
+						tabs: ["BBB"],
 					},
 				],
 				sizes: [0.3, 0.7],
@@ -40,7 +40,7 @@ test("redistribute depth 1 child", () => {
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 			},
 		],
 		sizes: [0.5, 0.5],
@@ -58,11 +58,11 @@ test("redistribute depth 2 children", () => {
 				children: [
 					{
 						type: "child-panel",
-						child: ["AAA"],
+						tabs: ["AAA"],
 					},
 					{
 						type: "child-panel",
-						child: ["BBB"],
+						tabs: ["BBB"],
 					},
 				],
 				sizes: [0.19999999999999998, 0.7999999999999999],
@@ -70,7 +70,7 @@ test("redistribute depth 2 children", () => {
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 			},
 		],
 		sizes: [0.6, 0.4],
@@ -92,15 +92,15 @@ test("redistribute with 3 children", () => {
 				children: [
 					{
 						type: "child-panel",
-						child: ["AAA"],
+						tabs: ["AAA"],
 					},
 					{
 						type: "child-panel",
-						child: ["BBB"],
+						tabs: ["BBB"],
 					},
 					{
 						type: "child-panel",
-						child: ["DDD"],
+						tabs: ["DDD"],
 					},
 				],
 				sizes: [0.19999999999999998, 0.6857142857142857, 0.1142857142857143],
@@ -108,7 +108,7 @@ test("redistribute with 3 children", () => {
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 			},
 		],
 		sizes: [0.6, 0.4],
@@ -132,7 +132,7 @@ test("redistribute nested spec with 4 children", () => {
 				children: [
 					{
 						type: "child-panel",
-						child: ["AAA"],
+						tabs: ["AAA"],
 					},
 					{
 						type: "split-panel",
@@ -140,19 +140,19 @@ test("redistribute nested spec with 4 children", () => {
 						children: [
 							{
 								type: "child-panel",
-								child: ["EEE"],
+								tabs: ["EEE"],
 							},
 							{
 								type: "child-panel",
-								child: ["BBB"],
+								tabs: ["BBB"],
 							},
 							{
 								type: "child-panel",
-								child: ["DDD"],
+								tabs: ["DDD"],
 							},
 							{
 								type: "child-panel",
-								child: ["CCC"],
+								tabs: ["CCC"],
 							},
 						],
 						sizes: [0.2, 0.2, 0.3, 0.3],
@@ -162,7 +162,7 @@ test("redistribute nested spec with 4 children", () => {
 			},
 			{
 				type: "child-panel",
-				child: ["FFF"],
+				tabs: ["FFF"],
 			},
 		],
 		sizes: [0.5, 0.5],
@@ -189,25 +189,25 @@ test("nested aligned splitpanels", () => {
 						children: [
 							{
 								type: "child-panel",
-								child: ["AAA"],
+								tabs: ["AAA"],
 							},
 							{
 								type: "child-panel",
-								child: ["BBB"],
+								tabs: ["BBB"],
 							},
 						],
 						sizes: [0.3, 0.7],
 					},
 					{
 						type: "child-panel",
-						child: ["DDD"],
+						tabs: ["DDD"],
 					},
 				],
 				sizes: [0.5, 0.5],
 			},
 			{
 				type: "child-panel",
-				child: ["FFF"],
+				tabs: ["FFF"],
 			},
 		],
 		sizes: [0.5, 0.5],
@@ -234,7 +234,7 @@ test("nested aligned splitpanels, reversed orientation", () => {
 						children: [
 							{
 								type: "child-panel",
-								child: ["AAA"],
+								tabs: ["AAA"],
 							},
 							{
 								type: "split-panel",
@@ -242,11 +242,11 @@ test("nested aligned splitpanels, reversed orientation", () => {
 								children: [
 									{
 										type: "child-panel",
-										child: ["BBB"],
+										tabs: ["BBB"],
 									},
 									{
 										type: "child-panel",
-										child: ["CCC"],
+										tabs: ["CCC"],
 									},
 								],
 								sizes: [0.3, 0.7],
@@ -256,14 +256,14 @@ test("nested aligned splitpanels, reversed orientation", () => {
 					},
 					{
 						type: "child-panel",
-						child: ["DDD"],
+						tabs: ["DDD"],
 					},
 				],
 				sizes: [0.5, 0.5],
 			},
 			{
 				type: "child-panel",
-				child: ["FFF"],
+				tabs: ["FFF"],
 			},
 		],
 		sizes: [0.5, 0.5],
@@ -290,7 +290,7 @@ test("nested aligned splitpanels, reversed orientation with asymmetric sizes", (
 						children: [
 							{
 								type: "child-panel",
-								child: ["AAA"],
+								tabs: ["AAA"],
 							},
 							{
 								type: "split-panel",
@@ -298,11 +298,11 @@ test("nested aligned splitpanels, reversed orientation with asymmetric sizes", (
 								children: [
 									{
 										type: "child-panel",
-										child: ["BBB"],
+										tabs: ["BBB"],
 									},
 									{
 										type: "child-panel",
-										child: ["CCC"],
+										tabs: ["CCC"],
 									},
 								],
 								sizes: [0.3666666666666667, 0.6333333333333333],
@@ -312,14 +312,14 @@ test("nested aligned splitpanels, reversed orientation with asymmetric sizes", (
 					},
 					{
 						type: "child-panel",
-						child: ["DDD"],
+						tabs: ["DDD"],
 					},
 				],
 				sizes: [0.75, 0.25],
 			},
 			{
 				type: "child-panel",
-				child: ["FFF"],
+				tabs: ["FFF"],
 			},
 		],
 		sizes: [0.5, 0.5],

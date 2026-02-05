@@ -26,14 +26,14 @@ import { EMPTY_PANEL } from "./types.ts";
 export function remove_child(panel: Layout, child: string): Layout {
 	// If this is a child panel, handle tab removal
 	if (panel.type === "child-panel") {
-		if (panel.child.includes(child)) {
-			const newChild = panel.child.filter((c) => c !== child);
+		if (panel.tabs.includes(child)) {
+			const newChild = panel.tabs.filter((c) => c !== child);
 			if (newChild.length === 0) {
 				return structuredClone(EMPTY_PANEL);
 			}
 			return {
 				type: "child-panel",
-				child: newChild,
+				tabs: newChild,
 			};
 		}
 
@@ -46,7 +46,7 @@ export function remove_child(panel: Layout, child: string): Layout {
 	// Try to remove the child from this split panel's children
 	const index = result.children.findIndex((p) => {
 		if (p.type === "child-panel") {
-			return p.child.includes(child);
+			return p.tabs.includes(child);
 		}
 
 		return false;
@@ -54,7 +54,7 @@ export function remove_child(panel: Layout, child: string): Layout {
 
 	if (index !== -1) {
 		const tab_layout = result.children[index] as TabLayout;
-		if (tab_layout.child.length === 1) {
+		if (tab_layout.tabs.length === 1) {
 			// Found the child at this level - remove it
 			const newChildren = result.children.filter((_, i) => i !== index);
 			const newSizes = remove_and_redistribute(result.sizes, index);
@@ -67,10 +67,10 @@ export function remove_child(panel: Layout, child: string): Layout {
 			result.children = newChildren;
 			result.sizes = newSizes;
 		} else {
-			tab_layout.child.splice(tab_layout.child.indexOf(child), 1);
+			tab_layout.tabs.splice(tab_layout.tabs.indexOf(child), 1);
 			if (
 				tab_layout.selected &&
-				tab_layout.selected >= tab_layout.child.length
+				tab_layout.selected >= tab_layout.tabs.length
 			) {
 				tab_layout.selected--;
 			}

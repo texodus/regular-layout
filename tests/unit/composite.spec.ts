@@ -30,7 +30,7 @@ test("cursor near left edge of same orientation", () => {
 				children: [
 					{
 						type: "child-panel",
-						child: ["AAA"],
+						tabs: ["AAA"],
 					},
 					{
 						type: "split-panel",
@@ -39,11 +39,11 @@ test("cursor near left edge of same orientation", () => {
 						children: [
 							{
 								type: "child-panel",
-								child: ["DDD"],
+								tabs: ["DDD"],
 							},
 							{
 								type: "child-panel",
-								child: ["BBB"],
+								tabs: ["BBB"],
 							},
 						],
 					},
@@ -53,7 +53,7 @@ test("cursor near left edge of same orientation", () => {
 			},
 			{
 				type: "child-panel",
-				child: ["CCC"],
+				tabs: ["CCC"],
 			},
 		],
 		sizes: [0.6, 0.4],
@@ -71,7 +71,7 @@ test("cursor near top edge of opposite orientation", () => {
 		children: [
 			{
 				type: "child-panel",
-				child: ["DDD"],
+				tabs: ["DDD"],
 			},
 			{
 				type: "split-panel",
@@ -81,11 +81,11 @@ test("cursor near top edge of opposite orientation", () => {
 						children: [
 							{
 								type: "child-panel",
-								child: ["AAA"],
+								tabs: ["AAA"],
 							},
 							{
 								type: "child-panel",
-								child: ["BBB"],
+								tabs: ["BBB"],
 							},
 						],
 						sizes: [0.3, 0.7],
@@ -93,7 +93,7 @@ test("cursor near top edge of opposite orientation", () => {
 					},
 					{
 						type: "child-panel",
-						child: ["CCC"],
+						tabs: ["CCC"],
 					},
 				],
 				sizes: [0.6, 0.4],
@@ -125,11 +125,11 @@ test("cursor near bottom edge but with opposite orientation", () => {
 						children: [
 							{
 								type: "child-panel",
-								child: ["AAA"],
+								tabs: ["AAA"],
 							},
 							{
 								type: "child-panel",
-								child: ["BBB"],
+								tabs: ["BBB"],
 							},
 						],
 						sizes: [0.3, 0.7],
@@ -137,7 +137,7 @@ test("cursor near bottom edge but with opposite orientation", () => {
 					},
 					{
 						type: "child-panel",
-						child: ["CCC"],
+						tabs: ["CCC"],
 					},
 				],
 				sizes: [0.6, 0.4],
@@ -145,7 +145,7 @@ test("cursor near bottom edge but with opposite orientation", () => {
 			},
 			{
 				type: "child-panel",
-				child: ["DDD"],
+				tabs: ["DDD"],
 			},
 		],
 	});
@@ -166,7 +166,7 @@ test("arbitrary regression also", () => {
 						children: [
 							{
 								type: "child-panel",
-								child: ["AAA"],
+								tabs: ["AAA"],
 								selected: 0,
 							},
 							{
@@ -175,12 +175,12 @@ test("arbitrary regression also", () => {
 								children: [
 									{
 										type: "child-panel",
-										child: ["BBB"],
+										tabs: ["BBB"],
 										selected: 0,
 									},
 									{
 										type: "child-panel",
-										child: ["CCC"],
+										tabs: ["CCC"],
 										selected: 0,
 									},
 								],
@@ -191,7 +191,7 @@ test("arbitrary regression also", () => {
 					},
 					{
 						type: "child-panel",
-						child: ["EEE"],
+						tabs: ["EEE"],
 						selected: 0,
 					},
 				],
@@ -199,7 +199,7 @@ test("arbitrary regression also", () => {
 			},
 			{
 				type: "child-panel",
-				child: ["FFF", "GGG", "HHH"],
+				tabs: ["FFF", "GGG", "HHH"],
 				selected: 0,
 			},
 		],
@@ -226,7 +226,7 @@ test("arbitrary regression also", () => {
 								children: [
 									{
 										type: "child-panel",
-										child: ["AAA"],
+										tabs: ["AAA"],
 										selected: 0,
 									},
 									{
@@ -235,12 +235,12 @@ test("arbitrary regression also", () => {
 										children: [
 											{
 												type: "child-panel",
-												child: ["BBB"],
+												tabs: ["BBB"],
 												selected: 0,
 											},
 											{
 												type: "child-panel",
-												child: ["CCC"],
+												tabs: ["CCC"],
 												selected: 0,
 											},
 										],
@@ -251,7 +251,7 @@ test("arbitrary regression also", () => {
 							},
 							{
 								type: "child-panel",
-								child: ["EEE"],
+								tabs: ["EEE"],
 								selected: 0,
 							},
 						],
@@ -259,7 +259,7 @@ test("arbitrary regression also", () => {
 					},
 					{
 						type: "child-panel",
-						child: ["FFF", "GGG", "HHH"],
+						tabs: ["FFF", "GGG", "HHH"],
 						selected: 0,
 					},
 				],
@@ -267,7 +267,7 @@ test("arbitrary regression also", () => {
 			},
 			{
 				type: "child-panel",
-				child: ["QQQ"],
+				tabs: ["QQQ"],
 				// selected: 0,
 			},
 		],

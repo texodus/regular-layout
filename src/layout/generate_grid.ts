@@ -104,7 +104,7 @@ function build_cells(
 		const selected = panel.selected ?? 0;
 		return [
 			{
-				child: panel.child[selected],
+				child: panel.tabs[selected],
 				colStart: find_track_index(physics, colPositions, colStart),
 				colEnd: find_track_index(physics, colPositions, colEnd),
 				rowStart: find_track_index(physics, rowPositions, rowStart),
@@ -182,8 +182,8 @@ const child_template = (
  *   type: "split-panel",
  *   orientation: "horizontal",
  *   children: [
- *     { type: "child-panel", child: "sidebar" },
- *     { type: "child-panel", child: "main" }
+ *     { type: "child-panel", tabs: "sidebar" },
+ *     { type: "child-panel", tabs: "main" }
  *   ],
  *   sizes: [0.25, 0.75]
  * };
@@ -204,7 +204,7 @@ export function create_css_grid_layout(
 		const selected = layout.selected ?? 0;
 		return [
 			host_template("100%", "100%"),
-			child_template(physics, layout.child[selected], "1", "1"),
+			child_template(physics, layout.tabs[selected], "1", "1"),
 		].join("\n");
 	}
 
