@@ -33,6 +33,7 @@ import { redistribute_panel_sizes } from "./layout/redistribute_panel_sizes.ts";
 import { updateOverlaySheet } from "./layout/generate_overlay.ts";
 import { calculate_edge } from "./layout/calculate_edge.ts";
 import { flatten } from "./layout/flatten.ts";
+import { calculate_path } from "./layout/calculate_path.ts";
 import {
 	DEFAULT_PHYSICS,
 	type PhysicsUpdate,
@@ -149,6 +150,16 @@ export class RegularLayout extends HTMLElement {
 	): LayoutPath | null => {
 		const [col, row, _] = this.relativeCoordinates(coordinates, false);
 		return calculate_intersection(col, row, this._panel);
+	};
+
+	/**
+	 * Calculates the index path for a panel with the given name.
+	 *
+	 * @param name - The name of the panel to find.
+	 * @returns The panel's index path if found, `null` otherwise.
+	 */
+	calculatePath = (name: string): number[] | null => {
+		return calculate_path(name, this._panel);
 	};
 
 	/**
