@@ -15,27 +15,27 @@ import type { Layout } from "../../src/layout/types.ts";
 
 test("Deeply alternating split partial", () => {
 	const test: Layout = {
-		type: "split-panel",
+		type: "split-layout",
 		orientation: "horizontal",
 		children: [
 			{
-				type: "split-panel",
+				type: "split-layout",
 				orientation: "horizontal",
 				children: [
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["AAA"],
 					},
 					{
-						type: "split-panel",
+						type: "split-layout",
 						orientation: "vertical",
 						children: [
 							{
-								type: "child-panel",
+								type: "tab-layout",
 								tabs: ["CCC"],
 							},
 							{
-								type: "child-panel",
+								type: "tab-layout",
 								tabs: ["DDD"],
 							},
 						],
@@ -45,19 +45,19 @@ test("Deeply alternating split partial", () => {
 				sizes: [0.5, 0.5],
 			},
 			{
-				type: "split-panel",
+				type: "split-layout",
 				orientation: "horizontal",
 				children: [
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["FFF"],
 					},
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["BBB"],
 					},
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["EEE"],
 					},
 				],
@@ -68,25 +68,25 @@ test("Deeply alternating split partial", () => {
 	};
 
 	expect(flatten(test)).toStrictEqual({
-		type: "split-panel",
+		type: "split-layout",
 		orientation: "horizontal",
 		children: [
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["AAA"],
 				selected: 0,
 			},
 			{
-				type: "split-panel",
+				type: "split-layout",
 				orientation: "vertical",
 				children: [
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["CCC"],
 						selected: 0,
 					},
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["DDD"],
 						selected: 0,
 					},
@@ -94,17 +94,17 @@ test("Deeply alternating split partial", () => {
 				sizes: [0.5, 0.5],
 			},
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["FFF"],
 				selected: 0,
 			},
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["BBB"],
 				selected: 0,
 			},
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["EEE"],
 				selected: 0,
 			},
@@ -115,19 +115,19 @@ test("Deeply alternating split partial", () => {
 
 test("Nested split panels with a single child", () => {
 	const test: Layout = {
-		type: "split-panel",
+		type: "split-layout",
 		orientation: "horizontal",
 		children: [
 			{
-				type: "split-panel",
+				type: "split-layout",
 				orientation: "vertical",
 				children: [
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["AAA", "BBB", "CCC"],
 					},
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["DDD"],
 					},
 				],
@@ -138,16 +138,16 @@ test("Nested split panels with a single child", () => {
 	};
 
 	expect(flatten(test)).toStrictEqual({
-		type: "split-panel",
+		type: "split-layout",
 		orientation: "vertical",
 		children: [
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["AAA", "BBB", "CCC"],
 				selected: 0,
 			},
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["DDD"],
 				selected: 0,
 			},

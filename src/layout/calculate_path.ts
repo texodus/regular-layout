@@ -9,7 +9,7 @@
 // ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-import type { Layout } from "./types.ts";
+import type { Layout, LayoutPathTraversal } from "./types.ts";
 
 /**
  * Calculates the index path for a panel with the given name.
@@ -28,9 +28,9 @@ export function calculate_path(name: string, layout: Layout): number[] | null {
 function calculate_path_recursive(
 	name: string,
 	panel: Layout,
-	path: number[],
+	path: LayoutPathTraversal,
 ): number[] | null {
-	if (panel.type === "child-panel") {
+	if (panel.type === "tab-layout") {
 		if (!panel.tabs.includes(name)) {
 			return null;
 		}

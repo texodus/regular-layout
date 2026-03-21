@@ -24,7 +24,7 @@ test("should insert a single panel into a single panel layout", async ({
 	await setupLayout(page, LAYOUTS.SINGLE_AAA);
 	const currentState = await saveLayout(page);
 	expect(currentState).toStrictEqual({
-		type: "child-panel",
+		type: "tab-layout",
 		tabs: ["AAA"],
 		selected: 0,
 	});
@@ -32,7 +32,7 @@ test("should insert a single panel into a single panel layout", async ({
 	await insertPanel(page, "BBB", []);
 	const currentState2 = await saveLayout(page);
 	expect(currentState2).toStrictEqual({
-		type: "child-panel",
+		type: "tab-layout",
 		tabs: ["BBB", "AAA"],
 		selected: 0,
 	});
@@ -45,21 +45,21 @@ test("should insert panel at specific path in split panel", async ({
 	await insertPanel(page, "CCC", [1]);
 	const afterInsert = await saveLayout(page);
 	expect(afterInsert).toStrictEqual({
-		type: "split-panel",
+		type: "split-layout",
 		orientation: "horizontal",
 		children: [
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["AAA"],
 				selected: 0,
 			},
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["CCC"],
 				selected: 0,
 			},
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["BBB"],
 				selected: 0,
 			},
@@ -87,25 +87,25 @@ test("should insert panel into nested split panel", async ({ page }) => {
 	});
 
 	expect(afterInsert).toStrictEqual({
-		type: "split-panel",
+		type: "split-layout",
 		orientation: "horizontal",
 		children: [
 			{
-				type: "split-panel",
+				type: "split-layout",
 				orientation: "vertical",
 				children: [
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["AAA"],
 						selected: 0,
 					},
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["BBB"],
 						selected: 0,
 					},
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["DDD"],
 						selected: 0,
 					},
@@ -113,7 +113,7 @@ test("should insert panel into nested split panel", async ({ page }) => {
 				sizes: [0.19999999999999998, 0.4666666666666666, 0.3333333333333333],
 			},
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["CCC"],
 				selected: 0,
 			},
@@ -144,25 +144,25 @@ test("should split existing panel when inserting at deeper path", async ({
 	});
 
 	expect(afterInsert).toStrictEqual({
-		type: "split-panel",
+		type: "split-layout",
 		orientation: "horizontal",
 		children: [
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["AAA"],
 				selected: 0,
 			},
 			{
-				type: "split-panel",
+				type: "split-layout",
 				orientation: "vertical",
 				children: [
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["BBB"],
 						selected: 0,
 					},
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["CCC"],
 						selected: 0,
 					},

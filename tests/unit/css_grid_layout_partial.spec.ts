@@ -17,29 +17,29 @@ import { DEFAULT_PHYSICS } from "../../src/layout/constants.ts";
 
 test("Deeply alternating split with grid-based overlay", () => {
 	const test: Layout = {
-		type: "split-panel",
+		type: "split-layout",
 		children: [
 			{
-				type: "split-panel",
+				type: "split-layout",
 				children: [
 					{
-						type: "split-panel",
+						type: "split-layout",
 						orientation: "horizontal",
 						children: [
 							{
-								type: "child-panel",
+								type: "tab-layout",
 								tabs: ["AAA"],
 							},
 							{
-								type: "split-panel",
+								type: "split-layout",
 								orientation: "vertical",
 								children: [
 									{
-										type: "child-panel",
+										type: "tab-layout",
 										tabs: ["BBB"],
 									},
 									{
-										type: "child-panel",
+										type: "tab-layout",
 										tabs: ["CCC"],
 									},
 								],
@@ -49,7 +49,7 @@ test("Deeply alternating split with grid-based overlay", () => {
 						sizes: [0.5, 0.5],
 					},
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["DDD"],
 					},
 				],
@@ -57,7 +57,7 @@ test("Deeply alternating split with grid-based overlay", () => {
 				orientation: "vertical",
 			},
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["EEE"],
 			},
 		],

@@ -16,14 +16,14 @@ import { remove_child } from "../../src/layout/remove_child.ts";
 test("remove child from nested split panel", () => {
 	const result = remove_child(LAYOUTS.NESTED_BASIC, "AAA");
 	expect(result).toStrictEqual({
-		type: "split-panel",
+		type: "split-layout",
 		children: [
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["BBB"],
 			},
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["CCC"],
 			},
 		],
@@ -35,14 +35,14 @@ test("remove child from nested split panel", () => {
 test("remove child from top-level split panel", () => {
 	const result = remove_child(LAYOUTS.NESTED_BASIC, "CCC");
 	expect(result).toStrictEqual({
-		type: "split-panel",
+		type: "split-layout",
 		children: [
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["AAA"],
 			},
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["BBB"],
 			},
 		],
@@ -54,14 +54,14 @@ test("remove child from top-level split panel", () => {
 test("remove child from top-level tab panel", () => {
 	const result = remove_child(
 		{
-			type: "child-panel",
+			type: "tab-layout",
 			tabs: ["AAA", "CCC"],
 		},
 		"AAA",
 	);
 
 	expect(result).toStrictEqual({
-		type: "child-panel",
+		type: "tab-layout",
 		tabs: ["CCC"],
 	});
 });
@@ -69,14 +69,14 @@ test("remove child from top-level tab panel", () => {
 test("remove child from split panel with 3 children", () => {
 	const result = remove_child(LAYOUTS.THREE_HORIZONTAL_CUSTOM, "BBB");
 	expect(result).toStrictEqual({
-		type: "split-panel",
+		type: "split-layout",
 		children: [
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["AAA"],
 			},
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["CCC"],
 			},
 		],
@@ -88,17 +88,17 @@ test("remove child from split panel with 3 children", () => {
 test("remove deeply nested child", () => {
 	const result = remove_child(LAYOUTS.DEEPLY_NESTED_ALT, "BBB");
 	expect(result).toStrictEqual({
-		type: "split-panel",
+		type: "split-layout",
 		children: [
 			{
-				type: "split-panel",
+				type: "split-layout",
 				children: [
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["AAA"],
 					},
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["CCC"],
 					},
 				],
@@ -106,7 +106,7 @@ test("remove deeply nested child", () => {
 				orientation: "horizontal",
 			},
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["DDD"],
 			},
 		],

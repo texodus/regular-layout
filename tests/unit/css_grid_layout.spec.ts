@@ -33,7 +33,7 @@ test("simple test", async () => {
 
 test("single child panel", () => {
 	const singleChild: Layout = {
-		type: "child-panel",
+		type: "tab-layout",
 		tabs: ["ONLY"],
 	};
 
@@ -49,17 +49,17 @@ test("single child panel", () => {
 
 test("regressions", () => {
 	const test: Layout = {
-		type: "split-panel",
+		type: "split-layout",
 		children: [
 			{
-				type: "split-panel",
+				type: "split-layout",
 				children: [
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["AAA"],
 					},
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["BBB"],
 					},
 				],
@@ -67,7 +67,7 @@ test("regressions", () => {
 				orientation: "vertical",
 			},
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["CCC"],
 			},
 		],
@@ -92,32 +92,32 @@ test("regressions", () => {
 
 test("deeply nested css grid", () => {
 	const test: Layout = {
-		type: "split-panel",
+		type: "split-layout",
 		children: [
 			{
-				type: "split-panel",
+				type: "split-layout",
 				children: [
 					{
-						type: "split-panel",
+						type: "split-layout",
 						orientation: "horizontal",
 						children: [
 							{
-								type: "child-panel",
+								type: "tab-layout",
 								tabs: ["AAA"],
 							},
 							{
-								type: "child-panel",
+								type: "tab-layout",
 								tabs: ["EEE"],
 							},
 						],
 						sizes: [0.5, 0.5],
 					},
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["BBB"],
 					},
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["DDD"],
 					},
 				],
@@ -125,7 +125,7 @@ test("deeply nested css grid", () => {
 				orientation: "vertical",
 			},
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["CCC"],
 			},
 		],
@@ -152,32 +152,32 @@ test("deeply nested css grid", () => {
 
 test("Deeply nested CSS grid part 2", () => {
 	const test: Layout = {
-		type: "split-panel",
+		type: "split-layout",
 		children: [
 			{
-				type: "split-panel",
+				type: "split-layout",
 				children: [
 					{
-						type: "split-panel",
+						type: "split-layout",
 						orientation: "horizontal",
 						children: [
 							{
-								type: "child-panel",
+								type: "tab-layout",
 								tabs: ["AAA"],
 							},
 							{
-								type: "child-panel",
+								type: "tab-layout",
 								tabs: ["EEE"],
 							},
 						],
 						sizes: [0.5, 0.5],
 					},
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["BBB"],
 					},
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["DDD"],
 					},
 				],
@@ -185,15 +185,15 @@ test("Deeply nested CSS grid part 2", () => {
 				orientation: "vertical",
 			},
 			{
-				type: "split-panel",
+				type: "split-layout",
 				orientation: "horizontal",
 				children: [
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["CCC"],
 					},
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["FFF"],
 					},
 				],
@@ -224,17 +224,17 @@ test("Deeply nested CSS grid part 2", () => {
 
 test("parallel", () => {
 	const test: Layout = {
-		type: "split-panel",
+		type: "split-layout",
 		children: [
 			{
-				type: "split-panel",
+				type: "split-layout",
 				children: [
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["AAA"],
 					},
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["BBB"],
 					},
 				],
@@ -242,11 +242,11 @@ test("parallel", () => {
 				orientation: "vertical",
 			},
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["DDD"],
 			},
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["CCC"],
 			},
 		],
@@ -270,19 +270,19 @@ test("parallel", () => {
 	);
 });
 
-test("Parallel split-panels with different sizes", () => {
+test("Parallel split-layouts with different sizes", () => {
 	const test: Layout = {
-		type: "split-panel",
+		type: "split-layout",
 		children: [
 			{
-				type: "split-panel",
+				type: "split-layout",
 				children: [
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["AAA"],
 					},
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["BBB"],
 					},
 				],
@@ -290,14 +290,14 @@ test("Parallel split-panels with different sizes", () => {
 				orientation: "vertical",
 			},
 			{
-				type: "split-panel",
+				type: "split-layout",
 				children: [
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["CCC"],
 					},
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["DDD"],
 					},
 				],
@@ -327,29 +327,29 @@ test("Parallel split-panels with different sizes", () => {
 
 test("Deeply alternating split", () => {
 	const test: Layout = {
-		type: "split-panel",
+		type: "split-layout",
 		children: [
 			{
-				type: "split-panel",
+				type: "split-layout",
 				children: [
 					{
-						type: "split-panel",
+						type: "split-layout",
 						orientation: "horizontal",
 						children: [
 							{
-								type: "child-panel",
+								type: "tab-layout",
 								tabs: ["VfssXzLK"],
 							},
 							{
-								type: "split-panel",
+								type: "split-layout",
 								orientation: "vertical",
 								children: [
 									{
-										type: "child-panel",
+										type: "tab-layout",
 										tabs: ["qsAwxKvs"],
 									},
 									{
-										type: "child-panel",
+										type: "tab-layout",
 										tabs: ["AAA"],
 									},
 								],
@@ -359,7 +359,7 @@ test("Deeply alternating split", () => {
 						sizes: [0.5, 0.5],
 					},
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["BBB"],
 					},
 				],
@@ -367,7 +367,7 @@ test("Deeply alternating split", () => {
 				orientation: "vertical",
 			},
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["CCC"],
 			},
 		],

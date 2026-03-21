@@ -23,7 +23,7 @@ import type { Layout } from "./types.ts";
  * @returns A new flattened layout tree (original is not mutated).
  */
 export function flatten(layout: Layout): Layout {
-	if (layout.type === "child-panel") {
+	if (layout.type === "tab-layout") {
 		layout.selected = layout.selected || 0;
 		return layout;
 	}
@@ -36,7 +36,7 @@ export function flatten(layout: Layout): Layout {
 		const flattenedChild = flatten(child);
 
 		if (
-			flattenedChild.type === "split-panel" &&
+			flattenedChild.type === "split-layout" &&
 			flattenedChild.orientation === layout.orientation
 		) {
 			for (let j = 0; j < flattenedChild.children.length; j++) {
@@ -54,7 +54,7 @@ export function flatten(layout: Layout): Layout {
 	}
 
 	return {
-		type: "split-panel",
+		type: "split-layout",
 		orientation: layout.orientation,
 		children: flattenedChildren,
 		sizes: flattenedSizes,

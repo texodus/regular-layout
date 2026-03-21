@@ -9,7 +9,13 @@
 // ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-import type { LayoutPath, LayoutDivider, Layout, ViewWindow } from "./types.ts";
+import type {
+	LayoutPath,
+	LayoutDivider,
+	Layout,
+	ViewWindow,
+	LayoutPathTraversal,
+} from "./types.ts";
 
 const VIEW_WINDOW = {
 	row_start: 0,
@@ -67,14 +73,14 @@ function calculate_intersection_recursive(
 	check_dividers: { rect: DOMRect; size: number } | null,
 	parent_orientation: "horizontal" | "vertical" | null = null,
 	view_window: ViewWindow = structuredClone(VIEW_WINDOW),
-	path: number[] = [],
+	path: LayoutPathTraversal = [],
 ): LayoutPath | null | LayoutDivider {
 	if (column < 0 || row < 0 || column > 1 || row > 1) {
 		return null;
 	}
 
 	// Base case: if this is a child panel, return its name
-	if (panel.type === "child-panel") {
+	if (panel.type === "tab-layout") {
 		const selected = panel.selected ?? 0;
 		const col_width = view_window.col_end - view_window.col_start;
 		const row_height = view_window.row_end - view_window.row_start;

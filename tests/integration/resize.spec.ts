@@ -22,7 +22,7 @@ test("should resize panels by dragging dividers and preserve state with save/res
 }) => {
 	await setupLayout(page);
 	const initialState = await saveLayout(page);
-	expect(initialState).toHaveProperty("type", "split-panel");
+	expect(initialState).toHaveProperty("type", "split-layout");
 	expect(initialState).toHaveProperty("children");
 	expect(initialState).toHaveProperty("sizes");
 	const layoutBox = await page.locator("regular-layout").boundingBox();
@@ -35,7 +35,7 @@ test("should resize panels by dragging dividers and preserve state with save/res
 	await dragMouse(page, dividerX, dividerY, dividerX + dragDistance, dividerY);
 	const resizedState = await saveLayout(page);
 	expect(resizedState).not.toEqual(initialState);
-	expect(resizedState).toHaveProperty("type", "split-panel");
+	expect(resizedState).toHaveProperty("type", "split-layout");
 	expect(resizedState).toHaveProperty("sizes");
 	await restoreLayout(page, initialState);
 	const restored1 = await saveLayout(page);

@@ -24,7 +24,7 @@ test("should save and restore various layout types", async ({ page }) => {
 	await setupLayout(page, LAYOUTS.SINGLE_AAA);
 	const currentState = await saveLayout(page);
 	expect(currentState).toStrictEqual({
-		type: "child-panel",
+		type: "tab-layout",
 		tabs: ["AAA"],
 		selected: 0,
 	});
@@ -33,16 +33,16 @@ test("should save and restore various layout types", async ({ page }) => {
 	await restoreLayout(page, LAYOUTS.TWO_HORIZONTAL);
 	const currentState2 = await saveLayout(page);
 	expect(currentState2).toStrictEqual({
-		type: "split-panel",
+		type: "split-layout",
 		orientation: "horizontal",
 		children: [
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["AAA"],
 				selected: 0,
 			},
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["BBB"],
 				selected: 0,
 			},
@@ -54,20 +54,20 @@ test("should save and restore various layout types", async ({ page }) => {
 	await restoreLayout(page, LAYOUTS.NESTED_BASIC);
 	const currentState3 = await saveLayout(page);
 	expect(currentState3).toStrictEqual({
-		type: "split-panel",
+		type: "split-layout",
 		orientation: "horizontal",
 		children: [
 			{
-				type: "split-panel",
+				type: "split-layout",
 				orientation: "vertical",
 				children: [
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["AAA"],
 						selected: 0,
 					},
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["BBB"],
 						selected: 0,
 					},
@@ -75,7 +75,7 @@ test("should save and restore various layout types", async ({ page }) => {
 				sizes: [0.3, 0.7],
 			},
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["CCC"],
 				selected: 0,
 			},
@@ -109,16 +109,16 @@ test("should save returns a deep clone, not a reference", async ({ page }) => {
 	const afterModification = await saveLayout(page);
 	expect(afterModification).not.toStrictEqual(saved);
 	expect(saved).toStrictEqual({
-		type: "split-panel",
+		type: "split-layout",
 		orientation: "horizontal",
 		children: [
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["AAA"],
 				selected: 0,
 			},
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["BBB"],
 				selected: 0,
 			},
@@ -131,21 +131,21 @@ test("should save and restore preserve exact size ratios", async ({ page }) => {
 	await setupLayout(page, LAYOUTS.THREE_HORIZONTAL_PRECISE);
 	const saved = await saveLayout(page);
 	expect(saved).toStrictEqual({
-		type: "split-panel",
+		type: "split-layout",
 		orientation: "horizontal",
 		children: [
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["AAA"],
 				selected: 0,
 			},
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["BBB"],
 				selected: 0,
 			},
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["CCC"],
 				selected: 0,
 			},
@@ -178,26 +178,26 @@ test("should flatten nested split panels with same orientation", async ({
 }) => {
 	// Test horizontal panels nested within horizontal parent
 	const nestedHorizontal: Layout = {
-		type: "split-panel",
+		type: "split-layout",
 		orientation: "horizontal",
 		children: [
 			{
-				type: "split-panel",
+				type: "split-layout",
 				orientation: "horizontal",
 				children: [
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["AAA"],
 					},
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["BBB"],
 					},
 				],
 				sizes: [0.3, 0.7],
 			},
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["CCC"],
 			},
 		],
@@ -209,21 +209,21 @@ test("should flatten nested split panels with same orientation", async ({
 
 	// Should be flattened to a single horizontal split with 3 children
 	expect(saved).toStrictEqual({
-		type: "split-panel",
+		type: "split-layout",
 		orientation: "horizontal",
 		children: [
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["AAA"],
 				selected: 0,
 			},
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["BBB"],
 				selected: 0,
 			},
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["CCC"],
 				selected: 0,
 			},
@@ -233,23 +233,23 @@ test("should flatten nested split panels with same orientation", async ({
 
 	// Test vertical panels nested within vertical parent
 	const nestedVertical: Layout = {
-		type: "split-panel",
+		type: "split-layout",
 		orientation: "vertical",
 		children: [
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["AAA"],
 			},
 			{
-				type: "split-panel",
+				type: "split-layout",
 				orientation: "vertical",
 				children: [
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["BBB"],
 					},
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["CCC"],
 					},
 				],
@@ -264,21 +264,21 @@ test("should flatten nested split panels with same orientation", async ({
 
 	// Should be flattened to a single vertical split with 3 children
 	expect(saved2).toStrictEqual({
-		type: "split-panel",
+		type: "split-layout",
 		orientation: "vertical",
 		children: [
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["AAA"],
 				selected: 0,
 			},
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["BBB"],
 				selected: 0,
 			},
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["CCC"],
 				selected: 0,
 			},
@@ -292,27 +292,27 @@ test("should flatten nested split panels with same orientation, not at the root"
 }) => {
 	// Test horizontal panels nested within horizontal parent
 	const nestedHorizontal: Layout = {
-		type: "split-panel",
+		type: "split-layout",
 		orientation: "horizontal",
 		children: [
 			{
-				type: "split-panel",
+				type: "split-layout",
 				orientation: "vertical",
 				children: [
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["AAA"],
 					},
 					{
-						type: "split-panel",
+						type: "split-layout",
 						orientation: "vertical",
 						children: [
 							{
-								type: "child-panel",
+								type: "tab-layout",
 								tabs: ["BBB"],
 							},
 							{
-								type: "child-panel",
+								type: "tab-layout",
 								tabs: ["DDD"],
 							},
 						],
@@ -322,7 +322,7 @@ test("should flatten nested split panels with same orientation, not at the root"
 				sizes: [0.3, 0.7],
 			},
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["CCC"],
 			},
 		],
@@ -334,25 +334,25 @@ test("should flatten nested split panels with same orientation, not at the root"
 
 	// Should be flattened to a single horizontal split with 3 children
 	expect(saved).toStrictEqual({
-		type: "split-panel",
+		type: "split-layout",
 		orientation: "horizontal",
 		children: [
 			{
-				type: "split-panel",
+				type: "split-layout",
 				orientation: "vertical",
 				children: [
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["AAA"],
 						selected: 0,
 					},
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["BBB"],
 						selected: 0,
 					},
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["DDD"],
 						selected: 0,
 					},
@@ -360,7 +360,7 @@ test("should flatten nested split panels with same orientation, not at the root"
 				sizes: [0.3, 0.21, 0.48999999999999994],
 			},
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["CCC"],
 				selected: 0,
 			},
