@@ -25,6 +25,7 @@ import type {
 	TabLayout,
 	OverlayMode,
 	Orientation,
+	LayoutPathTraversal,
 } from "./layout/types.ts";
 import { calculate_intersection } from "./layout/calculate_intersect.ts";
 import { remove_child } from "./layout/remove_child.ts";
@@ -301,7 +302,7 @@ export class RegularLayout extends HTMLElement {
 	 */
 	insertPanel = (
 		name: string,
-		path: number[] = [],
+		path: LayoutPathTraversal = [],
 		split?: boolean | Orientation,
 	) => {
 		let orientation: Orientation | undefined;
@@ -331,7 +332,7 @@ export class RegularLayout extends HTMLElement {
 	 * @returns The TabLayout containing the panel if found, null otherwise.
 	 */
 	getPanel = (name: string, layout: Layout = this._panel): TabLayout | null => {
-		if (layout.type === "child-panel") {
+		if (layout.type === "tab-layout") {
 			if (layout.tabs.includes(name)) {
 				return layout;
 			}

@@ -25,14 +25,14 @@ import { EMPTY_PANEL } from "./types.ts";
  */
 export function remove_child(panel: Layout, child: string): Layout {
 	// If this is a child panel, handle tab removal
-	if (panel.type === "child-panel") {
+	if (panel.type === "tab-layout") {
 		if (panel.tabs.includes(child)) {
 			const newChild = panel.tabs.filter((c) => c !== child);
 			if (newChild.length === 0) {
 				return structuredClone(EMPTY_PANEL);
 			}
 			return {
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: newChild,
 			};
 		}
@@ -45,7 +45,7 @@ export function remove_child(panel: Layout, child: string): Layout {
 
 	// Try to remove the child from this split panel's children
 	const index = result.children.findIndex((p) => {
-		if (p.type === "child-panel") {
+		if (p.type === "tab-layout") {
 			return p.tabs.includes(child);
 		}
 
@@ -82,7 +82,7 @@ export function remove_child(panel: Layout, child: string): Layout {
 	// Child not found at this level - recursively search children
 	let modified = false;
 	const newChildren = result.children.map((p) => {
-		if (p.type === "split-panel") {
+		if (p.type === "split-layout") {
 			const updated = remove_child(p, child);
 			if (updated !== p) {
 				modified = true;

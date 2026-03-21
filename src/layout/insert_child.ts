@@ -9,7 +9,7 @@
 // ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-import type { Layout } from "./types.ts";
+import type { Layout, LayoutPathTraversal } from "./types.ts";
 
 /**
  * Inserts a new child panel into the layout tree at a specified location.
@@ -28,32 +28,32 @@ import type { Layout } from "./types.ts";
 export function insert_child(
 	panel: Layout,
 	child: string,
-	path: number[],
+	path: LayoutPathTraversal,
 	orientation?: "horizontal" | "vertical",
 ): Layout {
 	const createChildPanel = (childId: string): Layout => ({
-		type: "child-panel",
+		type: "tab-layout",
 		tabs: [childId],
 	});
 
 	if (path.length === 0) {
 		// Insert at root level
-		if (panel.type === "child-panel") {
-			// Add to existing child-panel as a tab
+		if (panel.type === "tab-layout") {
+			// Add to existing tab-layout as a tab
 			return {
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: [child, ...panel.tabs],
 			};
 		} else if (orientation) {
 			// When inserting at edge of root, wrap the entire panel in a new split
 			return {
-				type: "split-panel",
+				type: "split-layout",
 				orientation: orientation,
 				children: [createChildPanel(child), panel],
 				sizes: [0.5, 0.5],
 			};
 		} else {
-			// Append to existing split-panel
+			// Append to existing split-layout
 			const newChildren = [...panel.children, createChildPanel(child)];
 			const newSizes = [...panel.sizes, 1 / (newChildren.length - 1)];
 			return {
@@ -69,8 +69,8 @@ export function insert_child(
 
 	// Special case: when orientation is provided and restPath is empty, handle edge insertion
 	if (orientation && restPath.length === 0) {
-		// If panel is a split-panel with the same orientation, insert into its children
-		if (panel.type === "split-panel" && panel.orientation === orientation) {
+		// If panel is a split-layout with the same orientation, insert into its children
+		if (panel.type === "split-layout" && panel.orientation === orientation) {
 			const newChildren = [...panel.children];
 			newChildren.splice(index, 0, createChildPanel(child));
 			const newSizes = [...panel.sizes];
@@ -89,14 +89,14 @@ export function insert_child(
 				: [panel, createChildPanel(child)];
 
 		return {
-			type: "split-panel",
+			type: "split-layout",
 			orientation: orientation,
 			children,
 			sizes: [0.5, 0.5],
 		};
 	}
 
-	if (panel.type === "child-panel") {
+	if (panel.type === "tab-layout") {
 		// Stack into child array only when ALL of these conditions are met:
 		// 1. Path has exactly one element (restPath is empty)
 		// 2. Orientation was NOT explicitly provided (orientation is undefined)
@@ -117,7 +117,7 @@ export function insert_child(
 
 		// Otherwise, wrap in a split panel and recurse
 		const newPanel: Layout = {
-			type: "split-panel",
+			type: "split-layout",
 			orientation: orientation || "horizontal",
 			children: [panel],
 			sizes: [1],
@@ -130,7 +130,7 @@ export function insert_child(
 		if (orientation && panel.children[index]) {
 			// When inserting at an edge, create a split panel with the new child and existing child
 			const newSplitPanel: Layout = {
-				type: "split-panel",
+				type: "split-layout",
 				orientation: orientation,
 				children: [createChildPanel(child), panel.children[index]],
 				sizes: [0.5, 0.5],
@@ -159,9 +159,9 @@ export function insert_child(
 
 	const targetChild = panel.children[index];
 
-	// Determine the orientation to pass down when navigating into a child-panel
+	// Determine the orientation to pass down when navigating into a tab-layout
 	const childOrientation =
-		targetChild.type === "child-panel" &&
+		targetChild.type === "tab-layout" &&
 		restPath.length > 0 &&
 		orientation !== undefined
 			? panel.orientation === "horizontal"

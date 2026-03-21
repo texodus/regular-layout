@@ -162,7 +162,7 @@ export class RegularLayoutFrame extends HTMLElement {
 		let new_tab_panel = this._layout.getPanel(slot, new_panel);
 		if (!new_tab_panel) {
 			new_tab_panel = {
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: [slot],
 				selected: 0,
 			};

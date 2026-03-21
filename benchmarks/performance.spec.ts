@@ -47,7 +47,7 @@ function generateLargeLayout(depth: number, panelsPerLevel: number): Layout {
 	function generatePanel(): TabLayout {
 		const name = `Panel${panelCounter++}`;
 		return {
-			type: "child-panel",
+			type: "tab-layout",
 			tabs: [name],
 		};
 	}
@@ -71,7 +71,7 @@ function generateLargeLayout(depth: number, panelsPerLevel: number): Layout {
 		}
 
 		return {
-			type: "split-panel",
+			type: "split-layout",
 			orientation,
 			children,
 			sizes,
@@ -82,14 +82,14 @@ function generateLargeLayout(depth: number, panelsPerLevel: number): Layout {
 }
 
 function countPanels(layout: Layout): number {
-	if (layout.type === "child-panel") {
+	if (layout.type === "tab-layout") {
 		return 1;
 	}
 	return layout.children.reduce((sum, child) => sum + countPanels(child), 0);
 }
 
 function getPanelNames(layout: Layout): string[] {
-	if (layout.type === "child-panel") {
+	if (layout.type === "tab-layout") {
 		return layout.tabs;
 	}
 	return layout.children.flatMap((child) => getPanelNames(child));

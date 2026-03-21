@@ -70,7 +70,7 @@ export async function dragMouse(
 export async function insertPanel(
 	page: Page,
 	panelName: string,
-	path: number[],
+	path: LayoutPathTraversal,
 ): Promise<void> {
 	await page.evaluate(
 		({ name, p }) => {

@@ -47,7 +47,7 @@ export interface ViewWindow {
  * opposite `orientation` as its parent.
  */
 export interface SplitLayout {
-	type: "split-panel";
+	type: "split-layout";
 	children: Layout[];
 	sizes: number[];
 	orientation: Orientation;
@@ -57,10 +57,15 @@ export interface SplitLayout {
  * A leaf panel node that contains a single named child element.
  */
 export interface TabLayout {
-	type: "child-panel";
+	type: "tab-layout";
 	tabs: string[];
 	selected?: number;
 }
+
+/**
+ * Represents a panel location relative to a `Layout` struct.
+ */
+export type LayoutPathTraversal = number[];
 
 /**
  * Represents a draggable divider between two panels in the layout.
@@ -68,7 +73,7 @@ export interface TabLayout {
  * Used for hit detection.
  */
 export interface LayoutDivider {
-	path: number[];
+	path: LayoutPathTraversal;
 	view_window: ViewWindow;
 	type: Orientation;
 }
@@ -79,7 +84,7 @@ export interface LayoutDivider {
 export interface LayoutPath {
 	type: "layout-path";
 	slot: string;
-	path: number[];
+	path: LayoutPathTraversal;
 	view_window: ViewWindow;
 	column: number;
 	row: number;
@@ -94,7 +99,7 @@ export interface LayoutPath {
  * An empty `Layout` with no panels.
  */
 export const EMPTY_PANEL: Layout = {
-	type: "split-panel",
+	type: "split-layout",
 	orientation: "horizontal",
 	sizes: [],
 	children: [],

@@ -44,7 +44,7 @@ function collect_track_positions(
 	end: number,
 	physics: Physics,
 ): number[] {
-	if (panel.type === "child-panel") {
+	if (panel.type === "tab-layout") {
 		return [start, end];
 	}
 
@@ -100,7 +100,7 @@ function build_cells(
 	rowEnd: number,
 	physics: Physics,
 ): GridCell[] {
-	if (panel.type === "child-panel") {
+	if (panel.type === "tab-layout") {
 		const selected = panel.selected ?? 0;
 		return [
 			{
@@ -179,11 +179,11 @@ const child_template = (
  * @example
  * ```typescript
  * const layout = {
- *   type: "split-panel",
+ *   type: "split-layout",
  *   orientation: "horizontal",
  *   children: [
- *     { type: "child-panel", tabs: "sidebar" },
- *     { type: "child-panel", tabs: "main" }
+ *     { type: "tab-layout", tabs: "sidebar" },
+ *     { type: "tab-layout", tabs: "main" }
  *   ],
  *   sizes: [0.25, 0.75]
  * };
@@ -200,7 +200,7 @@ export function create_css_grid_layout(
 	overlay?: [string, string],
 	physics: Physics = DEFAULT_PHYSICS,
 ): string {
-	if (layout.type === "child-panel") {
+	if (layout.type === "tab-layout") {
 		const selected = layout.selected ?? 0;
 		return [
 			host_template("100%", "100%"),

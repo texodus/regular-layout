@@ -23,26 +23,26 @@ test("cursor near left edge of same orientation", () => {
 	);
 
 	expect(result).toStrictEqual({
-		type: "split-panel",
+		type: "split-layout",
 		children: [
 			{
-				type: "split-panel",
+				type: "split-layout",
 				children: [
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["AAA"],
 					},
 					{
-						type: "split-panel",
+						type: "split-layout",
 						orientation: "horizontal",
 						sizes: [0.5, 0.5],
 						children: [
 							{
-								type: "child-panel",
+								type: "tab-layout",
 								tabs: ["DDD"],
 							},
 							{
-								type: "child-panel",
+								type: "tab-layout",
 								tabs: ["BBB"],
 							},
 						],
@@ -52,7 +52,7 @@ test("cursor near left edge of same orientation", () => {
 				orientation: "vertical",
 			},
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["CCC"],
 			},
 		],
@@ -65,26 +65,26 @@ test("cursor near top edge of opposite orientation", () => {
 	const result = insert_child(LAYOUTS.NESTED_BASIC, "DDD", [0], "vertical");
 
 	expect(result).toStrictEqual({
-		type: "split-panel",
+		type: "split-layout",
 		sizes: [0.5, 0.5],
 		orientation: "vertical",
 		children: [
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["DDD"],
 			},
 			{
-				type: "split-panel",
+				type: "split-layout",
 				children: [
 					{
-						type: "split-panel",
+						type: "split-layout",
 						children: [
 							{
-								type: "child-panel",
+								type: "tab-layout",
 								tabs: ["AAA"],
 							},
 							{
-								type: "child-panel",
+								type: "tab-layout",
 								tabs: ["BBB"],
 							},
 						],
@@ -92,7 +92,7 @@ test("cursor near top edge of opposite orientation", () => {
 						orientation: "vertical",
 					},
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["CCC"],
 					},
 				],
@@ -113,22 +113,22 @@ test("cursor near bottom edge but with opposite orientation", () => {
 	);
 
 	expect(result).toStrictEqual({
-		type: "split-panel",
+		type: "split-layout",
 		sizes: [0.5, 0.5],
 		orientation: "vertical",
 		children: [
 			{
-				type: "split-panel",
+				type: "split-layout",
 				children: [
 					{
-						type: "split-panel",
+						type: "split-layout",
 						children: [
 							{
-								type: "child-panel",
+								type: "tab-layout",
 								tabs: ["AAA"],
 							},
 							{
-								type: "child-panel",
+								type: "tab-layout",
 								tabs: ["BBB"],
 							},
 						],
@@ -136,7 +136,7 @@ test("cursor near bottom edge but with opposite orientation", () => {
 						orientation: "vertical",
 					},
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["CCC"],
 					},
 				],
@@ -144,7 +144,7 @@ test("cursor near bottom edge but with opposite orientation", () => {
 				orientation: "horizontal",
 			},
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["DDD"],
 			},
 		],
@@ -153,33 +153,33 @@ test("cursor near bottom edge but with opposite orientation", () => {
 
 test("arbitrary regression also", () => {
 	const PANEL: Layout = {
-		type: "split-panel",
+		type: "split-layout",
 		orientation: "horizontal",
 		children: [
 			{
-				type: "split-panel",
+				type: "split-layout",
 				orientation: "vertical",
 				children: [
 					{
-						type: "split-panel",
+						type: "split-layout",
 						orientation: "horizontal",
 						children: [
 							{
-								type: "child-panel",
+								type: "tab-layout",
 								tabs: ["AAA"],
 								selected: 0,
 							},
 							{
-								type: "split-panel",
+								type: "split-layout",
 								orientation: "vertical",
 								children: [
 									{
-										type: "child-panel",
+										type: "tab-layout",
 										tabs: ["BBB"],
 										selected: 0,
 									},
 									{
-										type: "child-panel",
+										type: "tab-layout",
 										tabs: ["CCC"],
 										selected: 0,
 									},
@@ -190,7 +190,7 @@ test("arbitrary regression also", () => {
 						sizes: [0.5, 0.5],
 					},
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["EEE"],
 						selected: 0,
 					},
@@ -198,7 +198,7 @@ test("arbitrary regression also", () => {
 				sizes: [0.5, 0.5],
 			},
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["FFF", "GGG", "HHH"],
 				selected: 0,
 			},
@@ -209,37 +209,37 @@ test("arbitrary regression also", () => {
 	const result = insert_child(PANEL, "QQQ", [1], "vertical");
 	expect(result).toStrictEqual({
 		sizes: [0.5, 0.5],
-		type: "split-panel",
+		type: "split-layout",
 		orientation: "vertical",
 		children: [
 			{
-				type: "split-panel",
+				type: "split-layout",
 				orientation: "horizontal",
 				children: [
 					{
-						type: "split-panel",
+						type: "split-layout",
 						orientation: "vertical",
 						children: [
 							{
-								type: "split-panel",
+								type: "split-layout",
 								orientation: "horizontal",
 								children: [
 									{
-										type: "child-panel",
+										type: "tab-layout",
 										tabs: ["AAA"],
 										selected: 0,
 									},
 									{
-										type: "split-panel",
+										type: "split-layout",
 										orientation: "vertical",
 										children: [
 											{
-												type: "child-panel",
+												type: "tab-layout",
 												tabs: ["BBB"],
 												selected: 0,
 											},
 											{
-												type: "child-panel",
+												type: "tab-layout",
 												tabs: ["CCC"],
 												selected: 0,
 											},
@@ -250,7 +250,7 @@ test("arbitrary regression also", () => {
 								sizes: [0.5, 0.5],
 							},
 							{
-								type: "child-panel",
+								type: "tab-layout",
 								tabs: ["EEE"],
 								selected: 0,
 							},
@@ -258,7 +258,7 @@ test("arbitrary regression also", () => {
 						sizes: [0.5, 0.5],
 					},
 					{
-						type: "child-panel",
+						type: "tab-layout",
 						tabs: ["FFF", "GGG", "HHH"],
 						selected: 0,
 					},
@@ -266,7 +266,7 @@ test("arbitrary regression also", () => {
 				sizes: [0.5, 0.5],
 			},
 			{
-				type: "child-panel",
+				type: "tab-layout",
 				tabs: ["QQQ"],
 				// selected: 0,
 			},

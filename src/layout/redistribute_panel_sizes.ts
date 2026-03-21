@@ -10,7 +10,7 @@
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 import { DEFAULT_PHYSICS } from "./constants.ts";
-import type { Layout } from "./types.ts";
+import type { Layout, LayoutPathTraversal } from "./types.ts";
 
 /**
  * Adjusts panel sizes during a drag operation on a divider.
@@ -31,7 +31,7 @@ import type { Layout } from "./types.ts";
  */
 export function redistribute_panel_sizes(
 	panel: Layout,
-	path: number[],
+	path: LayoutPathTraversal,
 	delta: number | undefined,
 	physics = DEFAULT_PHYSICS,
 ): Layout {
@@ -43,14 +43,14 @@ export function redistribute_panel_sizes(
 	let current: Layout = result;
 	const deltas = { horizontal: delta || 0, vertical: delta || 0 };
 	for (let i = 0; i < path.length - 1; i++) {
-		if (current.type === "split-panel") {
+		if (current.type === "split-layout") {
 			deltas[current.orientation] /= current.sizes[path[i]];
 			current = current.children[path[i]];
 		}
 	}
 
 	// Apply the redistribution at the final path index
-	if (current.type === "split-panel") {
+	if (current.type === "split-layout") {
 		if (delta === undefined) {
 			current.sizes = current.sizes.map((_) => 1 / current.sizes.length);
 		} else {

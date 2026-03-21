@@ -20,7 +20,7 @@ test("returns null for a name not in the layout", () => {
 
 test("returns null for an empty layout", () => {
 	const result = calculate_path("AAA", {
-		type: "split-panel",
+		type: "split-layout",
 		orientation: "horizontal",
 		sizes: [],
 		children: [],

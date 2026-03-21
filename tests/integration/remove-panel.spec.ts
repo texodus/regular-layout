@@ -24,7 +24,7 @@ test.describe("removePanel", () => {
 
 		const currentState = await saveLayout(page);
 		expect(currentState).toStrictEqual({
-			type: "child-panel",
+			type: "tab-layout",
 			tabs: ["AAA"],
 			selected: 0,
 		});
@@ -35,16 +35,16 @@ test.describe("removePanel", () => {
 		await removePanel(page, "BBB");
 		const currentState = await saveLayout(page);
 		expect(currentState).toStrictEqual({
-			type: "split-panel",
+			type: "split-layout",
 			orientation: "horizontal",
 			children: [
 				{
-					type: "child-panel",
+					type: "tab-layout",
 					tabs: ["AAA"],
 					selected: 0,
 				},
 				{
-					type: "child-panel",
+					type: "tab-layout",
 					tabs: ["CCC"],
 					selected: 0,
 				},
@@ -58,16 +58,16 @@ test.describe("removePanel", () => {
 		await removePanel(page, "AAA");
 		const currentState = await saveLayout(page);
 		expect(currentState).toStrictEqual({
-			type: "split-panel",
+			type: "split-layout",
 			orientation: "horizontal",
 			children: [
 				{
-					type: "child-panel",
+					type: "tab-layout",
 					tabs: ["BBB"],
 					selected: 0,
 				},
 				{
-					type: "child-panel",
+					type: "tab-layout",
 					tabs: ["CCC"],
 					selected: 0,
 				},
@@ -81,20 +81,20 @@ test.describe("removePanel", () => {
 		await removePanel(page, "BBB");
 		const currentState = await saveLayout(page);
 		expect(currentState).toStrictEqual({
-			type: "split-panel",
+			type: "split-layout",
 			orientation: "vertical",
 			children: [
 				{
-					type: "split-panel",
+					type: "split-layout",
 					orientation: "horizontal",
 					children: [
 						{
-							type: "child-panel",
+							type: "tab-layout",
 							tabs: ["AAA"],
 							selected: 0,
 						},
 						{
-							type: "child-panel",
+							type: "tab-layout",
 							tabs: ["CCC"],
 							selected: 0,
 						},
@@ -102,7 +102,7 @@ test.describe("removePanel", () => {
 					sizes: [0.5, 0.5],
 				},
 				{
-					type: "child-panel",
+					type: "tab-layout",
 					tabs: ["DDD"],
 					selected: 0,
 				},
@@ -130,21 +130,21 @@ test.describe("tabs", () => {
 		await removePanel(page, "BBB");
 		const currentState = await saveLayout(page);
 		expect(currentState).toStrictEqual({
-			type: "split-panel",
+			type: "split-layout",
 			orientation: "horizontal",
 			children: [
 				{
-					type: "child-panel",
+					type: "tab-layout",
 					tabs: ["AAA"],
 					selected: 0,
 				},
 				{
-					type: "child-panel",
+					type: "tab-layout",
 					tabs: ["DDD", "EEE"],
 					selected: 0,
 				},
 				{
-					type: "child-panel",
+					type: "tab-layout",
 					tabs: ["CCC"],
 					selected: 0,
 				},

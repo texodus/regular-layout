@@ -11,11 +11,17 @@
 
 import { DEFAULT_PHYSICS, type Physics } from "./constants";
 import { insert_child } from "./insert_child";
-import type { Layout, LayoutPath, Orientation, ViewWindow } from "./types";
+import type {
+	Layout,
+	LayoutPath,
+	LayoutPathTraversal,
+	Orientation,
+	ViewWindow,
+} from "./types";
 
 /**
  * Calculates an insertion point (which may involve splitting a single
- * `"child-panel"` into a new `"split-panel"`), based on the  cursor position.
+ * `"tab-layout"` into a new `"split-layout"`), based on the  cursor position.
  * *
  * @param col - The cursor column.
  * @param row - The cursor row.
@@ -23,7 +29,7 @@ import type { Layout, LayoutPath, Orientation, ViewWindow } from "./types";
  * @param slot - The slot identifier where the insert should occur
  * @param drop_target - The `LayoutPath` (from `calculateIntersect`) of the
  * panel to either insert next to, or split by.
- * @returns A new `LayoutPath` reflecting the updated (maybe) `"split-panel"`,
+ * @returns A new `LayoutPath` reflecting the updated (maybe) `"split-layout"`,
  * which is enough to draw the overlay.
  */
 export function calculate_edge(
@@ -133,7 +139,7 @@ function insert_root_edge(
 	panel: Layout,
 	slot: string,
 	drop_target: LayoutPath,
-	path: number[],
+	path: LayoutPathTraversal,
 	is_before: boolean,
 	orientation: Orientation,
 ): LayoutPath {
@@ -153,7 +159,7 @@ function insert_axis(
 	is_before: boolean,
 	axis_orientation: Orientation,
 ): LayoutPath {
-	let result_path: number[];
+	let result_path: LayoutPathTraversal;
 
 	if (drop_target.orientation === axis_orientation) {
 		// Same orientation - insert into existing split
@@ -183,7 +189,10 @@ function insert_axis(
 	};
 }
 
-function calculate_view_window(panel: Layout, path: number[]): ViewWindow {
+function calculate_view_window(
+	panel: Layout,
+	path: LayoutPathTraversal,
+): ViewWindow {
 	let view_window: ViewWindow = {
 		row_start: 0,
 		row_end: 1,
@@ -193,7 +202,7 @@ function calculate_view_window(panel: Layout, path: number[]): ViewWindow {
 
 	let current_panel = panel;
 	for (const step of path) {
-		if (current_panel.type === "child-panel") {
+		if (current_panel.type === "tab-layout") {
 			break;
 		}
 
