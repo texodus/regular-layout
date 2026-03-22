@@ -9,8 +9,8 @@
 // ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-import { DEFAULT_PHYSICS } from "./constants.ts";
-import type { Layout, LayoutPathTraversal } from "./types.ts";
+import { DEFAULT_PHYSICS } from "../core/constants.ts";
+import type { Layout, LayoutPathTraversal } from "../core/types.ts";
 
 /**
  * Adjusts panel sizes during a drag operation on a divider.

@@ -9,7 +9,7 @@
 // ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../helpers/coverage.ts";
 import type { Page } from "@playwright/test";
 import { setupLayout, restoreLayout } from "../helpers/integration.ts";
 import { LAYOUTS } from "../helpers/fixtures.ts";

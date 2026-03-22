@@ -9,7 +9,7 @@
 // ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-import type { Layout, LayoutPathTraversal } from "./types.ts";
+import type { Layout, LayoutPathTraversal } from "../core/types.ts";
 
 /**
  * Inserts a new child panel into the layout tree at a specified location.

@@ -9,16 +9,16 @@
 // ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../helpers/coverage.ts";
 import type { Layout } from "../../dist/index.js";
 import { LAYOUTS } from "../helpers/fixtures.ts";
 
 test("should switch between tabs by clicking", async ({ page }) => {
 	await page.goto("/examples/index.html");
 	await page.waitForSelector("regular-layout");
-	await page.evaluate((layout) => {
+	await page.evaluate(async (layout) => {
 		const layoutElement = document.querySelector("regular-layout");
-		layoutElement?.restore(layout as Layout);
+		await layoutElement?.restore(layout as Layout);
 	}, LAYOUTS.SINGLE_TABS_WITH_SELECTED);
 
 	const getSelectedTab = async (slot: string) => {
@@ -70,9 +70,9 @@ test("should switch between tabs by clicking", async ({ page }) => {
 test("should move a panel by dragging a selected tab", async ({ page }) => {
 	await page.goto("/examples/index.html");
 	await page.waitForSelector("regular-layout");
-	await page.evaluate((layout) => {
+	await page.evaluate(async (layout) => {
 		const layoutElement = document.querySelector("regular-layout");
-		layoutElement?.restore(layout as Layout);
+		await layoutElement?.restore(layout as Layout);
 	}, LAYOUTS.TWO_HORIZONTAL_WITH_TABS);
 
 	const dragCoords = await page.evaluate(() => {
@@ -131,9 +131,9 @@ test("should move a panel by dragging a selected tab", async ({ page }) => {
 test("should move a panel by dragging a deselected tab", async ({ page }) => {
 	await page.goto("/examples/index.html");
 	await page.waitForSelector("regular-layout");
-	await page.evaluate((layout) => {
+	await page.evaluate(async (layout) => {
 		const layoutElement = document.querySelector("regular-layout");
-		layoutElement?.restore(layout as Layout);
+		await layoutElement?.restore(layout as Layout);
 	}, LAYOUTS.TWO_HORIZONTAL_WITH_TABS);
 
 	const layoutBefore = await page.evaluate(() => {

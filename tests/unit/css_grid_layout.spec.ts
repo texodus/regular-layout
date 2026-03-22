@@ -13,8 +13,8 @@ import { expect, test } from "@playwright/test";
 import { LAYOUTS } from "../helpers/fixtures.ts";
 
 import { create_css_grid_layout } from "../../src/layout/generate_grid.ts";
-import type { Layout } from "../../src/layout/types.ts";
-import { DEFAULT_PHYSICS } from "../../src/layout/constants.ts";
+import type { Layout } from "../../src/core/types.ts";
+import { DEFAULT_PHYSICS } from "../../src/core/constants.ts";
 
 const RESULT = `
 :host ::slotted(*){display:none}:host{display:grid;grid-template-rows:30fr 70fr;grid-template-columns:60fr 40fr}

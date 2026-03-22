@@ -9,7 +9,7 @@
 // ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-import type { TabLayout } from "./layout/types.ts";
+import type { TabLayout } from "./core/types.ts";
 import type { RegularLayout } from "./regular-layout.ts";
 
 /**

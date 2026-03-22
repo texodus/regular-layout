@@ -9,77 +9,71 @@
 // ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-import { expect, test } from "@playwright/test";
+import type { Layout, PresizeDetail } from "../core/types.ts";
+import { calculate_presize_paths } from "../layout/calculate_presize_paths.ts";
 
-import { create_css_grid_layout } from "../../src/layout/generate_grid.ts";
-import type { Layout } from "../../src/core/types.ts";
-import { DEFAULT_PHYSICS } from "../../src/core/constants.ts";
+/**
+ * Manages cancelable pre-resize gating for layout updates.
+ *
+ * Before each layout change, a cancelable `resize-before` event is dispatched
+ * on the target. If the event is cancelled via `preventDefault()`, the update
+ * is suspended until {@link resume} is called. Concurrent updates are queued
+ * and processed sequentially.
+ */
+export class PresizeQueue {
+	#resizing = false;
+	#queued: { layout: Layout; fn: () => void } | null = null;
+	#pending: (() => void) | null = null;
 
-test("Deeply alternating split with grid-based overlay", () => {
-	const test: Layout = {
-		type: "split-layout",
-		children: [
-			{
-				type: "split-layout",
-				children: [
-					{
-						type: "split-layout",
-						orientation: "horizontal",
-						children: [
-							{
-								type: "tab-layout",
-								tabs: ["AAA"],
-							},
-							{
-								type: "split-layout",
-								orientation: "vertical",
-								children: [
-									{
-										type: "tab-layout",
-										tabs: ["BBB"],
-									},
-									{
-										type: "tab-layout",
-										tabs: ["CCC"],
-									},
-								],
-								sizes: [0.5, 0.5],
-							},
-						],
-						sizes: [0.5, 0.5],
-					},
-					{
-						type: "tab-layout",
-						tabs: ["DDD"],
-					},
-				],
-				sizes: [0.3, 0.7],
-				orientation: "vertical",
-			},
-			{
-				type: "tab-layout",
-				tabs: ["EEE"],
-			},
-		],
-		sizes: [0.6, 0.4],
-		orientation: "horizontal",
-	};
+	constructor(
+		private _target: EventTarget,
+		private _eventName: string,
+	) {}
 
-	expect(
-		create_css_grid_layout(test, ["BBB", "AAA"], {
-			...DEFAULT_PHYSICS,
-			SHOULD_ROUND: true,
-		}),
-	).toEqual(
-		`
-:host ::slotted(*){display:none}:host{display:grid;grid-template-rows:15fr 15fr 70fr;grid-template-columns:30fr 30fr 40fr}
-:host ::slotted([name="AAA"]){display:flex;grid-column:1;grid-row:1 / 3}
-:host ::slotted([name="BBB"]){display:flex;grid-column:1;grid-row:1 / 3}
-:host ::slotted([name=BBB]){z-index:1}
-:host ::slotted([name="BBB"]){display:flex;grid-column:2;grid-row:1}
-:host ::slotted([name="CCC"]){display:flex;grid-column:2;grid-row:2}
-:host ::slotted([name="DDD"]){display:flex;grid-column:1 / 3;grid-row:3}
-:host ::slotted([name="EEE"]){display:flex;grid-column:3;grid-row:1 / 4}
-        `.trim(),
-	);
-});
+	async run(layout: Layout, fn: () => void): Promise<void> {
+		if (this.#resizing) {
+			this.#queued = { layout, fn };
+			return;
+		}
+
+		this.#resizing = true;
+		try {
+			await this.#dispatchAndMaybeWait(layout, fn);
+			while (this.#queued) {
+				const { layout: nextLayout, fn: nextFn } = this.#queued;
+				this.#queued = null;
+				await this.#dispatchAndMaybeWait(nextLayout, nextFn);
+			}
+		} finally {
+			this.#resizing = false;
+		}
+	}
+
+	resume(): void {
+		if (this.#pending) {
+			const resolve = this.#pending;
+			this.#pending = null;
+			resolve();
+		}
+	}
+
+	async #dispatchAndMaybeWait(layout: Layout, fn: () => void): Promise<void> {
+		const detail: PresizeDetail = {
+			calculatePresizePaths: () => calculate_presize_paths(layout),
+		};
+
+		const event = new CustomEvent(this._eventName, {
+			cancelable: true,
+			detail,
+		});
+
+		const proceed = this._target.dispatchEvent(event);
+		if (!proceed) {
+			await new Promise<void>((resolve) => {
+				this.#pending = resolve;
+			});
+		}
+
+		fn();
+	}
+}

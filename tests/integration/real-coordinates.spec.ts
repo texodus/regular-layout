@@ -10,77 +10,68 @@
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 import { expect, test } from "../helpers/coverage.ts";
-import { setupLayout, getLayoutBounds } from "../helpers/integration.ts";
+import { setupLayout } from "../helpers/integration.ts";
 import { LAYOUTS } from "../helpers/fixtures.ts";
 
-test("should update CSS with grid preview in grid mode", async ({ page }) => {
-	await setupLayout(page, LAYOUTS.TWO_HORIZONTAL_EQUAL);
-	const bounds = await getLayoutBounds(page);
-	const x = bounds.x + bounds.width * 0.75;
-	const y = bounds.y + bounds.height * 0.5;
-	await page.evaluate(
-		({ x, y }) => {
-			const layout = document.querySelector("regular-layout");
-			const layoutPath = layout?.calculateIntersect({ clientX: x, clientY: y });
-			if (layoutPath) {
-				layout?.setOverlayState(
-					{ clientX: x, clientY: y },
-					layoutPath,
-					"overlay",
-					"grid",
-				);
-			}
-		},
-		{ x, y },
-	);
-
-	const cssRules = await page.evaluate(() => {
-		const layout = document.querySelector("regular-layout");
-		const stylesheet = layout?.shadowRoot?.adoptedStyleSheets[0];
-		return stylesheet?.cssRules.length || 0;
-	});
-
-	expect(cssRules).toBe(3);
-});
-
-test("should dispatch regular-layout-update event in grid mode", async ({
+test("realCoordinates matches getBoundingClientRect for 3 horizontal children", async ({
 	page,
 }) => {
-	await setupLayout(page, LAYOUTS.TWO_HORIZONTAL_EQUAL);
-	const bounds = await getLayoutBounds(page);
-	const x = bounds.x + bounds.width * 0.25;
-	const y = bounds.y + bounds.height * 0.5;
-	const eventReceived = await page.evaluate(
-		({ x, y }) => {
-			return new Promise<boolean>((resolve) => {
-				const layout = document.querySelector("regular-layout");
-				layout?.addEventListener(
-					"regular-layout-before-update",
-					() => {
-						resolve(true);
-					},
-					{ once: true },
-				);
+	await setupLayout(page, LAYOUTS.THREE_HORIZONTAL);
 
-				const layoutPath = layout?.calculateIntersect({
-					clientX: x,
-					clientY: y,
-				});
+	const result = await page.evaluate(() => {
+		const layout = document.querySelector("regular-layout");
+		if (!layout) return null;
+		const panels = ["AAA", "BBB", "CCC"];
+		const results: Record<
+			string,
+			{
+				real: { x: number; y: number; width: number; height: number };
+				actual: { x: number; y: number; width: number; height: number };
+			}
+		> = {};
 
-				if (layoutPath) {
-					layout?.setOverlayState(
-						{ clientX: x, clientY: y },
-						layoutPath,
-						"overlay",
-						"grid",
-					);
-				} else {
-					resolve(false);
-				}
+		for (const name of panels) {
+			const panel = document.querySelector(`[name="${name}"]`) as HTMLElement;
+
+			if (!panel) continue;
+			const panelRect = panel.getBoundingClientRect();
+			const centerX = panelRect.x + panelRect.width / 2;
+			const centerY = panelRect.y + panelRect.height / 2;
+			const hit = layout.calculateIntersect({
+				clientX: centerX,
+				clientY: centerY,
 			});
-		},
-		{ x, y },
-	);
 
-	expect(eventReceived).toBe(true);
+			if (!hit || hit.slot !== name) continue;
+			const rect = layout.realCoordinates(hit.view_window);
+			results[name] = {
+				real: {
+					x: rect.x + 3,
+					y: rect.y + 27,
+					width: rect.width - 6,
+					height: rect.height - 30,
+				},
+				actual: {
+					x: panelRect.x,
+					y: panelRect.y,
+					width: panelRect.width,
+					height: panelRect.height,
+				},
+			};
+		}
+
+		return results;
+	});
+
+	expect(result).not.toBeNull();
+
+	// biome-ignore lint/style/noNonNullAssertion: playwright expectation
+	const panels = Object.entries(result!);
+	expect(panels.length).toBe(3);
+	for (const [name, { real, actual }] of panels) {
+		expect(real.x, `${name} x`).toBeCloseTo(actual.x, 0);
+		expect(real.y, `${name} y`).toBeCloseTo(actual.y, 0);
+		expect(real.width, `${name} width`).toBeCloseTo(actual.width, 0);
+		expect(real.height, `${name} height`).toBeCloseTo(actual.height, 0);
+	}
 });

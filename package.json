@@ -19,10 +19,10 @@
 	],
 	"scripts": {
 		"build": "tsx build.ts",
-		"build:watch": "tsx build.ts --watch",
+		"watch": "tsx build.ts --watch",
 		"clean": "rm -rf dist",
-		"test": "playwright test tests/integration tests/unit",
-		"test:perf": "playwright test --workers=1 ./benchmarks",
+		"test": "tsx test.ts",
+		"bench": "playwright test --workers=1 ./benchmarks",
 		"example": "tsx serve.ts",
 		"deploy": "tsx deploy.ts",
 		"lint": "biome lint src tests",
@@ -34,6 +34,7 @@
 		"@playwright/test": "^1.57.0",
 		"@types/node": "^22.10.5",
 		"esbuild": "^0.27.2",
+		"monocart-coverage-reports": "^2.12.2",
 		"tsx": "^4.21.0",
 		"typescript": "^5.9.3"
 	}

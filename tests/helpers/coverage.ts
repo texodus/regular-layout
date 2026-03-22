@@ -9,77 +9,47 @@
 // ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-import { expect, test } from "@playwright/test";
+import { test as base, expect } from "@playwright/test";
+import * as fs from "node:fs";
+import * as path from "node:path";
+import * as crypto from "node:crypto";
 
-import { create_css_grid_layout } from "../../src/layout/generate_grid.ts";
-import type { Layout } from "../../src/core/types.ts";
-import { DEFAULT_PHYSICS } from "../../src/core/constants.ts";
+const COVERAGE_DIR = path.join(process.cwd(), "build", "coverage", "raw");
 
-test("Deeply alternating split with grid-based overlay", () => {
-	const test: Layout = {
-		type: "split-layout",
-		children: [
-			{
-				type: "split-layout",
-				children: [
-					{
-						type: "split-layout",
-						orientation: "horizontal",
-						children: [
-							{
-								type: "tab-layout",
-								tabs: ["AAA"],
-							},
-							{
-								type: "split-layout",
-								orientation: "vertical",
-								children: [
-									{
-										type: "tab-layout",
-										tabs: ["BBB"],
-									},
-									{
-										type: "tab-layout",
-										tabs: ["CCC"],
-									},
-								],
-								sizes: [0.5, 0.5],
-							},
-						],
-						sizes: [0.5, 0.5],
-					},
-					{
-						type: "tab-layout",
-						tabs: ["DDD"],
-					},
-				],
-				sizes: [0.3, 0.7],
-				orientation: "vertical",
-			},
-			{
-				type: "tab-layout",
-				tabs: ["EEE"],
-			},
-		],
-		sizes: [0.6, 0.4],
-		orientation: "horizontal",
-	};
+/**
+ * Extended Playwright test fixture that collects V8 JS coverage from
+ * Chromium's CDP coverage API. Coverage entries are written as JSON
+ * files to `build/coverage/raw/` for later merging and report generation.
+ *
+ * Only active when the `COVERAGE` environment variable is set.
+ */
+export const test = base.extend({
+	page: async ({ page }, use) => {
+		const enabled = !!process.env.COVERAGE;
+		if (enabled) {
+			await page.coverage.startJSCoverage({
+				resetOnNavigation: false,
+			});
+		}
 
-	expect(
-		create_css_grid_layout(test, ["BBB", "AAA"], {
-			...DEFAULT_PHYSICS,
-			SHOULD_ROUND: true,
-		}),
-	).toEqual(
-		`
-:host ::slotted(*){display:none}:host{display:grid;grid-template-rows:15fr 15fr 70fr;grid-template-columns:30fr 30fr 40fr}
-:host ::slotted([name="AAA"]){display:flex;grid-column:1;grid-row:1 / 3}
-:host ::slotted([name="BBB"]){display:flex;grid-column:1;grid-row:1 / 3}
-:host ::slotted([name=BBB]){z-index:1}
-:host ::slotted([name="BBB"]){display:flex;grid-column:2;grid-row:1}
-:host ::slotted([name="CCC"]){display:flex;grid-column:2;grid-row:2}
-:host ::slotted([name="DDD"]){display:flex;grid-column:1 / 3;grid-row:3}
-:host ::slotted([name="EEE"]){display:flex;grid-column:3;grid-row:1 / 4}
-        `.trim(),
-	);
+		await use(page);
+
+		if (enabled) {
+			const coverage = await page.coverage.stopJSCoverage();
+			const relevant = coverage.filter((entry) =>
+				entry.url.includes(".esbuild-serve/"),
+			);
+
+			if (relevant.length > 0) {
+				fs.mkdirSync(COVERAGE_DIR, { recursive: true });
+				const id = crypto.randomUUID();
+				fs.writeFileSync(
+					path.join(COVERAGE_DIR, `${id}.json`),
+					JSON.stringify(relevant),
+				);
+			}
+		}
+	},
 });
+
+export { expect };

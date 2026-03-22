@@ -63,7 +63,7 @@ regular-layout.lorax regular-layout-frame::part(close) {
 
 regular-layout.lorax regular-layout-frame::part(close):hover {
     transition: background-color 0.2s;
-    background-color: rgba(255,0,0,0.2);
+    background-color: rgba(255, 0, 0, 0.2);
 }
 
 /* Frame in Overlay Mode */
@@ -71,7 +71,7 @@ regular-layout.lorax regular-layout-frame.overlay {
     background-color: rgba(0, 0, 0, 0.2);
     border: 1px dashed rgb(0, 0, 0);
     border-radius: 6px;
-    margin: 0;
+    margin: 3px;
     box-shadow: none;
     transition:
         top 0.1s ease-in-out,
@@ -80,11 +80,13 @@ regular-layout.lorax regular-layout-frame.overlay {
         left 0.1s ease-in-out;
 }
 
-regular-layout.lorax regular-layout-frame::part(container), regular-layout.lorax regular-layout-frame::part(titlebar) {
+regular-layout.lorax regular-layout-frame::part(container),
+regular-layout.lorax regular-layout-frame::part(titlebar) {
     display: none;
 }
 
-regular-layout.lorax regular-layout-frame:not(.overlay)::part(container), regular-layout.lorax regular-layout-frame:not(.overlay)::part(titlebar) {
+regular-layout.lorax regular-layout-frame:not(.overlay)::part(container),
+regular-layout.lorax regular-layout-frame:not(.overlay)::part(titlebar) {
     display: flex;
 }
 
