@@ -96,7 +96,7 @@ export interface LayoutPath {
 }
 
 /**
- * The detail payload of the `regular-layout-resize-before` event.
+ * The detail payload of the `regular-layout-before-resize` event.
  */
 export interface PresizeDetail {
 	calculatePresizePaths(): Record<string, LayoutPath>;

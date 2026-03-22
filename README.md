@@ -94,12 +94,12 @@ localStorage.setItem("layout", JSON.stringify(state));
 layout.restore(JSON.parse(localStorage.getItem("layout")));
 ```
 
-`restore()` dispatches a cancelable `regular-layout-resize-before` event before
+`restore()` dispatches a cancelable `regular-layout-before-resize` event before
 applying the new state. Call `preventDefault()` to suspend the update, then
 `layout.resumeResize()` when ready:
 
 ```javascript
-layout.addEventListener("regular-layout-resize-before", (event) => {
+layout.addEventListener("regular-layout-before-resize", (event) => {
     event.preventDefault();
     // ... prepare for resize ...
     layout.resumeResize();
@@ -152,7 +152,7 @@ complete theme for `<regular-layout>` and `regular-layout-frame>`.
 
 | Event | Detail | Cancelable | Description |
 |-------|--------|------------|-------------|
-| `regular-layout-resize-before` | `{ calculatePresizePaths() }` | Yes | Fired before any layout change. Cancel to suspend until `resumeResize()`. |
+| `regular-layout-before-resize` | `{ calculatePresizePaths() }` | Yes | Fired before any layout change. Cancel to suspend until `resumeResize()`. |
 | `regular-layout-update` | `Layout` | No | Fired after layout state is updated. |
 
 ```javascript
