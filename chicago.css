@@ -11,79 +11,85 @@
  */
 
 regular-layout.chicago {
-    background-color: #008080;
-    font-family: "ui-monospace", "SFMono-Regular", "SF Mono", "Menlo", "Consolas", "Liberation Mono", monospace;
-    padding: 24px;
+	background-color: #008080;
+	font-family:
+		"ui-monospace", "SFMono-Regular", "SF Mono", "Menlo", "Consolas",
+		"Liberation Mono", monospace;
+	padding: 24px;
 }
 
 /* Frame */
 regular-layout.chicago regular-layout-frame {
-    position: relative;
-    box-sizing: border-box;
-    margin: 12px;
-    background: #C0C0C0;
-    border-width: 2px;
-    border-color: #FFFFFF #808080 #808080 #FFFFFF;
-    border-style: solid;
+	position: relative;
+	box-sizing: border-box;
+	margin: 12px;
+	background: #c0c0c0;
+	border-width: 2px;
+	border-color: #ffffff #808080 #808080 #ffffff;
+	border-style: solid;
+}
+
+regular-layout.chicago regular-layout-frame::part(container) {
+	padding: 6px;
 }
 
 regular-layout.chicago regular-layout-frame::part(close) {
-    border-width: 1px;
-    border-color: #FFFFFF #808080 #808080 #FFFFFF;
-    border-style: solid;
-    height: 16px;
-    background: #C0C0C0;
-    align-self: center;
-    display: flex;
-    align-items: center;
-    padding: 0px 4px;
+	border-width: 1px;
+	border-color: #ffffff #808080 #808080 #ffffff;
+	border-style: solid;
+	height: 16px;
+	background: #c0c0c0;
+	align-self: center;
+	display: flex;
+	align-items: center;
+	padding: 0px 4px;
 }
 
 regular-layout.chicago regular-layout-frame::part(close):before {
-    content: "X";
-    font-size: 10px;
-    font-weight: bold;
+	content: "X";
+	font-size: 10px;
+	font-weight: bold;
 }
 
 regular-layout.chicago regular-layout-frame::part(titlebar) {
-    display: flex;
-    align-items: stretch;
-    padding-right: 0px;
+	display: flex;
+	align-items: stretch;
+	padding-right: 0px;
 }
 
 regular-layout.chicago regular-layout-frame::part(tab) {
-    display: flex;
-    flex: 1 1 150px;
-    align-items: center;
-    padding: 0 3px 0 8px;
-    cursor: pointer;
-    text-overflow: ellipsis;
-    background: #808080;
-    color: #FFF;
-    font-family: "Tahoma", "Arial", sans-serif;
-    font-weight: bold;
-    font-size: 11px;
+	display: flex;
+	flex: 1 1 150px;
+	align-items: center;
+	padding: 0 3px 0 8px;
+	cursor: pointer;
+	text-overflow: ellipsis;
+	background: #808080;
+	color: #fff;
+	font-family: "Tahoma", "Arial", sans-serif;
+	font-weight: bold;
+	font-size: 11px;
 }
 
 regular-layout.chicago regular-layout-frame::part(active-tab) {
-    background: #000080;
-    opacity: 1;
+	background: #000080;
+	opacity: 1;
 }
 
-regular-layout.chicago:has(.overlay)>* {
-    opacity: 0.8;
+regular-layout.chicago:has(.overlay) > * {
+	opacity: 0.8;
 }
 
-regular-layout.chicago:has(.overlay)>.overlay {
-    opacity: 1;
+regular-layout.chicago:has(.overlay) > .overlay {
+	opacity: 1;
 }
 
 /* Frame in Overlay Mode */
 regular-layout.chicago regular-layout-frame.overlay {
-    margin: 0;
-    transition:
-        top 0.1s ease-in-out,
-        height 0.1s ease-in-out,
-        width 0.1s ease-in-out,
-        left 0.1s ease-in-out;
+	margin: 0;
+	transition:
+		top 0.1s ease-in-out,
+		height 0.1s ease-in-out,
+		width 0.1s ease-in-out,
+		left 0.1s ease-in-out;
 }

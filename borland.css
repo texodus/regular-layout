@@ -10,85 +10,94 @@
  * ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
  */
 
-regular-layout.hotdog {
-	background-color: #ff0000;
+regular-layout.borland {
+	background-color: #0000aa;
 	font-family:
 		"ui-monospace", "SFMono-Regular", "SF Mono", "Menlo", "Consolas",
 		"Liberation Mono", monospace;
-	padding: 24px;
+	padding: 16px;
 }
 
 /* Frame */
-regular-layout.hotdog regular-layout-frame {
-	margin: 12px;
-	background: #ffff00;
-	border-width: 2px;
-	border-color: #ff6b6b #8b0000 #8b0000 #ff6b6b;
-	border-style: solid;
+regular-layout.borland regular-layout-frame {
+	position: relative;
+	box-sizing: border-box;
+	margin: 4px;
+	background: #0000aa;
+	border: 1px solid #00aaaa;
+	box-shadow: 1px 1px 0 #000000;
 }
 
-regular-layout.hotdog regular-layout-frame::part(container) {
-	padding: 6px;
+regular-layout.borland regular-layout-frame::part(container) {
+	padding: 4px 6px;
+	color: #ffff55;
 }
 
-regular-layout.hotdog regular-layout-frame::part(close) {
-	border-width: 1px;
-	border-color: #ff6b6b #8b0000 #8b0000 #ff6b6b;
-	border-style: solid;
+regular-layout.borland regular-layout-frame::part(close) {
+	background: #00aa00;
 	height: 16px;
-	background: #ff0000;
 	align-self: center;
 	display: flex;
 	align-items: center;
-	padding: 0px 4px;
-	color: #ffff00;
+	justify-content: center;
+	padding: 0 3px;
 }
 
-regular-layout.hotdog regular-layout-frame::part(close):before {
-	content: "X";
+regular-layout.borland regular-layout-frame::part(close):hover {
+	background: #00ff00;
+}
+
+regular-layout.borland regular-layout-frame::part(close):before {
+	content: "[×]";
 	font-size: 10px;
 	font-weight: bold;
+	color: #000000;
 }
 
-regular-layout.hotdog regular-layout-frame::part(titlebar) {
+regular-layout.borland regular-layout-frame::part(titlebar) {
 	display: flex;
 	align-items: stretch;
-	padding-right: 0px;
+	padding-right: 0;
+	height: 22px;
+	background: #0000aa;
 }
 
-regular-layout.hotdog regular-layout-frame::part(tab) {
+regular-layout.borland regular-layout-frame::part(tab) {
 	display: flex;
 	flex: 1 1 150px;
 	align-items: center;
 	padding: 0 3px 0 8px;
 	cursor: pointer;
 	text-overflow: ellipsis;
-	background: #cc0000;
-	color: #ffff00;
-	font-family: "Tahoma", "Arial", sans-serif;
-	font-weight: bold;
+	background: #0000aa;
+	color: #aaaaaa;
 	font-size: 11px;
+	font-weight: bold;
+	border-right: 1px solid #00aaaa;
 }
 
-regular-layout.hotdog regular-layout-frame::part(active-tab) {
-	background: #ff0000;
-	opacity: 1;
+regular-layout.borland regular-layout-frame::part(active-tab) {
+	background: #00aaaa;
+	color: #000000;
 }
 
-regular-layout.hotdog:has(.overlay) > * {
-	opacity: 0.8;
+regular-layout.borland:has(.overlay) > * {
+	opacity: 0.6;
 }
 
-regular-layout.hotdog:has(.overlay) > .overlay {
+regular-layout.borland:has(.overlay) > .overlay {
 	opacity: 1;
 }
 
 /* Frame in Overlay Mode */
-regular-layout.hotdog regular-layout-frame.overlay {
+regular-layout.borland regular-layout-frame.overlay {
+	background: rgba(0, 170, 170, 0.9);
+	border: 1px solid #ffff55;
+	box-shadow: none;
 	margin: 0;
 	transition:
-		top 0.1s ease-in-out,
-		height 0.1s ease-in-out,
-		width 0.1s ease-in-out,
-		left 0.1s ease-in-out;
+		top 0.05s linear,
+		height 0.05s linear,
+		width 0.05s linear,
+		left 0.05s linear;
 }

@@ -1,74 +1,59 @@
 {
-    "type": "split-panel",
-    "orientation": "horizontal",
-    "children": [
+  "type": "split-layout",
+  "orientation": "horizontal",
+  "children": [
+    {
+      "type": "split-layout",
+      "orientation": "vertical",
+      "children": [
         {
-            "type": "split-panel",
-            "orientation": "vertical",
-            "children": [
+          "type": "split-layout",
+          "orientation": "horizontal",
+          "children": [
+            {
+              "type": "tab-layout",
+              "tabs": ["AAA"]
+            },
+            {
+              "type": "split-layout",
+              "orientation": "vertical",
+              "children": [
                 {
-                    "type": "split-panel",
-                    "orientation": "horizontal",
-                    "children": [
-                        {
-                            "type": "child-panel",
-                            "child": ["AAA"]
-                        },
-                        {
-                            "type": "split-panel",
-                            "orientation": "vertical",
-                            "children": [
-                                {
-                                    "type": "child-panel",
-                                    "child": ["BBB"]
-                                },
-                                {
-                                    "type": "child-panel",
-                                    "child": ["CCC"]
-                                }
-                            ],
-                            "sizes": [
-                                0.5,
-                                0.5
-                            ]
-                        }
-                    ],
-                    "sizes": [
-                        0.5,
-                        0.5
-                    ]
+                  "type": "tab-layout",
+                  "tabs": ["BBB"]
                 },
                 {
-                    "type": "split-panel",
-                    "orientation": "horizontal",
-                    "children": [
-                        {
-                            "type": "child-panel",
-                            "child": ["DDD"]
-                        },
-                        {
-                            "type": "child-panel",
-                            "child": ["EEE"]
-                        }
-                    ],
-                    "sizes": [
-                        0.5,
-                        0.5
-                    ]
+                  "type": "tab-layout",
+                  "tabs": ["CCC"]
                 }
-            ],
-            "sizes": [
-                0.5,
-                0.5
-            ]
+              ],
+              "sizes": [0.5, 0.5]
+            }
+          ],
+          "sizes": [0.5, 0.5]
         },
         {
-            "type": "child-panel",
-            "child": ["FFF", "GGG", "HHH"]
+          "type": "split-layout",
+          "orientation": "horizontal",
+          "children": [
+            {
+              "type": "tab-layout",
+              "tabs": ["DDD"]
+            },
+            {
+              "type": "tab-layout",
+              "tabs": ["EEE"]
+            }
+          ],
+          "sizes": [0.5, 0.5]
         }
-    ],
-    "sizes": [
-        0.5,
-        0.5
-    ]
+      ],
+      "sizes": [0.5, 0.5]
+    },
+    {
+      "type": "tab-layout",
+      "tabs": ["FFF", "GGG", "HHH"]
+    }
+  ],
+  "sizes": [0.5, 0.5]
 }
