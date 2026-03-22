@@ -60,7 +60,7 @@ declare global {
 		): void;
 
 		addEventListener(
-			name: "regular-layout-resize-before",
+			name: "regular-layout-before-resize",
 			cb: (e: RegularLayoutPresizeEvent) => void,
 			options?: { signal: AbortSignal },
 		): void;
@@ -76,7 +76,7 @@ declare global {
 		): void;
 
 		removeEventListener(
-			name: "regular-layout-resize-before",
+			name: "regular-layout-before-resize",
 			cb: (e: RegularLayoutPresizeEvent) => void,
 		): void;
 	}

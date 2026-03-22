@@ -38,6 +38,12 @@ add.addEventListener("click", () => {
 	layout.insertPanel(name, []);
 });
 
+const urlTheme = new URLSearchParams(window.location.search).get("theme");
+if (urlTheme) {
+	themes.value = urlTheme;
+	layout.className = urlTheme;
+}
+
 themes.addEventListener("change", (_event) => {
 	layout.className = themes.value;
 });

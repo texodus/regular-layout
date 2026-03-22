@@ -128,7 +128,7 @@ export class RegularLayout extends HTMLElement {
 		this._stylesheet = new CSSStyleSheet();
 		this._cursor_stylesheet = new CSSStyleSheet();
 		this._cursor_override = false;
-		const event_name = `${this._physics.CUSTOM_EVENT_NAME_PREFIX}-resize-before`;
+		const event_name = `${this._physics.CUSTOM_EVENT_NAME_PREFIX}-before-resize`;
 		this._presizeQueue = new PresizeQueue(this, event_name);
 		this._overlayController = new OverlayController(this.create_overlay_host());
 		this._shadowRoot.adoptedStyleSheets = [
@@ -288,7 +288,7 @@ export class RegularLayout extends HTMLElement {
 
 	/**
 	 * Restores the layout from a saved state synchronously, without
-	 * dispatching the `regular-layout-resize-before` event.
+	 * dispatching the `regular-layout-before-resize` event.
 	 *
 	 * @param layout - The layout tree to restore
 	 */
@@ -304,7 +304,7 @@ export class RegularLayout extends HTMLElement {
 	/**
 	 * Restores the layout from a saved state.
 	 *
-	 * Before applying, dispatches a cancelable `regular-layout-resize-before`
+	 * Before applying, dispatches a cancelable `regular-layout-before-resize`
 	 * event. If the event is cancelled via `preventDefault()`, the layout
 	 * update is suspended until {@link resumeResize} is called.
 	 *
@@ -333,7 +333,7 @@ export class RegularLayout extends HTMLElement {
 
 	/**
 	 * Resumes a layout update that was suspended by cancelling the
-	 * `regular-layout-resize-before` event.
+	 * `regular-layout-before-resize` event.
 	 */
 	resumeResize = () => {
 		this._presizeQueue.resume();

@@ -13,14 +13,14 @@ import { expect, test } from "../helpers/coverage.ts";
 import { setupLayout, saveLayout, dragMouse } from "../helpers/integration.ts";
 import { LAYOUTS } from "../helpers/fixtures.ts";
 
-test("should fire regular-layout-resize-before on restore", async ({
+test("should fire regular-layout-before-resize on restore", async ({
 	page,
 }) => {
 	await setupLayout(page, LAYOUTS.SINGLE_AAA);
 	const fired = await page.evaluate(async () => {
 		const layout = document.querySelector("regular-layout");
 		let eventFired = false;
-		layout?.addEventListener("regular-layout-resize-before", () => {
+		layout?.addEventListener("regular-layout-before-resize", () => {
 			eventFired = true;
 		});
 		await layout?.restore({
@@ -42,7 +42,7 @@ test("should provide calculatePresizePaths in event detail", async ({
 			value: null,
 		};
 
-		layout?.addEventListener("regular-layout-resize-before", (e) => {
+		layout?.addEventListener("regular-layout-before-resize", (e) => {
 			presizePaths.value = (
 				e as CustomEvent
 			).detail.calculatePresizePaths() as Record<string, unknown>;
@@ -80,7 +80,7 @@ test("should suspend resize when preventDefault is called", async ({
 	await setupLayout(page, LAYOUTS.SINGLE_AAA);
 	const result = await page.evaluate(async () => {
 		const layout = document.querySelector("regular-layout");
-		layout?.addEventListener("regular-layout-resize-before", (e) => {
+		layout?.addEventListener("regular-layout-before-resize", (e) => {
 			e.preventDefault();
 		});
 
@@ -113,7 +113,7 @@ test("should resume suspended resize when resumeResize is called", async ({
 	await setupLayout(page, LAYOUTS.SINGLE_AAA);
 	const result = await page.evaluate(async () => {
 		const layout = document.querySelector("regular-layout");
-		layout?.addEventListener("regular-layout-resize-before", (e) => {
+		layout?.addEventListener("regular-layout-before-resize", (e) => {
 			e.preventDefault();
 		});
 
@@ -144,7 +144,7 @@ test("should proceed immediately when event is not cancelled", async ({
 	const tabs = await page.evaluate(async () => {
 		const layout = document.querySelector("regular-layout");
 		let eventCount = 0;
-		layout?.addEventListener("regular-layout-resize-before", () => {
+		layout?.addEventListener("regular-layout-before-resize", () => {
 			eventCount++;
 		});
 		await layout?.restore({
@@ -167,7 +167,7 @@ test("should fire resize-before on drag resize", async ({ page }) => {
 	await page.evaluate(() => {
 		const layout = document.querySelector("regular-layout");
 		(window as unknown as Record<string, number>).__resizeBeforeCount = 0;
-		layout?.addEventListener("regular-layout-resize-before", () => {
+		layout?.addEventListener("regular-layout-before-resize", () => {
 			(window as unknown as Record<string, number>).__resizeBeforeCount++;
 		});
 	});
@@ -196,7 +196,7 @@ test("should queue concurrent resizes and process sequentially", async ({
 		let callCount = 0;
 		let cancelFirst = true;
 
-		layout?.addEventListener("regular-layout-resize-before", (e) => {
+		layout?.addEventListener("regular-layout-before-resize", (e) => {
 			callCount++;
 			events.push(`before-${callCount}`);
 			if (cancelFirst) {
@@ -243,7 +243,7 @@ test("should provide pre-resize panel paths for nested layout", async ({
 	const paths = await page.evaluate(async () => {
 		const layout = document.querySelector("regular-layout");
 		let presizePaths: Record<string, Record<string, unknown>> | null = null;
-		layout?.addEventListener("regular-layout-resize-before", (e) => {
+		layout?.addEventListener("regular-layout-before-resize", (e) => {
 			presizePaths = (e as CustomEvent).detail.calculatePresizePaths();
 		});
 
@@ -299,7 +299,7 @@ test("should fire resize-before on double-click equalize", async ({ page }) => {
 	await page.evaluate(() => {
 		const layout = document.querySelector("regular-layout");
 		(window as unknown as Record<string, boolean>).__resizeBeforeFired = false;
-		layout?.addEventListener("regular-layout-resize-before", () => {
+		layout?.addEventListener("regular-layout-before-resize", () => {
 			(window as unknown as Record<string, boolean>).__resizeBeforeFired = true;
 		});
 	});
@@ -326,7 +326,7 @@ test("should not fire resize-before on restoreSync", async ({ page }) => {
 	const fired = await page.evaluate(() => {
 		const layout = document.querySelector("regular-layout");
 		let eventFired = false;
-		layout?.addEventListener("regular-layout-resize-before", () => {
+		layout?.addEventListener("regular-layout-before-resize", () => {
 			eventFired = true;
 		});
 		layout?.restoreSync({
