@@ -9,77 +9,58 @@
 // ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-import { expect, test } from "@playwright/test";
+import * as fs from "node:fs";
+import * as path from "node:path";
+import { CoverageReport } from "monocart-coverage-reports";
+import { execSync } from "node:child_process";
 
-import { create_css_grid_layout } from "../../src/layout/generate_grid.ts";
-import type { Layout } from "../../src/core/types.ts";
-import { DEFAULT_PHYSICS } from "../../src/core/constants.ts";
+const COVERAGE_DIR = path.join(process.cwd(), "build", "coverage");
+const RAW_DIR = path.join(COVERAGE_DIR, "raw");
+const REPORT_DIR = COVERAGE_DIR;
 
-test("Deeply alternating split with grid-based overlay", () => {
-	const test: Layout = {
-		type: "split-layout",
-		children: [
-			{
-				type: "split-layout",
-				children: [
-					{
-						type: "split-layout",
-						orientation: "horizontal",
-						children: [
-							{
-								type: "tab-layout",
-								tabs: ["AAA"],
-							},
-							{
-								type: "split-layout",
-								orientation: "vertical",
-								children: [
-									{
-										type: "tab-layout",
-										tabs: ["BBB"],
-									},
-									{
-										type: "tab-layout",
-										tabs: ["CCC"],
-									},
-								],
-								sizes: [0.5, 0.5],
-							},
-						],
-						sizes: [0.5, 0.5],
-					},
-					{
-						type: "tab-layout",
-						tabs: ["DDD"],
-					},
-				],
-				sizes: [0.3, 0.7],
-				orientation: "vertical",
-			},
-			{
-				type: "tab-layout",
-				tabs: ["EEE"],
-			},
-		],
-		sizes: [0.6, 0.4],
-		orientation: "horizontal",
-	};
+async function generateReport(): Promise<void> {
+	if (!fs.existsSync(RAW_DIR)) {
+		console.error("No coverage data found. Run tests with COVERAGE=1 first.");
+		process.exit(1);
+	}
 
-	expect(
-		create_css_grid_layout(test, ["BBB", "AAA"], {
-			...DEFAULT_PHYSICS,
-			SHOULD_ROUND: true,
-		}),
-	).toEqual(
-		`
-:host ::slotted(*){display:none}:host{display:grid;grid-template-rows:15fr 15fr 70fr;grid-template-columns:30fr 30fr 40fr}
-:host ::slotted([name="AAA"]){display:flex;grid-column:1;grid-row:1 / 3}
-:host ::slotted([name="BBB"]){display:flex;grid-column:1;grid-row:1 / 3}
-:host ::slotted([name=BBB]){z-index:1}
-:host ::slotted([name="BBB"]){display:flex;grid-column:2;grid-row:1}
-:host ::slotted([name="CCC"]){display:flex;grid-column:2;grid-row:2}
-:host ::slotted([name="DDD"]){display:flex;grid-column:1 / 3;grid-row:3}
-:host ::slotted([name="EEE"]){display:flex;grid-column:3;grid-row:1 / 4}
-        `.trim(),
-	);
+	const rawFiles = fs.readdirSync(RAW_DIR).filter((f) => f.endsWith(".json"));
+	if (rawFiles.length === 0) {
+		console.error("No coverage data found in .coverage/raw/");
+		process.exit(1);
+	}
+
+	console.log(`Processing ${rawFiles.length} coverage file(s)...`);
+	const report = new CoverageReport({
+		reports: ["text", "html", "lcovonly"],
+		outputDir: REPORT_DIR,
+		sourceFilter: (sourcePath: string) => sourcePath.startsWith("src/"),
+	});
+
+	for (const file of rawFiles) {
+		const entries = JSON.parse(
+			fs.readFileSync(path.join(RAW_DIR, file), "utf-8"),
+		);
+
+		for (const entry of entries) {
+			const urlPath = new URL(entry.url).pathname;
+			entry.url = path.join(process.cwd(), urlPath);
+		}
+
+		await report.add(entries);
+	}
+
+	await report.generate();
+	console.log(`\nCoverage report generated at ${REPORT_DIR}/index.html`);
+	console.log(`LCOV data written to ${REPORT_DIR}/lcov.info`);
+}
+
+execSync(
+	`rm -rf build/coverage && COVERAGE=1 playwright test tests/unit tests/integration`,
+	{ stdio: "inherit" },
+);
+
+generateReport().catch((err) => {
+	console.error("Failed to generate coverage report:", err);
+	process.exit(1);
 });

@@ -12,7 +12,7 @@
 import { expect, test } from "@playwright/test";
 import { calculate_intersection } from "../../src/layout/calculate_intersect.ts";
 import { LAYOUTS } from "../helpers/fixtures.ts";
-import { DEFAULT_PHYSICS } from "../../src/layout/constants.ts";
+import { DEFAULT_PHYSICS } from "../../src/core/constants.ts";
 
 test("AAA", () => {
 	const result = calculate_intersection(0.1, 0.1, LAYOUTS.NESTED_BASIC);

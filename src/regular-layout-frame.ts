@@ -9,7 +9,7 @@
 // ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-import type { LayoutPath } from "./layout/types.ts";
+import type { LayoutPath } from "./core/types.ts";
 import type { RegularLayoutEvent } from "./extensions.ts";
 import type { RegularLayout } from "./regular-layout.ts";
 import type { RegularLayoutTab } from "./regular-layout-tab.ts";

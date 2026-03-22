@@ -9,7 +9,7 @@
 // ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-import { DEFAULT_PHYSICS, type Physics } from "./constants";
+import { DEFAULT_PHYSICS, type Physics } from "../core/constants";
 import { insert_child } from "./insert_child";
 import type {
 	Layout,
@@ -17,7 +17,7 @@ import type {
 	LayoutPathTraversal,
 	Orientation,
 	ViewWindow,
-} from "./types";
+} from "../core/types";
 
 /**
  * Calculates an insertion point (which may involve splitting a single

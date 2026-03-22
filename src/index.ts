@@ -59,10 +59,12 @@
  * @packageDocumentation
  */
 
-export type * from "./layout/types.ts";
+export type * from "./core/types.ts";
 
 export { RegularLayout } from "./regular-layout.ts";
 export { RegularLayoutFrame } from "./regular-layout-frame.ts";
+
+export type * from "./extensions.ts";
 
 // Side effects
 import "./extensions.ts";

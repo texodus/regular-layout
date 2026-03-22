@@ -15,7 +15,7 @@ import type {
 	Layout,
 	ViewWindow,
 	LayoutPathTraversal,
-} from "./types.ts";
+} from "../core/types.ts";
 
 const VIEW_WINDOW = {
 	row_start: 0,
@@ -130,7 +130,10 @@ function calculate_intersection_recursive(
 		}
 
 		// Check if position falls within this child's bounds
-		if (position >= current_pos && position < next_pos) {
+		if (
+			position >= current_pos &&
+			(position < next_pos || i === panel.children.length - 1)
+		) {
 			return calculate_intersection_recursive(
 				column,
 				row,

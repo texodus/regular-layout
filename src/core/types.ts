@@ -96,6 +96,13 @@ export interface LayoutPath {
 }
 
 /**
+ * The detail payload of the `regular-layout-resize-before` event.
+ */
+export interface PresizeDetail {
+	calculatePresizePaths(): Record<string, LayoutPath>;
+}
+
+/**
  * An empty `Layout` with no panels.
  */
 export const EMPTY_PANEL: Layout = {

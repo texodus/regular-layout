@@ -42,9 +42,9 @@ export async function saveLayout(page: Page): Promise<Layout> {
  * Restores a layout to the given state.
  */
 export async function restoreLayout(page: Page, state: Layout): Promise<void> {
-	await page.evaluate((s) => {
+	await page.evaluate(async (s) => {
 		const layout = document.querySelector("regular-layout");
-		layout?.restore(s as Layout);
+		await layout?.restore(s as Layout);
 	}, state);
 }
 
@@ -73,9 +73,9 @@ export async function insertPanel(
 	path: LayoutPathTraversal,
 ): Promise<void> {
 	await page.evaluate(
-		({ name, p }) => {
+		async ({ name, p }) => {
 			const layout = document.querySelector("regular-layout");
-			layout?.insertPanel(name, p);
+			await layout?.insertPanel(name, p);
 		},
 		{ name: panelName, p: path },
 	);
@@ -88,9 +88,9 @@ export async function removePanel(
 	page: Page,
 	pathOrName: number[] | string,
 ): Promise<void> {
-	await page.evaluate((p) => {
+	await page.evaluate(async (p) => {
 		const layout = document.querySelector("regular-layout");
-		layout?.removePanel(p as string);
+		await layout?.removePanel(p as string);
 	}, pathOrName);
 }
 

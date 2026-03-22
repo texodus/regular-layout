@@ -11,7 +11,7 @@
 
 import { RegularLayout } from "./regular-layout.ts";
 import { RegularLayoutFrame } from "./regular-layout-frame.ts";
-import type { Layout } from "./layout/types.ts";
+import type { Layout, PresizeDetail } from "./core/types.ts";
 import { RegularLayoutTab } from "./regular-layout-tab.ts";
 
 customElements.define("regular-layout", RegularLayout);
@@ -59,6 +59,12 @@ declare global {
 			options?: { signal: AbortSignal },
 		): void;
 
+		addEventListener(
+			name: "regular-layout-resize-before",
+			cb: (e: RegularLayoutPresizeEvent) => void,
+			options?: { signal: AbortSignal },
+		): void;
+
 		removeEventListener(
 			name: "regular-layout-update",
 			cb: (e: RegularLayoutEvent) => void,
@@ -68,7 +74,13 @@ declare global {
 			name: "regular-layout-before-update",
 			cb: (e: RegularLayoutEvent) => void,
 		): void;
+
+		removeEventListener(
+			name: "regular-layout-resize-before",
+			cb: (e: RegularLayoutPresizeEvent) => void,
+		): void;
 	}
 }
 
 export type RegularLayoutEvent = CustomEvent<Layout>;
+export type RegularLayoutPresizeEvent = CustomEvent<PresizeDetail>;

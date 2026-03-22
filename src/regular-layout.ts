@@ -16,7 +16,7 @@
  * @packageDocumentation
  */
 
-import { EMPTY_PANEL } from "./layout/types.ts";
+import { EMPTY_PANEL } from "./core/types.ts";
 import { create_css_grid_layout } from "./layout/generate_grid.ts";
 import type {
 	LayoutPath,
@@ -26,20 +26,27 @@ import type {
 	OverlayMode,
 	Orientation,
 	LayoutPathTraversal,
-} from "./layout/types.ts";
+	ViewWindow,
+} from "./core/types.ts";
+
 import { calculate_intersection } from "./layout/calculate_intersect.ts";
 import { remove_child } from "./layout/remove_child.ts";
 import { insert_child } from "./layout/insert_child.ts";
 import { redistribute_panel_sizes } from "./layout/redistribute_panel_sizes.ts";
-import { updateOverlaySheet } from "./layout/generate_overlay.ts";
-import { calculate_edge } from "./layout/calculate_edge.ts";
+import { viewWindowToLocalRect } from "./layout/generate_overlay.ts";
 import { flatten } from "./layout/flatten.ts";
 import { calculate_path } from "./layout/calculate_path.ts";
+import { PresizeQueue } from "./model/presize_queue.ts";
+import {
+	OverlayController,
+	type OverlayHost,
+} from "./model/overlay_controller.ts";
+
 import {
 	DEFAULT_PHYSICS,
 	type PhysicsUpdate,
 	type Physics,
-} from "./layout/constants.ts";
+} from "./core/constants.ts";
 
 /**
  * An interface which models the fields of `PointerEvent` that
@@ -109,6 +116,8 @@ export class RegularLayout extends HTMLElement {
 	private _cursor_override: boolean;
 	private _dimensions?: { box: DOMRect; style: CSSStyleDeclaration };
 	private _physics: Physics;
+	private _presizeQueue: PresizeQueue;
+	private _overlayController: OverlayController;
 
 	constructor() {
 		super();
@@ -119,6 +128,9 @@ export class RegularLayout extends HTMLElement {
 		this._stylesheet = new CSSStyleSheet();
 		this._cursor_stylesheet = new CSSStyleSheet();
 		this._cursor_override = false;
+		const event_name = `${this._physics.CUSTOM_EVENT_NAME_PREFIX}-resize-before`;
+		this._presizeQueue = new PresizeQueue(this, event_name);
+		this._overlayController = new OverlayController(this.create_overlay_host());
 		this._shadowRoot.adoptedStyleSheets = [
 			this._stylesheet,
 			this._cursor_stylesheet,
@@ -177,54 +189,13 @@ export class RegularLayout extends HTMLElement {
 	 *     the target, "absolute" positions the panel absolutely. Defaults to
 	 *     "absolute".
 	 */
-	setOverlayState = (
+	setOverlayState = async (
 		event: PointerEventCoordinates,
-		{ slot }: LayoutPath,
-		className: string = this._physics.OVERLAY_CLASSNAME,
-		mode: OverlayMode = this._physics.OVERLAY_DEFAULT,
+		target: LayoutPath,
+		className?: string,
+		mode?: OverlayMode,
 	) => {
-		const panel = remove_child(this._panel, slot);
-		const query = `:scope > [${this._physics.CHILD_ATTRIBUTE_NAME}="${slot}"]`;
-		const drag_element = this.querySelector(query);
-		if (drag_element) {
-			drag_element.classList.add(className);
-		}
-
-		// TODO: Don't recalculate box (but this currently protects against resize).
-		const [col, row, box, style] = this.relativeCoordinates(event, true);
-		let drop_target = calculate_intersection(col, row, panel);
-		if (drop_target) {
-			drop_target = calculate_edge(
-				col,
-				row,
-				panel,
-				slot,
-				drop_target,
-				box,
-				this._physics,
-			);
-		}
-
-		if (mode === "grid" && drop_target) {
-			const path: [string, string] = [slot, drop_target?.slot];
-			const css = create_css_grid_layout(panel, path, this._physics);
-			this._stylesheet.replaceSync(css);
-		} else if (mode === "absolute") {
-			const grid_css = create_css_grid_layout(panel, undefined, this._physics);
-			const overlay_css = updateOverlaySheet(
-				slot,
-				box,
-				style,
-				drop_target,
-				this._physics,
-			);
-
-			this._stylesheet.replaceSync([grid_css, overlay_css].join("\n"));
-		}
-
-		const event_name = `${this._physics.CUSTOM_EVENT_NAME_PREFIX}-before-update`;
-		const custom_event = new CustomEvent<Layout>(event_name, { detail: panel });
-		this.dispatchEvent(custom_event);
+		await this._overlayController.set(event, target, className, mode);
 	};
 
 	/**
@@ -239,54 +210,12 @@ export class RegularLayout extends HTMLElement {
 	 * @param mode - Overlay rendering mode that was used, must match the mode
 	 *     passed to `setOverlayState`. Defaults to "absolute".
 	 */
-	clearOverlayState = (
+	clearOverlayState = async (
 		event: PointerEventCoordinates | null,
-		{ slot, layout }: LayoutPath,
-		className: string = this._physics.OVERLAY_CLASSNAME,
+		target: LayoutPath,
+		className?: string,
 	) => {
-		let panel = this._panel;
-		panel = remove_child(panel, slot);
-		const query = `:scope > [${this._physics.CHILD_ATTRIBUTE_NAME}="${slot}"]`;
-		const drag_element = this.querySelector(query);
-		if (drag_element) {
-			drag_element.classList.remove(className);
-		}
-
-		if (event === null) {
-			this.restore(layout);
-			return;
-		}
-
-		const [col, row, box] = this.relativeCoordinates(event, false);
-		let drop_target = calculate_intersection(col, row, panel);
-		if (drop_target) {
-			drop_target = calculate_edge(
-				col,
-				row,
-				panel,
-				slot,
-				drop_target,
-				box,
-				this._physics,
-			);
-		}
-
-		if (drop_target) {
-			const orientation = drop_target?.is_edge
-				? drop_target.orientation
-				: undefined;
-
-			const new_layout = insert_child(
-				panel,
-				slot,
-				drop_target.path,
-				orientation,
-			);
-
-			this.restore(new_layout);
-		} else {
-			this.restore(layout);
-		}
+		await this._overlayController.clear(event, target, className);
 	};
 
 	/**
@@ -300,7 +229,7 @@ export class RegularLayout extends HTMLElement {
 	 *     the new `SplitPanel` _if_ there is an option of orientation (e.g. if
 	 *     the layout had no pre-existing `SplitPanel`)
 	 */
-	insertPanel = (
+	insertPanel = async (
 		name: string,
 		path: LayoutPathTraversal = [],
 		split?: boolean | Orientation,
@@ -312,7 +241,7 @@ export class RegularLayout extends HTMLElement {
 			orientation = split;
 		}
 
-		this.restore(insert_child(this._panel, name, path, orientation));
+		await this.restore(insert_child(this._panel, name, path, orientation));
 	};
 
 	/**
@@ -320,8 +249,8 @@ export class RegularLayout extends HTMLElement {
 	 *
 	 * @param name - Name of the panel to remove
 	 */
-	removePanel = (name: string) => {
-		this.restore(remove_child(this._panel, name));
+	removePanel = async (name: string) => {
+		await this.restore(remove_child(this._panel, name));
 	};
 
 	/**
@@ -353,12 +282,31 @@ export class RegularLayout extends HTMLElement {
 	/**
 	 * Clears the entire layout, unslotting all panels.
 	 */
-	clear = () => {
-		this.restore(EMPTY_PANEL);
+	clear = async () => {
+		await this.restore(EMPTY_PANEL);
+	};
+
+	/**
+	 * Restores the layout from a saved state synchronously, without
+	 * dispatching the `regular-layout-resize-before` event.
+	 *
+	 * @param layout - The layout tree to restore
+	 */
+	restoreSync = (layout: Layout, _is_flattened: boolean = false) => {
+		this._panel = !_is_flattened ? flatten(layout) : layout;
+		const css = create_css_grid_layout(this._panel, undefined, this._physics);
+		this._stylesheet.replaceSync(css);
+		const event_name = `${this._physics.CUSTOM_EVENT_NAME_PREFIX}-update`;
+		const event = new CustomEvent<Layout>(event_name, { detail: this._panel });
+		this.dispatchEvent(event);
 	};
 
 	/**
 	 * Restores the layout from a saved state.
+	 *
+	 * Before applying, dispatches a cancelable `regular-layout-resize-before`
+	 * event. If the event is cancelled via `preventDefault()`, the layout
+	 * update is suspended until {@link resumeResize} is called.
 	 *
 	 * @param layout - The layout tree to restore
 	 *
@@ -366,16 +314,29 @@ export class RegularLayout extends HTMLElement {
 	 * ```typescript
 	 * const layout = document.querySelector('regular-layout');
 	 * const savedState = JSON.parse(localStorage.getItem('layout'));
-	 * layout.restore(savedState);
+	 * await layout.restore(savedState);
 	 * ```
 	 */
-	restore = (layout: Layout, _is_flattened: boolean = false) => {
-		this._panel = !_is_flattened ? flatten(layout) : layout;
-		const css = create_css_grid_layout(this._panel, undefined, this._physics);
-		this._stylesheet.replaceSync(css);
-		const event_name = `${this._physics.CUSTOM_EVENT_NAME_PREFIX}-update`;
-		const event = new CustomEvent<Layout>(event_name, { detail: this._panel });
-		this.dispatchEvent(event);
+	restore = async (layout: Layout, _is_flattened: boolean = false) => {
+		const panel = !_is_flattened ? flatten(layout) : layout;
+		await this._presizeQueue.run(panel, () => {
+			this._panel = panel;
+			const css = create_css_grid_layout(this._panel, undefined, this._physics);
+			this._stylesheet.replaceSync(css);
+			const event_name = `${this._physics.CUSTOM_EVENT_NAME_PREFIX}-update`;
+			const event = new CustomEvent<Layout>(event_name, {
+				detail: this._panel,
+			});
+			this.dispatchEvent(event);
+		});
+	};
+
+	/**
+	 * Resumes a layout update that was suspended by cancelling the
+	 * `regular-layout-resize-before` event.
+	 */
+	resumeResize = () => {
+		this._presizeQueue.resume();
 	};
 
 	/**
@@ -441,19 +402,51 @@ export class RegularLayout extends HTMLElement {
 
 		const box = this._dimensions.box;
 		const style = this._dimensions.style;
-		const col =
-			(event.clientX - box.left - parseFloat(style.paddingLeft)) /
-			(box.width -
-				parseFloat(style.paddingLeft) -
-				parseFloat(style.paddingRight));
+		const paddingLeft = parseFloat(style.paddingLeft);
+		const paddingTop = parseFloat(style.paddingTop);
+		const contentWidth =
+			box.width - paddingLeft - parseFloat(style.paddingRight);
 
-		const row =
-			(event.clientY - box.top - parseFloat(style.paddingTop)) /
-			(box.height -
-				parseFloat(style.paddingTop) -
-				parseFloat(style.paddingBottom));
+		const contentHeight =
+			box.height - paddingTop - parseFloat(style.paddingBottom);
 
+		const localX = event.clientX - box.left - paddingLeft;
+		const localY = event.clientY - box.top - paddingTop;
+		const col = Math.max(0, Math.min(1, localX / contentWidth));
+		const row = Math.max(0, Math.min(1, localY / contentHeight));
 		return [col, row, box, style];
+	};
+
+	/**
+	 * Converts a {@link ViewWindow} (normalized 0–1 coordinates) to a
+	 * `DOMRect` in screen pixels, accounting for padding and optionally
+	 * CSS `gap` and child `margin`.
+	 *
+	 * @param window - The view window to convert.
+	 * @returns A `DOMRect` representing the window in screen coordinates.
+	 */
+	realCoordinates = (window: ViewWindow, child?: HTMLElement): DOMRect => {
+		if (!this._dimensions) {
+			this._dimensions = {
+				box: this.getBoundingClientRect(),
+				style: getComputedStyle(this),
+			};
+		}
+
+		const box = this._dimensions.box;
+		const style = this._dimensions.style;
+		let childStyle: CSSStyleDeclaration | undefined;
+		if (child) {
+			childStyle = getComputedStyle(child);
+		}
+
+		const local = viewWindowToLocalRect(window, box, style, childStyle);
+		return new DOMRect(
+			box.left + local.x,
+			box.top + local.y,
+			local.width,
+			local.height,
+		);
 	};
 
 	/**
@@ -476,7 +469,47 @@ export class RegularLayout extends HTMLElement {
 		return Math.sqrt(dx ** 2 + dy ** 2);
 	};
 
-	private onDblClick = (event: MouseEvent) => {
+	//  ▇█████████████████■■■■ȺȺȺȺȺ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀ȺȺȺȺȺ■■■■■█████████████████
+	//  ███████▛▀▀█▃▄▄▅▆▆▆▇▇▇██████████████████████████████▇▇▇▆▆▆▅▅▄▃█▀▀▜███████
+	//  ████▛▚▅▇███▍ ▗▄▃¯"▜██▘   ▜██▍  ▀█▋ ▐█▀▔▂▄▃ ▔▜█  ▗▃▃▃▄▊  ▄▄▃ ▔▜██▇▅▃▀████
+	//  ███▋╺██████▍ ▐██▋  █▘ ◨Ƚ "██▍ ▙▁ ▀ ▐▋  █▛▀▀▀▜█  ´▂▂Ŋ█▊  °"▔ ▃██████▍▐███
+	//  ████▄▝▜████▍ ▝▀▀ ▂▟▘ ▄▄▄▄ "█▍ ██▄  ▐█▃ ▝▀▀  ▐█  ▝▀▀▀▀▊  ██▖ ▝████▛▀▄████
+	//  ██████▇▆▄▃█▀▀Ⱥ▼■███▇▇████▇▇█▇▇████▇████▇▇▇████▇▇▇▇▇▇▇█▇■◘▀▀▀▀▂▃▄▅▇██████
+	//  ███████████████▇▇▆▆▆▅▅▅▅▅▅▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▅▅▅▅▅▅▆▆▆▇▇███████████████
+	//
+	//
+	//   ┏▅▅▖ ▗▅▅▶  ▅▅▅▅▅▅▅ ▗▅▅▅▅▅▅▖ ▅▅▅▅▅▄▄▂       ▃▅▆▆▆▄▁  ┏▅▅▖  ▅▅▖▅▅▅▅▅▅▅▅▅
+	//   ┣██▌▗██▛   ██▊▔▔▔▔ ▐██▋▔▔▔` ███▍"▜██▙     ▟██▘▔███▖ ▐██▌  ██▌^▔▔███^▔^
+	//   ┣██▙██▋    ██▊▂▂▂  ▐██▋▂▂▂  ███▍ ▐██▋    ▐███  ▐██▋ ▐██▌  ██▌   ███▎
+	//   ┣██████▌   ███▀▀▀  ▐███▀▀▘  ██████▛▀     ▐███  ▐██▋ ▐██▌  ██▌   ███▎
+	//   ┣██▛ ▜██▖  ██▊     ▐██▋     ███▍         ▝███  ▟██▌ ▐██▌  ██▌   ███▎
+	//   ┣██▌  ███  ███▆▆▆▆▎▐███▆▆▆▅ ███▍          ▀██▙▅██▛  ▝███▅▆██▘   ███▎
+	//   ▔▔▔`  ´▔▔` ▔▔▔▔▔▔▔ ´▔▔▔▔▔▔▔ ▔▔▔             ▔""▔¯     ▔""^▔     ▔▔▔
+
+	private create_overlay_host(): OverlayHost {
+		const self = this;
+		return {
+			get panel() {
+				return self._panel;
+			},
+			get physics() {
+				return self._physics;
+			},
+			get stylesheet() {
+				return self._stylesheet;
+			},
+			get presizeQueue() {
+				return self._presizeQueue;
+			},
+			relativeCoordinates: (event, recalculate) =>
+				self.relativeCoordinates(event, recalculate),
+			restore: (layout, isFlattened) => self.restore(layout, isFlattened),
+			querySelector: (selectors) => self.querySelector(selectors),
+			dispatchEvent: (event) => self.dispatchEvent(event),
+		};
+	}
+
+	private onDblClick = async (event: MouseEvent) => {
 		const [col, row, rect] = this.relativeCoordinates(event, false);
 		const divider = calculate_intersection(col, row, this._panel, {
 			rect,
@@ -490,7 +523,7 @@ export class RegularLayout extends HTMLElement {
 				undefined,
 			);
 
-			this.restore(panel, true);
+			await this.restore(panel, true);
 		}
 	};
 
@@ -507,15 +540,17 @@ export class RegularLayout extends HTMLElement {
 		}
 	};
 
-	private onPointerMove = (event: PointerEvent) => {
+	private onPointerMove = async (event: PointerEvent) => {
 		if (this._drag_target) {
 			const [col, row] = this.relativeCoordinates(event, false);
 			const [{ path, type }, old_col, old_row] = this._drag_target;
 			const offset = type === "horizontal" ? old_col - col : old_row - row;
 			const panel = redistribute_panel_sizes(this._panel, path, offset);
-			this._stylesheet.replaceSync(
-				create_css_grid_layout(panel, undefined, this._physics),
-			);
+			await this._presizeQueue.run(panel, () => {
+				this._stylesheet.replaceSync(
+					create_css_grid_layout(panel, undefined, this._physics),
+				);
+			});
 		}
 
 		if (this._physics.GRID_DIVIDER_CHECK_TARGET && event.target !== this) {
@@ -545,14 +580,14 @@ export class RegularLayout extends HTMLElement {
 		}
 	};
 
-	private onPointerUp = (event: PointerEvent) => {
+	private onPointerUp = async (event: PointerEvent) => {
 		if (this._drag_target) {
 			this.releasePointerCapture(event.pointerId);
 			const [col, row] = this.relativeCoordinates(event, false);
 			const [{ path, type }, old_col, old_row] = this._drag_target;
 			const offset = type === "horizontal" ? old_col - col : old_row - row;
 			const panel = redistribute_panel_sizes(this._panel, path, offset);
-			this.restore(panel, true);
+			await this.restore(panel, true);
 			this._drag_target = undefined;
 		}
 	};

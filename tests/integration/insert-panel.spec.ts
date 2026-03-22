@@ -9,7 +9,7 @@
 // ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../helpers/coverage.ts";
 import type { Layout } from "../../dist/index.js";
 import {
 	setupLayout,
@@ -71,14 +71,14 @@ test("should insert panel at specific path in split panel", async ({
 test("should insert panel into nested split panel", async ({ page }) => {
 	await page.goto("/examples/index.html");
 	await page.waitForSelector("regular-layout");
-	await page.evaluate((layoutConfig) => {
+	await page.evaluate(async (layoutConfig) => {
 		const layout = document.querySelector("regular-layout");
-		layout?.restore(layoutConfig as Layout);
+		await layout?.restore(layoutConfig as Layout);
 	}, LAYOUTS.NESTED_BASIC);
 
-	await page.evaluate(() => {
+	await page.evaluate(async () => {
 		const layout = document.querySelector("regular-layout");
-		layout?.insertPanel("DDD", [0, 2]);
+		await layout?.insertPanel("DDD", [0, 2]);
 	});
 
 	const afterInsert = await page.evaluate(() => {
@@ -128,14 +128,14 @@ test("should split existing panel when inserting at deeper path", async ({
 	await page.goto("/examples/index.html");
 	await page.waitForSelector("regular-layout");
 
-	await page.evaluate((layoutConfig) => {
+	await page.evaluate(async (layoutConfig) => {
 		const layout = document.querySelector("regular-layout");
-		layout?.restore(layoutConfig as Layout);
+		await layout?.restore(layoutConfig as Layout);
 	}, LAYOUTS.TWO_HORIZONTAL_EQUAL);
 
-	await page.evaluate(() => {
+	await page.evaluate(async () => {
 		const layout = document.querySelector("regular-layout");
-		layout?.insertPanel("CCC", [1, 1], "vertical");
+		await layout?.insertPanel("CCC", [1, 1], "vertical");
 	});
 
 	const afterInsert = await page.evaluate(() => {
@@ -179,14 +179,14 @@ test("should preserve state with save/restore after insertPanel", async ({
 }) => {
 	await page.goto("/examples/index.html");
 	await page.waitForSelector("regular-layout");
-	await page.evaluate((layoutConfig) => {
+	await page.evaluate(async (layoutConfig) => {
 		const layout = document.querySelector("regular-layout");
-		layout?.restore(layoutConfig as Layout);
+		await layout?.restore(layoutConfig as Layout);
 	}, LAYOUTS.SINGLE_AAA);
 
-	await page.evaluate(() => {
+	await page.evaluate(async () => {
 		const layout = document.querySelector("regular-layout");
-		layout?.insertPanel("BBB", []);
+		await layout?.insertPanel("BBB", []);
 	});
 
 	const stateAfterInsert = await page.evaluate(() => {
@@ -194,9 +194,9 @@ test("should preserve state with save/restore after insertPanel", async ({
 		return layout?.save();
 	});
 
-	await page.evaluate((state) => {
+	await page.evaluate(async (state) => {
 		const layout = document.querySelector("regular-layout");
-		layout?.restore(state as Layout);
+		await layout?.restore(state as Layout);
 	}, stateAfterInsert);
 
 	const restoredState = await page.evaluate(() => {

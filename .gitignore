@@ -2,6 +2,7 @@
 !/.gitignore
 !/.github
 
+build
 dist
 node_modules
 playwright-report

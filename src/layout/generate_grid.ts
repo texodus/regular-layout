@@ -9,8 +9,8 @@
 // ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-import { DEFAULT_PHYSICS, type Physics } from "./constants.ts";
-import type { Layout } from "./types.ts";
+import { DEFAULT_PHYSICS, type Physics } from "../core/constants.ts";
+import type { Layout } from "../core/types.ts";
 
 interface GridCell {
 	child: string;
