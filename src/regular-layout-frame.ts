@@ -26,7 +26,7 @@ const CSS = `
 
 const HTML_TEMPLATE = `
 	<div part="titlebar"></div>
-	<slot part="container"></slot>
+	<div part="container"><slot></slot></div>
 `;
 
 type DragState = { moved?: boolean; path: LayoutPath };
