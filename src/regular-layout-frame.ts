@@ -32,6 +32,20 @@ const HTML_TEMPLATE = `
 type DragState = { moved?: boolean; path: LayoutPath };
 
 /**
+ * Escapes a string for safe use as a CSS `<string>` token (the `content`
+ * fallback), handling backslashes, double-quotes, and newlines.
+ */
+const css_string = (value: string): string =>
+	`"${value.replace(/[\\"\n]/g, (c) => (c === "\n" ? "\\A " : `\\${c}`))}"`;
+
+/**
+ * The per-slot CSS custom property a consumer sets to override a tab's label,
+ * e.g. `regular-layout { --regular-layout-my-panel--title: "My Panel"; }`.
+ */
+const title_variable = (slot: string): string =>
+	`--regular-layout-${globalThis.CSS.escape(slot)}--title`;
+
+/**
  * A custom element that represents a draggable panel within a
  * `<regular-layout>`.
  *
@@ -47,8 +61,17 @@ type DragState = { moved?: boolean; path: LayoutPath };
  * [named `slot`s](https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_templates_and_slots)
  * for wholesale replacement of the underlying Shadow DOM.
  *
+ * The `name` attribute identifies the panel within the layout. The tab label
+ * defaults to `name`, but can be overridden with pure CSS by setting the
+ * `--regular-layout-<name>--title` custom property to a CSS string - the label
+ * is rendered via the tab title's `::before` `content`, so the override
+ * applies reactively with no JavaScript.
+ *
  * @example
  * ```html
+ * <style>
+ *     regular-layout { --regular-layout-panel-1--title: "Panel 1"; }
+ * </style>
  * <regular-layout>
  *     <regular-layout-frame name="panel-1">
  *         <!-- Panel content here -->
@@ -59,6 +82,7 @@ type DragState = { moved?: boolean; path: LayoutPath };
 export class RegularLayoutFrame extends HTMLElement {
 	private _shadowRoot!: ShadowRoot;
 	private _container_sheet!: CSSStyleSheet;
+	private _title_sheet!: CSSStyleSheet;
 	private _layout!: RegularLayout;
 	private _header!: HTMLElement;
 	private _drag: DragState | null = null;
@@ -72,8 +96,12 @@ export class RegularLayoutFrame extends HTMLElement {
 	connectedCallback() {
 		this._container_sheet ??= new CSSStyleSheet();
 		this._container_sheet.replaceSync(CSS);
+		this._title_sheet ??= new CSSStyleSheet();
 		this._shadowRoot ??= this.attachShadow({ mode: "open" });
-		this._shadowRoot.adoptedStyleSheets = [this._container_sheet];
+		this._shadowRoot.adoptedStyleSheets = [
+			this._container_sheet,
+			this._title_sheet,
+		];
 		this._shadowRoot.innerHTML = HTML_TEMPLATE;
 		this._layout = this.parentElement as RegularLayout;
 		this._header = this._shadowRoot.children[0] as HTMLElement;
@@ -106,6 +134,10 @@ export class RegularLayoutFrame extends HTMLElement {
 	}
 
 	private onPointerDown = (event: PointerEvent): void => {
+		if (event.button !== 0) {
+			return;
+		}
+
 		const elem = event.target as RegularLayoutTab;
 		if (elem.part.contains("tab")) {
 			const path = this._layout.calculateIntersect(event);
@@ -184,5 +216,28 @@ export class RegularLayoutFrame extends HTMLElement {
 		for (let j = this._header.children.length - 1; j >= last_index; j--) {
 			this._header.removeChild(this._header.children[j]);
 		}
+
+		this.drawTitles(attr, new_tab_panel.tabs);
+	};
+
+	/**
+	 * Regenerates this frame's title stylesheet, mapping each tab (by its slot
+	 * `name`) to its label. The label is rendered via the title's `::before`
+	 * `content`, reading the slot's `--regular-layout-<slot>--title` override
+	 * variable with the slot name as the fallback - so a consumer can relabel a
+	 * tab purely in CSS and the change applies reactively.
+	 *
+	 * @param attr - The child name attribute (`CHILD_ATTRIBUTE_NAME`).
+	 * @param tabs - The slot names rendered in this frame's titlebar.
+	 */
+	private drawTitles = (attr: string, tabs: string[]) => {
+		const css = tabs
+			.map(
+				(slot) =>
+					`regular-layout-tab[${attr}="${slot}"] [part~="title"]::before{content:var(${title_variable(slot)}, ${css_string(slot)})}`,
+			)
+			.join("\n");
+
+		this._title_sheet.replaceSync(css);
 	};
 }

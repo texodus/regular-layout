@@ -65,6 +65,12 @@ declare global {
 			options?: { signal: AbortSignal },
 		): void;
 
+		addEventListener(
+			name: "regular-layout-select",
+			cb: (e: RegularLayoutSelectEvent) => void,
+			options?: { signal: AbortSignal },
+		): void;
+
 		removeEventListener(
 			name: "regular-layout-update",
 			cb: (e: RegularLayoutEvent) => void,
@@ -79,8 +85,14 @@ declare global {
 			name: "regular-layout-before-resize",
 			cb: (e: RegularLayoutPresizeEvent) => void,
 		): void;
+
+		removeEventListener(
+			name: "regular-layout-select",
+			cb: (e: RegularLayoutSelectEvent) => void,
+		): void;
 	}
 }
 
 export type RegularLayoutEvent = CustomEvent<Layout>;
 export type RegularLayoutPresizeEvent = CustomEvent<PresizeDetail>;
+export type RegularLayoutSelectEvent = CustomEvent<{ name: string }>;

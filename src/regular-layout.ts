@@ -17,7 +17,10 @@
  */
 
 import { EMPTY_PANEL } from "./core/types.ts";
-import { create_css_grid_layout } from "./layout/generate_grid.ts";
+import {
+	create_css_grid_layout,
+	create_css_maximize_layout,
+} from "./layout/generate_grid.ts";
 import type {
 	LayoutPath,
 	Layout,
@@ -106,6 +109,14 @@ export interface PointerEventCoordinates {
  * latter implementation would require synchronizing the light DOM
  * and shadow DOM slots/slotted children continuously.
  *
+ * Note that `::slotted()` only matches *directly* slotted nodes - it
+ * does not pierce a slotted `<slot>`. A consumer that wants to forward
+ * its own light-DOM content through `<regular-layout>` therefore cannot
+ * place a bare `<slot name="X">` as a layout child and expect it to be
+ * grid-positioned; instead, wrap the forwarding slot in a concrete
+ * `<regular-layout-frame name="X">` (which *is* directly slotted and so
+ * matched by the generated `::slotted([name="X"])` rules).
+ *
  */
 export class RegularLayout extends HTMLElement {
 	private _shadowRoot: ShadowRoot;
@@ -118,6 +129,7 @@ export class RegularLayout extends HTMLElement {
 	private _physics: Physics;
 	private _presizeQueue: PresizeQueue;
 	private _overlayController: OverlayController;
+	private _maximized?: string;
 
 	constructor() {
 		super();
@@ -254,6 +266,36 @@ export class RegularLayout extends HTMLElement {
 	};
 
 	/**
+	 * Selects a panel by `name`, making it the front-most tab within its
+	 * containing stack, then dispatches a `<prefix>-select` event with
+	 * `detail: { name }`.
+	 *
+	 * The event fires whenever a tab is selected - including re-selecting the
+	 * already-active tab, or selecting the sole tab of a single-element stack -
+	 * so consumers can always map a tab interaction to an "active panel". When
+	 * the selection actually changes, a `<prefix>-update` event is dispatched
+	 * first (via {@link restore}).
+	 *
+	 * @param name - The name of the panel to select.
+	 */
+	select = async (name: string) => {
+		const layout = this.save();
+		const tab_panel = this.getPanel(name, layout);
+		if (!tab_panel) {
+			return;
+		}
+
+		const index = tab_panel.tabs.indexOf(name);
+		if (index !== -1 && tab_panel.selected !== index) {
+			tab_panel.selected = index;
+			await this.restore(layout);
+		}
+
+		const event_name = `${this._physics.CUSTOM_EVENT_NAME_PREFIX}-select`;
+		this.dispatchEvent(new CustomEvent(event_name, { detail: { name } }));
+	};
+
+	/**
 	 * Retrieves a panel by name from the layout tree.
 	 *
 	 * @param name - Name of the panel to find.
@@ -287,12 +329,49 @@ export class RegularLayout extends HTMLElement {
 	};
 
 	/**
+	 * Maximizes a panel by `name`, rendering it full-size and hiding every
+	 * other panel. This is transient display state - it is **not** persisted by
+	 * {@link save}, and any subsequent {@link restore} resets the layout to the
+	 * minimized (normal, multi-panel) view.
+	 *
+	 * Has no effect if `name` is not present in the current layout.
+	 *
+	 * @param name - The name of the panel to maximize.
+	 */
+	maximize = (name: string) => {
+		if (!this.getPanel(name)) {
+			return;
+		}
+
+		this._maximized = name;
+		this._stylesheet.replaceSync(
+			create_css_maximize_layout(name, this._physics),
+		);
+	};
+
+	/**
+	 * Restores the normal multi-panel view after a {@link maximize}, without
+	 * altering the layout tree. No-op if no panel is currently maximized.
+	 */
+	minimize = () => {
+		if (this._maximized === undefined) {
+			return;
+		}
+
+		this._maximized = undefined;
+		this._stylesheet.replaceSync(
+			create_css_grid_layout(this._panel, undefined, this._physics),
+		);
+	};
+
+	/**
 	 * Restores the layout from a saved state synchronously, without
 	 * dispatching the `regular-layout-before-resize` event.
 	 *
 	 * @param layout - The layout tree to restore
 	 */
 	restoreSync = (layout: Layout, _is_flattened: boolean = false) => {
+		this._maximized = undefined;
 		this._panel = !_is_flattened ? flatten(layout) : layout;
 		const css = create_css_grid_layout(this._panel, undefined, this._physics);
 		this._stylesheet.replaceSync(css);
@@ -320,6 +399,7 @@ export class RegularLayout extends HTMLElement {
 	restore = async (layout: Layout, _is_flattened: boolean = false) => {
 		const panel = !_is_flattened ? flatten(layout) : layout;
 		await this._presizeQueue.run(panel, () => {
+			this._maximized = undefined;
 			this._panel = panel;
 			const css = create_css_grid_layout(this._panel, undefined, this._physics);
 			this._stylesheet.replaceSync(css);
@@ -327,6 +407,7 @@ export class RegularLayout extends HTMLElement {
 			const event = new CustomEvent<Layout>(event_name, {
 				detail: this._panel,
 			});
+
 			this.dispatchEvent(event);
 		});
 	};
@@ -528,6 +609,10 @@ export class RegularLayout extends HTMLElement {
 	};
 
 	private onPointerDown = (event: PointerEvent) => {
+		if (event.button !== 0) {
+			return;
+		}
+
 		if (!this._physics.GRID_DIVIDER_CHECK_TARGET || event.target === this) {
 			const [col, row, rect] = this.relativeCoordinates(event);
 			const size = this._physics.GRID_DIVIDER_SIZE;

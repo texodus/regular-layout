@@ -34,6 +34,14 @@ export class RegularLayoutTab extends HTMLElement {
 	 * @param index - The index of this tab within the tab panel.
 	 */
 	populate = (layout: RegularLayout, tab_panel: TabLayout, index: number) => {
+		// Stamp the slot onto the tab so its title can be styled by name (see
+		// `RegularLayoutFrame#drawTitles`). Tag-qualified selectors keep this
+		// distinct from the panel `name` on `<regular-layout-frame>`.
+		this.setAttribute(
+			layout.savePhysics().CHILD_ATTRIBUTE_NAME,
+			tab_panel.tabs[index],
+		);
+
 		if (this._tab_panel) {
 			const tab_changed =
 				(index === tab_panel.selected) !==
@@ -44,9 +52,6 @@ export class RegularLayoutTab extends HTMLElement {
 
 			if (index_changed) {
 				const selected = tab_panel.selected === index;
-				const slot = tab_panel.tabs[index];
-				this.children[0].textContent = slot;
-
 				if (selected) {
 					this.children[1].part.add("active-close");
 					this.part.add("active-tab");
@@ -56,7 +61,6 @@ export class RegularLayoutTab extends HTMLElement {
 				}
 			}
 		} else {
-			const slot = tab_panel.tabs[index];
 			const selected = tab_panel.selected === index;
 			const parts = selected ? "active-close close" : "close";
 			this.innerHTML = `<div part="title"></div><button part="${parts}"></button>`;
@@ -67,7 +71,6 @@ export class RegularLayoutTab extends HTMLElement {
 			}
 
 			this.addEventListener("pointerdown", this.onTabClick);
-			this.children[0].textContent = slot;
 			this.children[1].addEventListener("pointerdown", this.onTabClose);
 		}
 
@@ -76,28 +79,23 @@ export class RegularLayoutTab extends HTMLElement {
 		this._index = index;
 	};
 
-	private onTabClose = (_: Event) => {
+	private onTabClose = (event: Event) => {
+		if (event instanceof PointerEvent && event?.button !== 0) {
+			return;
+		}
+
 		if (this._tab_panel !== undefined && this._index !== undefined) {
 			this._layout?.removePanel(this._tab_panel.tabs[this._index]);
 		}
 	};
 
-	private onTabClick = (_: PointerEvent) => {
-		if (
-			this._tab_panel !== undefined &&
-			this._index !== undefined &&
-			this._index !== this._tab_panel.selected
-		) {
-			const new_layout = this._layout?.save();
-			const new_tab_panel = this._layout?.getPanel(
-				this._tab_panel.tabs[this._index],
-				new_layout,
-			);
+	private onTabClick = (event: PointerEvent) => {
+		if (event.button !== 0) {
+			return;
+		}
 
-			if (new_tab_panel && new_layout) {
-				new_tab_panel.selected = this._index;
-				this._layout?.restore(new_layout);
-			}
+		if (this._tab_panel !== undefined && this._index !== undefined) {
+			this._layout?.select(this._tab_panel.tabs[this._index]);
 		}
 	};
 }

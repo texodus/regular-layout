@@ -39,7 +39,7 @@ test("should apply overlay class to dragged panel in absolute mode", async ({
 	);
 
 	// Verify AAA panel has overlay class
-	const panel = await page.locator("[name=AAA]");
+	const panel = await page.locator("regular-layout-frame[name=AAA]");
 	expect(panel).toHaveClass("overlay");
 });
 
@@ -108,9 +108,9 @@ test("should handle custom className in absolute mode", async ({ page }) => {
 		{ x, y },
 	);
 
-	const panel = await page.locator("[name=AAA]");
+	const panel = await page.locator("regular-layout-frame[name=AAA]");
 	expect(panel).toHaveClass("custom-drag-class");
 
-	const panel2 = await page.locator("[name=AAA]");
+	const panel2 = await page.locator("regular-layout-frame[name=AAA]");
 	expect(panel2).not.toHaveClass("overlay");
 });
