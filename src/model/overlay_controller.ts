@@ -58,7 +58,6 @@ export class OverlayController {
 
 		const [col, row, box, style] = host.relativeCoordinates(event, true);
 		let drop_target = calculate_intersection(col, row, panel);
-		console.log(row, col, drop_target);
 		if (drop_target) {
 			drop_target = calculate_edge(
 				col,

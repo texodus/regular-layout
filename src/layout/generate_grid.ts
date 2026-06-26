@@ -264,3 +264,21 @@ export function create_css_grid_layout(
 
 	return css.join("\n");
 }
+
+/**
+ * Generates CSS Grid styles that render a single panel maximized to fill the
+ * entire layout, hiding all other slotted children.
+ *
+ * @param name - The name of the panel to maximize.
+ * @param physics - Instance constants (defaults to {@link DEFAULT_PHYSICS}).
+ * @returns CSS string showing only `name`, full-size.
+ */
+export function create_css_maximize_layout(
+	name: string,
+	physics: Physics = DEFAULT_PHYSICS,
+): string {
+	return [
+		host_template("100%", "100%"),
+		child_template(physics, name, "1", "1"),
+	].join("\n");
+}
