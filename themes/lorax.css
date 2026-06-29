@@ -10,48 +10,60 @@
  * ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
  */
 
+/*
+ * In the own-tab model, the frames of a stack overlap in one cell: each frame
+ * renders only its own tab (the engine tiles them into the shared titlebar) and
+ * only the selected frame shows its content. So this theme styles appearance,
+ * not layout - panel chrome lives on `::part(container)` (shown only for the
+ * selected frame) rather than the overlapping frame box, and the titlebar strip
+ * is transparent so every stacked frame's tab shows through.
+ */
+
 regular-layout.lorax {
 	font-family:
 		"ui-monospace", "SFMono-Regular", "SF Mono", "Menlo", "Consolas",
 		"Liberation Mono", monospace;
 }
 
-/* Frame */
 regular-layout.lorax regular-layout-frame {
-	margin: 3px;
-	margin-top: 27px;
+	--rl-tab-width: 200px;
+}
+
+/* Panel content chrome (only the selected frame's container is rendered). */
+regular-layout.lorax regular-layout-frame::part(container) {
+	box-sizing: border-box;
+	margin: 0 3px 3px 3px;
+	padding: 6px;
+	/* Square top so the tab strip sits flush; rounded bottom. */
 	border-radius: 0 6px 6px 6px;
 	border: 1px solid #666;
 	box-shadow: 0px 6px 6px -4px rgba(150, 150, 180);
 }
 
-regular-layout.lorax regular-layout-frame::part(container) {
-	padding: 6px;
-}
-
+/* Transparent strip; the engine tiles the per-frame tabs across it. */
 regular-layout.lorax regular-layout-frame::part(titlebar) {
-	display: flex;
-	align-items: stretch;
-	margin-left: -1px;
-	margin-right: -1px;
-	margin-bottom: 0px;
-	margin-top: -24px;
-	padding-right: 6px;
+	margin: 3px 6px 0 3px;
+	align-items: end;
 }
 
 regular-layout.lorax regular-layout-frame::part(tab) {
-	display: flex;
-	flex: 1 1 150px;
+	box-sizing: border-box;
 	align-items: center;
-	text-align: center;
+	justify-content: center;
 	font-size: 10px;
 	padding: 0 6px;
+	margin-right: 2px;
 	cursor: pointer;
-	max-width: 150px;
-	text-overflow: ellipsis;
 	border: 1px solid #666;
+	border-bottom: none;
 	border-radius: 6px 6px 0 0;
 	opacity: 0.5;
+}
+
+regular-layout.lorax regular-layout-frame::part(title) {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 regular-layout.lorax regular-layout-frame::part(active-tab) {
@@ -71,67 +83,52 @@ regular-layout.lorax regular-layout-frame::part(close):hover {
 	background-color: rgba(255, 0, 0, 0.2);
 }
 
-/* Frame in Overlay Mode */
 regular-layout.lorax regular-layout-frame.overlay {
-	background-color: rgba(0, 0, 0, 0.2);
-	border: 1px dashed rgb(0, 0, 0);
-	border-radius: 6px;
-	margin: 3px;
-	box-shadow: none;
 	transition:
+		maring 0.1s ease-in-out,
 		top 0.1s ease-in-out,
 		height 0.1s ease-in-out,
 		width 0.1s ease-in-out,
 		left 0.1s ease-in-out;
 }
 
-regular-layout.lorax regular-layout-frame::part(container),
-regular-layout.lorax regular-layout-frame::part(titlebar) {
-	display: none;
-}
-
-regular-layout.lorax regular-layout-frame:not(.overlay)::part(container),
-regular-layout.lorax regular-layout-frame:not(.overlay)::part(titlebar) {
-	display: flex;
-}
-
-/* Colors */
-regular-layout.lorax :nth-child(8n + 1),
+/* Colors (per panel position) - the content area and its tab share a hue. */
+regular-layout.lorax :nth-child(8n + 1)::part(container),
 regular-layout.lorax :nth-child(8n + 1)::part(tab) {
 	background-color: #ffadadff;
 }
 
-regular-layout.lorax :nth-child(8n + 2),
+regular-layout.lorax :nth-child(8n + 2)::part(container),
 regular-layout.lorax :nth-child(8n + 2)::part(tab) {
 	background-color: #ffd6a5ff;
 }
 
-regular-layout.lorax :nth-child(8n + 3),
+regular-layout.lorax :nth-child(8n + 3)::part(container),
 regular-layout.lorax :nth-child(8n + 3)::part(tab) {
 	background-color: #fdffb6ff;
 }
 
-regular-layout.lorax :nth-child(8n + 4),
+regular-layout.lorax :nth-child(8n + 4)::part(container),
 regular-layout.lorax :nth-child(8n + 4)::part(tab) {
 	background-color: #caffbfff;
 }
 
-regular-layout.lorax :nth-child(8n + 5),
+regular-layout.lorax :nth-child(8n + 5)::part(container),
 regular-layout.lorax :nth-child(8n + 5)::part(tab) {
 	background-color: #9bf6ffff;
 }
 
-regular-layout.lorax :nth-child(8n + 6),
+regular-layout.lorax :nth-child(8n + 6)::part(container),
 regular-layout.lorax :nth-child(8n + 6)::part(tab) {
 	background-color: #a0c4ffff;
 }
 
-regular-layout.lorax :nth-child(8n + 7),
+regular-layout.lorax :nth-child(8n + 7)::part(container),
 regular-layout.lorax :nth-child(8n + 7)::part(tab) {
 	background-color: #bdb2ffff;
 }
 
-regular-layout.lorax :nth-child(8n + 8),
+regular-layout.lorax :nth-child(8n + 8)::part(container),
 regular-layout.lorax :nth-child(8n + 8)::part(tab) {
 	background-color: #ffc6ffff;
 }

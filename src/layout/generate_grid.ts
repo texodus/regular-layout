@@ -18,6 +18,7 @@ interface GridCell {
 	colEnd: number;
 	rowStart: number;
 	rowEnd: number;
+	zIndex?: number;
 }
 
 function dedupe_sort(physics: Physics, result: number[], pos: number) {
@@ -102,15 +103,26 @@ function build_cells(
 ): GridCell[] {
 	if (panel.type === "tab-layout") {
 		const selected = panel.selected ?? 0;
-		return [
-			{
-				child: panel.tabs[selected],
-				colStart: find_track_index(physics, colPositions, colStart),
-				colEnd: find_track_index(physics, colPositions, colEnd),
-				rowStart: find_track_index(physics, rowPositions, rowStart),
-				rowEnd: find_track_index(physics, rowPositions, rowEnd),
-			},
-		];
+		const col_start = find_track_index(physics, colPositions, colStart);
+		const col_end = find_track_index(physics, colPositions, colEnd);
+		const row_start = find_track_index(physics, rowPositions, rowStart);
+		const row_end = find_track_index(physics, rowPositions, rowEnd);
+
+		// Stacked tabs all occupy the same cell, overlapping. Only the selected
+		// frame is lifted (`z-index:1`) so its content sits on top; the rest
+		// self-hide their content and just contribute their tab. Keeping the
+		// max frame `z-index` at 1 lets the drag overlay sit above any stack
+		// with a small constant (2). A single-tab stack
+		// emits one placement with no `z-index`, so non-stacked output is
+		// unchanged.
+		return panel.tabs.map((child, i) => ({
+			child,
+			colStart: col_start,
+			colEnd: col_end,
+			rowStart: row_start,
+			rowEnd: row_end,
+			zIndex: panel.tabs.length > 1 && i === selected ? 1 : undefined,
+		}));
 	}
 
 	const { children, sizes, orientation } = panel;
@@ -162,8 +174,11 @@ const child_template = (
 	slot: string,
 	rowPart: string,
 	colPart: string,
+	zIndex?: number,
 ) =>
-	`:host ::slotted([${physics.CHILD_ATTRIBUTE_NAME}="${slot}"]){display:flex;grid-column:${colPart};grid-row:${rowPart}}`;
+	`:host ::slotted([${physics.CHILD_ATTRIBUTE_NAME}="${slot}"]){display:flex;grid-column:${colPart};grid-row:${rowPart}${
+		zIndex === undefined ? "" : `;z-index:${zIndex}`
+	}}`;
 
 /**
  * Generates CSS Grid styles to render a layout tree.
@@ -202,9 +217,18 @@ export function create_css_grid_layout(
 ): string {
 	if (layout.type === "tab-layout") {
 		const selected = layout.selected ?? 0;
+		const stacked = layout.tabs.length > 1;
 		return [
 			host_template("100%", "100%"),
-			child_template(physics, layout.tabs[selected], "1", "1"),
+			...layout.tabs.map((tab, i) =>
+				child_template(
+					physics,
+					tab,
+					"1",
+					"1",
+					stacked && i === selected ? 1 : undefined,
+				),
+			),
 		].join("\n");
 	}
 
@@ -253,11 +277,13 @@ export function create_css_grid_layout(
 	for (const cell of cells) {
 		const colPart = formatGridLine(cell.colStart, cell.colEnd);
 		const rowPart = formatGridLine(cell.rowStart, cell.rowEnd);
-		css.push(child_template(physics, cell.child, rowPart, colPart));
+		css.push(
+			child_template(physics, cell.child, rowPart, colPart, cell.zIndex),
+		);
 		if (cell.child === overlay?.[1]) {
 			css.push(child_template(physics, overlay[0], rowPart, colPart));
 			css.push(
-				`:host ::slotted([${physics.CHILD_ATTRIBUTE_NAME}=${overlay[0]}]){z-index:1}`,
+				`:host ::slotted([${physics.CHILD_ATTRIBUTE_NAME}=${overlay[0]}]){z-index:2}`,
 			);
 		}
 	}

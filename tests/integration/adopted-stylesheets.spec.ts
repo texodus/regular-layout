@@ -66,12 +66,20 @@ test("should generate correct CSS for SINGLE_AAA layout", async ({ page }) => {
 test("should generate correct CSS for SINGLE_TABS layout", async ({ page }) => {
 	await setupLayout(page, LAYOUTS.SINGLE_TABS);
 	const css = await getAdoptedStyleSheetCSS(page);
+	// Stacked tabs overlap in one cell; only the selected tab is lifted.
 	expect(normalizeCSS(css)).toContain(
-		normalizeCSS(':host::slotted([name="AAA"]){display:flex;grid-area:1 / 1;}'),
+		normalizeCSS(
+			':host::slotted([name="AAA"]){display:flex;grid-area:1 / 1;z-index:1;}',
+		),
 	);
 
-	expect(normalizeCSS(css)).not.toContain('name="BBB"');
-	expect(normalizeCSS(css)).not.toContain('name="CCC"');
+	expect(normalizeCSS(css)).toContain(
+		normalizeCSS(':host::slotted([name="BBB"]){display:flex;grid-area:1 / 1;}'),
+	);
+
+	expect(normalizeCSS(css)).toContain(
+		normalizeCSS(':host::slotted([name="CCC"]){display:flex;grid-area:1 / 1;}'),
+	);
 });
 
 test("should generate correct CSS for TWO_HORIZONTAL layout", async ({
@@ -289,7 +297,8 @@ test("should generate correct CSS for TWO_HORIZONTAL_WITH_TABS", async ({
 	const css = await getAdoptedStyleSheetCSS(page);
 	expect(normalizeCSS(css)).toContain('name="AAA"');
 	expect(normalizeCSS(css)).toContain('name="CCC"');
-	expect(normalizeCSS(css)).not.toContain('name="BBB"');
+	// BBB is stacked with AAA; it is now placed (overlapped), not omitted.
+	expect(normalizeCSS(css)).toContain('name="BBB"');
 	expect(normalizeCSS(css)).toContain("grid-template-columns:50fr 50fr");
 });
 
