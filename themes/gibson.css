@@ -20,12 +20,9 @@ regular-layout.gibson {
 
 /* Frame */
 regular-layout.gibson regular-layout-frame {
-	--titlebar-height: 28px;
 	position: relative;
 	box-sizing: border-box;
 	margin: 8px;
-	background: rgba(10, 10, 26, 0.85);
-	backdrop-filter: blur(4px);
 	color: white;
 	text-shadow:
 		0 0 5px #fff,
@@ -33,8 +30,13 @@ regular-layout.gibson regular-layout-frame {
 		0 0 20px #fff;
 }
 
+/* Panel chrome lives on the content (only the selected frame shows it), so the
+   overlapping frame box stays transparent and every stacked tab is visible. */
 regular-layout.gibson regular-layout-frame::part(container) {
 	padding: 6px;
+	background: rgba(10, 10, 26, 0.85);
+	backdrop-filter: blur(4px);
+	box-sizing: border-box;
 }
 
 regular-layout.gibson regular-layout-frame::part(active-close) {
@@ -70,19 +72,11 @@ regular-layout.gibson regular-layout-frame::part(close) {
 }
 
 regular-layout.gibson regular-layout-frame::part(titlebar) {
-	display: flex;
-	justify-content: flex-end;
-	align-items: stretch;
-	padding-left: 12px;
 	height: 32px;
-
-	/* border-bottom: 1px solid rgba(0, 255, 255, 0.3); */
 }
 
 regular-layout.gibson regular-layout-frame::part(tab) {
 	display: flex;
-	flex: 1 1 150px;
-	max-width: 200px;
 	align-items: center;
 	padding: 0 5px 0 12px;
 	cursor: pointer;
@@ -131,6 +125,7 @@ regular-layout.gibson regular-layout-frame.overlay {
 		inset 0 0 20px rgba(255, 0, 255, 0.2);
 	margin: 0;
 	transition:
+		margin 0.075s ease-out,
 		top 0.075s ease-out,
 		height 0.075s ease-out,
 		width 0.075s ease-out,
@@ -138,18 +133,9 @@ regular-layout.gibson regular-layout-frame.overlay {
 }
 
 regular-layout.gibson regular-layout-frame::part(container) {
-	display: none;
 	border: 1px solid #00ffff;
-	border-radius: 12px 0 12px 0;
-}
-
-regular-layout.gibson regular-layout-frame::part(titlebar) {
-	display: none;
-}
-
-regular-layout.gibson regular-layout-frame:not(.overlay)::part(container),
-regular-layout.gibson regular-layout-frame:not(.overlay)::part(titlebar) {
-	display: flex;
+	/* Square top so the tab strip sits flush; keep the asymmetric bottom. */
+	border-radius: 0 0 12px 0;
 }
 
 /* Cyberpunk color variations */

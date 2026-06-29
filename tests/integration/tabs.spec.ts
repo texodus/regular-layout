@@ -10,62 +10,59 @@
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 import { expect, test } from "../helpers/coverage.ts";
+import type { Page } from "@playwright/test";
 import type { Layout } from "../../dist/index.js";
 import { LAYOUTS } from "../helpers/fixtures.ts";
+
+// Each frame renders only its *own* tab, and the frames in a stack overlap; the
+// tabs tile because every frame derives the same titlebar grid. The bundled
+// example themes target `regular-layout.lorax` and assume the old flex/multi-tab
+// titlebar, so these tests drop the theme class to exercise the default chrome.
+const center = (page: Page, name: string) =>
+	page.evaluate((name) => {
+		const slot = document
+			.querySelector(`regular-layout-frame[name="${name}"]`)
+			?.shadowRoot?.querySelector('slot[name="tab"]') as HTMLElement | null;
+
+		if (!slot) return null;
+		const r = slot.getBoundingClientRect();
+		return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+	}, name);
+
+const activeLabel = (page: Page, name: string) =>
+	page.evaluate((name) => {
+		const title = document
+			.querySelector(`regular-layout-frame[name="${name}"]`)
+			?.shadowRoot?.querySelector('[part~="active-tab"] [part~="title"]');
+		return title ? getComputedStyle(title, "::before").content : undefined;
+	}, name);
 
 test("should switch between tabs by clicking", async ({ page }) => {
 	await page.goto("/examples/index.html");
 	await page.waitForSelector("regular-layout");
 	await page.evaluate(async (layout) => {
-		const layoutElement = document.querySelector("regular-layout");
-		await layoutElement?.restore(layout as Layout);
+		const root = document.querySelector("regular-layout");
+		if (root) root.className = "";
+		await root?.restore(layout as Layout);
 	}, LAYOUTS.SINGLE_TABS_WITH_SELECTED);
 
-	const getSelectedTab = async (slot: string) => {
-		return await page.evaluate((slot) => {
-			const frame = document.querySelector(
-				`regular-layout-frame[name=${slot}]`,
-			);
-			const title = frame?.shadowRoot?.querySelector(
-				'[part~="active-tab"] [part~="title"]',
-			);
-			// The label renders via the title's `::before` `content`.
-			return title ? getComputedStyle(title, "::before").content : undefined;
-		}, slot);
-	};
+	// AAA is selected, so its own tab is the active one.
+	expect(await activeLabel(page, "AAA")).toBe('"AAA"');
 
-	const selectedBefore = await getSelectedTab("AAA");
-	expect(selectedBefore).toBe('"AAA"');
-	const frameBounds = await page.evaluate(() => {
-		const frame = document.querySelector('regular-layout-frame[name="AAA"]');
-		const tabs = frame?.shadowRoot?.querySelectorAll('[part~="tab"]');
-		if (!tabs || tabs.length < 2) return null;
-		const secondTab = tabs[1] as HTMLElement;
-		const rect = secondTab.getBoundingClientRect();
-		return {
-			x: rect.left + rect.width / 2,
-			y: rect.top + rect.height / 2,
-		};
+	// Click BBB's own tab (it tiles into column 2, clickable through the
+	// overlapping frames).
+	const bbb = await center(page, "BBB");
+	expect(bbb).not.toBeNull();
+	if (bbb) await page.mouse.click(bbb.x, bbb.y);
+	await page.waitForFunction(() => {
+		const l = document.querySelector("regular-layout");
+		return (l?.save() as { selected?: number } | undefined)?.selected === 1;
 	});
 
-	expect(frameBounds).not.toBeNull();
-	if (frameBounds) {
-		await page.mouse.click(frameBounds.x, frameBounds.y);
-	}
-
-	// Since tab selection has happened, the visible titlebar is now "BBB"'s
-	const selectedAfter = await getSelectedTab("BBB");
-	expect(selectedAfter).toBe('"BBB"');
-	const layoutState = await page.evaluate(() => {
-		const layout = document.querySelector("regular-layout");
-		return layout?.save();
-	});
-
-	expect(layoutState).toMatchObject({
-		type: "tab-layout",
-		tabs: ["AAA", "BBB", "CCC"],
-		selected: 1,
-	});
+	expect(await activeLabel(page, "BBB")).toBe('"BBB"');
+	expect(
+		await page.evaluate(() => document.querySelector("regular-layout")?.save()),
+	).toMatchObject({ type: "tab-layout", tabs: ["AAA", "BBB", "CCC"], selected: 1 });
 });
 
 test("should move a panel by dragging a selected tab", async ({ page }) => {
@@ -134,6 +131,7 @@ test("should move a panel by dragging a deselected tab", async ({ page }) => {
 	await page.waitForSelector("regular-layout");
 	await page.evaluate(async (layout) => {
 		const layoutElement = document.querySelector("regular-layout");
+		if (layoutElement) layoutElement.className = "";
 		await layoutElement?.restore(layout as Layout);
 	}, LAYOUTS.TWO_HORIZONTAL_WITH_TABS);
 
@@ -158,32 +156,20 @@ test("should move a panel by dragging a deselected tab", async ({ page }) => {
 		],
 	});
 
-	const dragCoords = await page.evaluate(() => {
-		const frame = document.querySelector('regular-layout-frame[name="AAA"]');
-		const tabs = frame?.shadowRoot?.querySelectorAll('[part~="tab"]');
-		if (!tabs || tabs.length < 2) return null;
-		const inactiveTab = Array.from(tabs).find(
-			(tab) => !tab.getAttribute("part")?.includes("active-tab"),
-		) as HTMLElement;
-
-		if (!inactiveTab) return null;
-		const tabRect = inactiveTab.getBoundingClientRect();
+	// BBB is the deselected tab; in the own-tab model it lives in BBB's own
+	// (overlapping) frame. Dragging it must move BBB, not the front-most AAA.
+	const from = await center(page, "BBB");
+	const to = await page.evaluate(() => {
 		const layout = document.querySelector("regular-layout");
-		const layoutRect = layout?.getBoundingClientRect();
-		if (!layoutRect) return null;
-		return {
-			fromX: tabRect.left + tabRect.width / 2,
-			fromY: tabRect.top + tabRect.height / 2,
-			toX: layoutRect.right - 50,
-			toY: layoutRect.top + layoutRect.height / 2,
-		};
+		const r = layout?.getBoundingClientRect();
+		return r ? { x: r.right - 50, y: r.top + r.height / 2 } : { x: 0, y: 0 };
 	});
 
-	expect(dragCoords).not.toBeNull();
-	if (dragCoords) {
-		await page.mouse.move(dragCoords.fromX, dragCoords.fromY);
+	expect(from).not.toBeNull();
+	if (from) {
+		await page.mouse.move(from.x, from.y);
 		await page.mouse.down();
-		await page.mouse.move(dragCoords.toX, dragCoords.toY);
+		await page.mouse.move(to.x, to.y);
 		await page.mouse.up();
 	}
 
@@ -221,7 +207,8 @@ test("should label tabs from the `--<name>--title` CSS variable, falling back to
 
 	const labels = await page.evaluate(async (layout) => {
 		// AAA's label is overridden via CSS; BBB has no override and falls back
-		// to its slot name. Labels render via the title's `::before` `content`.
+		// to its slot name. Each frame renders only its own tab, so AAA's label
+		// lives in AAA's frame and BBB's in BBB's frame.
 		const layoutElement = document.createElement("regular-layout");
 		layoutElement.style.setProperty("--regular-layout-AAA--title", '"Alpha"');
 		const aaa = document.createElement("regular-layout-frame");
@@ -233,11 +220,12 @@ test("should label tabs from the `--<name>--title` CSS variable, falling back to
 
 		await layoutElement.restore(layout as Layout);
 
-		const tabs = Array.from(
-			aaa.shadowRoot?.querySelectorAll('[part~="title"]') ?? [],
-		);
+		const label = (frame: Element) => {
+			const title = frame.shadowRoot?.querySelector('[part~="title"]');
+			return title ? getComputedStyle(title, "::before").content : undefined;
+		};
 
-		return tabs.map((tab) => getComputedStyle(tab, "::before").content);
+		return [label(aaa), label(bbb)];
 	}, LAYOUTS.SINGLE_TABS as Layout);
 
 	// `content` resolves to the (quoted) CSS string.
@@ -253,6 +241,7 @@ test("should fire `regular-layout-select` when a tab is selected", async ({
 
 	await page.evaluate(async (layout) => {
 		const layoutElement = document.querySelector("regular-layout");
+		if (layoutElement) layoutElement.className = "";
 		const selected: string[] = [];
 		(window as unknown as { selected: string[] }).selected = selected;
 		layoutElement?.addEventListener("regular-layout-select", (event) => {
@@ -262,39 +251,17 @@ test("should fire `regular-layout-select` when a tab is selected", async ({
 		await layoutElement?.restore(layout as Layout);
 	}, LAYOUTS.SINGLE_TABS_WITH_SELECTED);
 
-	// Locate a tab within a specific frame's titlebar. Only the selected
-	// panel's frame is visible (others are `display:none`), so the re-click
-	// must target whichever frame is currently front-most.
-	const tabCenter = (frameName: string, index: number) =>
-		page.evaluate(
-			({ frameName, index }) => {
-				const frame = document.querySelector(
-					`regular-layout-frame[name="${frameName}"]`,
-				);
-
-				const tab = frame?.shadowRoot?.querySelectorAll('[part~="tab"]')[
-					index
-				] as HTMLElement | undefined;
-
-				if (!tab) return null;
-				const rect = tab.getBoundingClientRect();
-				return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-			},
-			{ frameName, index },
-		);
-
-	// Click background tab BBB (index 1) in the visible AAA frame - selection
-	// changes and the event fires.
-	const bbb = await tabCenter("AAA", 1);
+	// Click BBB's own tab (it tiles into its column, clickable through the
+	// overlapping frames) - selection changes and the event fires.
+	const bbb = await center(page, "BBB");
 	expect(bbb).not.toBeNull();
 	if (bbb) await page.mouse.click(bbb.x, bbb.y);
 	await page.waitForFunction(
 		() => (window as unknown as { selected: string[] }).selected.length >= 1,
 	);
 
-	// Re-click the now-active BBB tab in the now-visible BBB frame -
-	// re-selection still fires.
-	const bbbAgain = await tabCenter("BBB", 1);
+	// Re-click BBB's now-active tab - re-selection still fires.
+	const bbbAgain = await center(page, "BBB");
 	expect(bbbAgain).not.toBeNull();
 	if (bbbAgain) await page.mouse.click(bbbAgain.x, bbbAgain.y);
 	await page.waitForFunction(

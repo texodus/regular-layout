@@ -21,13 +21,16 @@ regular-layout.hotdog {
 /* Frame */
 regular-layout.hotdog regular-layout-frame {
 	margin: 12px;
+}
+
+/* Panel chrome lives on the content (only the selected frame shows it), so the
+   overlapping frame box stays transparent and every stacked tab is visible. */
+regular-layout.hotdog regular-layout-frame::part(container) {
 	background: #ffff00;
 	border-width: 2px;
 	border-color: #ff6b6b #8b0000 #8b0000 #ff6b6b;
 	border-style: solid;
-}
-
-regular-layout.hotdog regular-layout-frame::part(container) {
+	box-sizing: border-box;
 	padding: 6px;
 }
 
@@ -57,8 +60,8 @@ regular-layout.hotdog regular-layout-frame::part(titlebar) {
 }
 
 regular-layout.hotdog regular-layout-frame::part(tab) {
+	box-sizing: border-box;
 	display: flex;
-	flex: 1 1 150px;
 	align-items: center;
 	padding: 0 3px 0 8px;
 	cursor: pointer;
@@ -68,6 +71,11 @@ regular-layout.hotdog regular-layout-frame::part(tab) {
 	font-family: "Tahoma", "Arial", sans-serif;
 	font-weight: bold;
 	font-size: 11px;
+	/* Raised bevel - the frame box no longer carries the border in the
+	   overlap model, so each tab frames itself. */
+	border-width: 2px;
+	border-color: #ff6b6b #8b0000 #8b0000 #ff6b6b;
+	border-style: solid;
 }
 
 regular-layout.hotdog regular-layout-frame::part(active-tab) {
@@ -87,6 +95,7 @@ regular-layout.hotdog:has(.overlay) > .overlay {
 regular-layout.hotdog regular-layout-frame.overlay {
 	margin: 0;
 	transition:
+		margin 0.1 ease-in-out,
 		top 0.1s ease-in-out,
 		height 0.1s ease-in-out,
 		width 0.1s ease-in-out,

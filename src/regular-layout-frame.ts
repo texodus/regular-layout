@@ -15,17 +15,19 @@ import type { RegularLayout } from "./regular-layout.ts";
 import type { RegularLayoutTab } from "./regular-layout-tab.ts";
 
 const CSS = `
-:host{box-sizing:border-box;flex-direction:column}
-:host::part(titlebar){display:flex;height:24px;user-select:none;overflow:hidden}
-:host::part(container){flex:1 1 auto}
-:host::part(title){flex:1 1 auto;pointer-events:none}
-:host::part(close){align-self:stretch}
-:host::slotted{flex:1 1 auto;}
-:host regular-layout-tab{width:0px;}
+:host{box-sizing:border-box;flex-direction:column;pointer-events:none}
+[part~="titlebar"]{height:24px;user-select:none;overflow:hidden}
+[part~="container"]{flex:1 1 auto;pointer-events:auto}
+[part~="title"]{flex:1 1 auto;pointer-events:none}
+[part~="close"]{align-self:stretch}
+:host([inactive]) [part~="container"]{display:none}
+.tabs{display:grid;width:100%;height:100%}
+.tabs slot[name="tab"]{display:grid;grid-row:1;pointer-events:auto}
+.tabs regular-layout-tab{display:flex;overflow:hidden}
 `;
 
 const HTML_TEMPLATE = `
-	<div part="titlebar"></div>
+	<div part="titlebar"><div class="tabs"><slot name="tab"><regular-layout-tab></regular-layout-tab></slot></div></div>
 	<div part="container"><slot></slot></div>
 `;
 
@@ -82,11 +84,11 @@ const title_variable = (slot: string): string =>
 export class RegularLayoutFrame extends HTMLElement {
 	private _shadowRoot!: ShadowRoot;
 	private _container_sheet!: CSSStyleSheet;
-	private _title_sheet!: CSSStyleSheet;
+	private _tab_sheet!: CSSStyleSheet;
 	private _layout!: RegularLayout;
 	private _header!: HTMLElement;
+	private _default_tab!: RegularLayoutTab;
 	private _drag: DragState | null = null;
-	private _tab_to_index_map: WeakMap<RegularLayoutTab, number> = new WeakMap();
 
 	/**
 	 * Initializes this elements. Override this method and
@@ -96,15 +98,20 @@ export class RegularLayoutFrame extends HTMLElement {
 	connectedCallback() {
 		this._container_sheet ??= new CSSStyleSheet();
 		this._container_sheet.replaceSync(CSS);
-		this._title_sheet ??= new CSSStyleSheet();
+		this._tab_sheet ??= new CSSStyleSheet();
 		this._shadowRoot ??= this.attachShadow({ mode: "open" });
 		this._shadowRoot.adoptedStyleSheets = [
 			this._container_sheet,
-			this._title_sheet,
+			this._tab_sheet,
 		];
 		this._shadowRoot.innerHTML = HTML_TEMPLATE;
 		this._layout = this.parentElement as RegularLayout;
 		this._header = this._shadowRoot.children[0] as HTMLElement;
+		// The built-in tab is the `slot="tab"` fallback; a consumer-supplied
+		// `slot="tab"` child replaces it.
+		this._default_tab = this._header.querySelector(
+			"regular-layout-tab",
+		) as RegularLayoutTab;
 		this._header.addEventListener("pointerdown", this.onPointerDown);
 		this.addEventListener("pointermove", this.onPointerMove);
 		this.addEventListener("pointerup", this.onPointerUp);
@@ -140,9 +147,17 @@ export class RegularLayoutFrame extends HTMLElement {
 
 		const elem = event.target as RegularLayoutTab;
 		if (elem.part.contains("tab")) {
+			const slot = this.getAttribute(
+				this._layout.savePhysics().CHILD_ATTRIBUTE_NAME,
+			);
+
 			const path = this._layout.calculateIntersect(event);
-			if (path) {
-				this._drag = { path };
+			if (path && slot) {
+				// Drag *this frame's* panel, not whichever panel is front-most at
+				// the pointer (which is what `calculateIntersect` resolves to in a
+				// stack). The overlapping stack shares geometry, so only the slot
+				// needs overriding.
+				this._drag = { path: { ...path, slot } };
 				this.setPointerCapture(event.pointerId);
 				event.preventDefault();
 			} else {
@@ -190,54 +205,41 @@ export class RegularLayoutFrame extends HTMLElement {
 			return;
 		}
 
-		const new_panel = event.detail;
-		let new_tab_panel = this._layout.getPanel(slot, new_panel);
-		if (!new_tab_panel) {
-			new_tab_panel = {
-				type: "tab-layout",
-				tabs: [slot],
-				selected: 0,
-			};
+		let tab_panel = this._layout.getPanel(slot, event.detail);
+		if (!tab_panel) {
+			tab_panel = { type: "tab-layout", tabs: [slot], selected: 0 };
 		}
 
-		for (let i = 0; i < new_tab_panel.tabs.length; i++) {
-			if (i >= this._header.children.length) {
-				const new_tab = document.createElement("regular-layout-tab");
-				new_tab.populate(this._layout, new_tab_panel, i);
-				this._header.appendChild(new_tab);
-				this._tab_to_index_map.set(new_tab, i);
-			} else {
-				const tab = this._header.children[i] as RegularLayoutTab;
-				tab.populate(this._layout, new_tab_panel, i);
-			}
-		}
-
-		const last_index = new_tab_panel.tabs.length;
-		for (let j = this._header.children.length - 1; j >= last_index; j--) {
-			this._header.removeChild(this._header.children[j]);
-		}
-
-		this.drawTitles(attr, new_tab_panel.tabs);
+		// Each frame renders only its *own* tab. Frames in a stack overlap (see
+		// `create_css_grid_layout`); the tabs tile because every frame derives
+		// the same column template and places its tab in its own column. Only
+		// the selected frame shows its content; the rest keep just their tab.
+		const index = tab_panel.tabs.indexOf(slot);
+		const selected = (tab_panel.selected ?? 0) === index;
+		this.toggleAttribute("inactive", !selected);
+		this._default_tab.populate(this._layout, tab_panel, index);
+		this.drawTab(slot, index, tab_panel.tabs.length);
 	};
 
 	/**
-	 * Regenerates this frame's title stylesheet, mapping each tab (by its slot
-	 * `name`) to its label. The label is rendered via the title's `::before`
-	 * `content`, reading the slot's `--regular-layout-<slot>--title` override
-	 * variable with the slot name as the fallback - so a consumer can relabel a
-	 * tab purely in CSS and the change applies reactively.
+	 * Regenerates this frame's tab stylesheet: the shared titlebar grid template
+	 * (so every frame in the stack aligns), the column this frame's tab occupies,
+	 * and the tab label. The label renders via the title's `::before` `content`,
+	 * reading the slot's `--regular-layout-<slot>--title` override variable with
+	 * the slot name as the fallback - so a consumer can relabel a tab purely in
+	 * CSS and the change applies reactively.
 	 *
-	 * @param attr - The child name attribute (`CHILD_ATTRIBUTE_NAME`).
-	 * @param tabs - The slot names rendered in this frame's titlebar.
+	 * @param slot - This frame's panel name.
+	 * @param index - This frame's column (zero-based) within the stack.
+	 * @param count - The number of tabs in the stack.
 	 */
-	private drawTitles = (attr: string, tabs: string[]) => {
-		const css = tabs
-			.map(
-				(slot) =>
-					`regular-layout-tab[${attr}="${slot}"] [part~="title"]::before{content:var(${title_variable(slot)}, ${css_string(slot)})}`,
-			)
-			.join("\n");
-
-		this._title_sheet.replaceSync(css);
+	private drawTab = (slot: string, index: number, count: number) => {
+		this._tab_sheet.replaceSync(
+			[
+				`.tabs{grid-template-columns:repeat(${count},var(--rl-tab-width,1fr))}`,
+				`.tabs slot[name="tab"]{grid-column:${index + 1}}`,
+				`[part~="title"]::before{content:var(${title_variable(slot)}, ${css_string(slot)})}`,
+			].join("\n"),
+		);
 	};
 }

@@ -45,11 +45,14 @@ test("realCoordinates matches getBoundingClientRect for 3 horizontal children", 
 			if (!hit || hit.slot !== name) continue;
 			const rect = layout.realCoordinates(hit.view_window);
 			results[name] = {
+				// The frame now fills its grid cell (theme chrome lives on
+				// `::part(container)`), so `realCoordinates` matches its box
+				// directly with no margin compensation.
 				real: {
-					x: rect.x + 3,
-					y: rect.y + 27,
-					width: rect.width - 6,
-					height: rect.height - 30,
+					x: rect.x,
+					y: rect.y,
+					width: rect.width,
+					height: rect.height,
 				},
 				actual: {
 					x: panelRect.x,

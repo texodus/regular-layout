@@ -69,6 +69,6 @@ export function updateOverlaySheet(
 		margin,
 	);
 
-	const css = `display:flex;position:absolute!important;z-index:1;top:${local.y}px;left:${local.x}px;height:${local.height}px;width:${local.width}px;`;
+	const css = `display:flex;position:absolute!important;z-index:2;top:${local.y}px;left:${local.x}px;height:${local.height}px;width:${local.width}px;`;
 	return `::slotted([${physics.CHILD_ATTRIBUTE_NAME}="${slot}"]){${css}}`;
 }

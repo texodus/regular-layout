@@ -23,12 +23,15 @@ regular-layout.borland regular-layout-frame {
 	position: relative;
 	box-sizing: border-box;
 	margin: 4px;
+}
+
+/* Panel chrome lives on the content (only the selected frame shows it), so the
+   overlapping frame box stays transparent and every stacked tab is visible. */
+regular-layout.borland regular-layout-frame::part(container) {
 	background: #0000aa;
 	border: 1px solid #00aaaa;
 	box-shadow: 1px 1px 0 #000000;
-}
-
-regular-layout.borland regular-layout-frame::part(container) {
+	box-sizing: border-box;
 	padding: 4px 6px;
 	color: #ffff55;
 }
@@ -59,7 +62,6 @@ regular-layout.borland regular-layout-frame::part(titlebar) {
 	align-items: stretch;
 	padding-right: 0;
 	height: 22px;
-	background: #0000aa;
 }
 
 regular-layout.borland regular-layout-frame::part(tab) {

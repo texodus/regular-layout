@@ -391,3 +391,25 @@ test("Deeply alternating split", () => {
 	`.trim(),
 	);
 });
+
+test("stacked tabs overlap in one cell, lifting only the selected tab", () => {
+	const stack: Layout = {
+		type: "tab-layout",
+		tabs: ["AAA", "BBB", "CCC"],
+		selected: 0,
+	};
+
+	expect(
+		create_css_grid_layout(stack, undefined, {
+			...DEFAULT_PHYSICS,
+			SHOULD_ROUND: true,
+		}),
+	).toEqual(
+		`
+:host ::slotted(*){display:none}:host{display:grid;grid-template-rows:100%;grid-template-columns:100%}
+:host ::slotted([name="AAA"]){display:flex;grid-column:1;grid-row:1;z-index:1}
+:host ::slotted([name="BBB"]){display:flex;grid-column:1;grid-row:1}
+:host ::slotted([name="CCC"]){display:flex;grid-column:1;grid-row:1}
+	`.trim(),
+	);
+});
