@@ -130,6 +130,7 @@ export class RegularLayout extends HTMLElement {
 	private _presizeQueue: PresizeQueue;
 	private _overlayController: OverlayController;
 	private _maximized?: string;
+	private _resize_observer?: ResizeObserver;
 
 	constructor() {
 		super();
@@ -141,7 +142,13 @@ export class RegularLayout extends HTMLElement {
 		this._cursor_stylesheet = new CSSStyleSheet();
 		this._cursor_override = false;
 		const event_name = `${this._physics.CUSTOM_EVENT_NAME_PREFIX}-before-resize`;
-		this._presizeQueue = new PresizeQueue(this, event_name);
+		// Refresh the bounds cache once per layout transition, so consumers
+		// reading coordinates from a `before-resize` handler always see the
+		// element's current position - a `ResizeObserver` alone can't catch
+		// position-only moves of the host.
+		this._presizeQueue = new PresizeQueue(this, event_name, () => {
+			this._dimensions = undefined;
+		});
 		this._overlayController = new OverlayController(this.create_overlay_host());
 		this._shadowRoot.adoptedStyleSheets = [
 			this._stylesheet,
@@ -150,6 +157,11 @@ export class RegularLayout extends HTMLElement {
 	}
 
 	connectedCallback() {
+		this._resize_observer ??= new ResizeObserver(() => {
+			this._dimensions = undefined;
+		});
+
+		this._resize_observer.observe(this);
 		this.addEventListener("dblclick", this.onDblClick);
 		this.addEventListener("pointerdown", this.onPointerDown);
 		this.addEventListener("pointerup", this.onPointerUp);
@@ -157,6 +169,7 @@ export class RegularLayout extends HTMLElement {
 	}
 
 	disconnectedCallback() {
+		this._resize_observer?.disconnect();
 		this.removeEventListener("dblclick", this.onDblClick);
 		this.removeEventListener("pointerdown", this.onPointerDown);
 		this.removeEventListener("pointerup", this.onPointerUp);
@@ -334,34 +347,54 @@ export class RegularLayout extends HTMLElement {
 	 * {@link save}, and any subsequent {@link restore} resets the layout to the
 	 * minimized (normal, multi-panel) view.
 	 *
+	 * Before applying, dispatches a cancelable `regular-layout-before-resize`
+	 * event (as {@link restore} does) whose paths describe the post-maximize
+	 * geometry - a single full-window entry for `name`. If the event is
+	 * cancelled via `preventDefault()`, the update is suspended until
+	 * {@link resumeResize} is called.
+	 *
 	 * Has no effect if `name` is not present in the current layout.
 	 *
 	 * @param name - The name of the panel to maximize.
 	 */
-	maximize = (name: string) => {
+	maximize = async (name: string) => {
 		if (!this.getPanel(name)) {
 			return;
 		}
 
-		this._maximized = name;
-		this._stylesheet.replaceSync(
-			create_css_maximize_layout(name, this._physics),
-		);
+		// The post-maximize geometry as a `Layout`: `name` alone, full-window.
+		// Panels hidden by the maximize are absent from the presize paths,
+		// consistent with `calculate_presize_paths`' visible-panels-only
+		// semantics.
+		const layout: Layout = { type: "tab-layout", tabs: [name], selected: 0 };
+		await this._presizeQueue.run(layout, () => {
+			this._maximized = name;
+			this._stylesheet.replaceSync(
+				create_css_maximize_layout(name, this._physics),
+			);
+		});
 	};
 
 	/**
 	 * Restores the normal multi-panel view after a {@link maximize}, without
 	 * altering the layout tree. No-op if no panel is currently maximized.
+	 *
+	 * Before applying, dispatches a cancelable `regular-layout-before-resize`
+	 * event (as {@link restore} does) with paths for the restored multi-panel
+	 * geometry. If the event is cancelled via `preventDefault()`, the update
+	 * is suspended until {@link resumeResize} is called.
 	 */
-	minimize = () => {
+	minimize = async () => {
 		if (this._maximized === undefined) {
 			return;
 		}
 
-		this._maximized = undefined;
-		this._stylesheet.replaceSync(
-			create_css_grid_layout(this._panel, undefined, this._physics),
-		);
+		await this._presizeQueue.run(this._panel, () => {
+			this._maximized = undefined;
+			this._stylesheet.replaceSync(
+				create_css_grid_layout(this._panel, undefined, this._physics),
+			);
+		});
 	};
 
 	/**
@@ -371,6 +404,7 @@ export class RegularLayout extends HTMLElement {
 	 * @param layout - The layout tree to restore
 	 */
 	restoreSync = (layout: Layout, _is_flattened: boolean = false) => {
+		this._dimensions = undefined;
 		this._maximized = undefined;
 		this._panel = !_is_flattened ? flatten(layout) : layout;
 		const css = create_css_grid_layout(this._panel, undefined, this._physics);

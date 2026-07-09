@@ -62,7 +62,11 @@ test("should switch between tabs by clicking", async ({ page }) => {
 	expect(await activeLabel(page, "BBB")).toBe('"BBB"');
 	expect(
 		await page.evaluate(() => document.querySelector("regular-layout")?.save()),
-	).toMatchObject({ type: "tab-layout", tabs: ["AAA", "BBB", "CCC"], selected: 1 });
+	).toMatchObject({
+		type: "tab-layout",
+		tabs: ["AAA", "BBB", "CCC"],
+		selected: 1,
+	});
 });
 
 test("should move a panel by dragging a selected tab", async ({ page }) => {

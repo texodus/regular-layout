@@ -9,8 +9,14 @@
 // ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-import type { Layout, PresizeDetail } from "../core/types.ts";
+import type { Layout, LayoutPath, PresizeDetail } from "../core/types.ts";
 import { calculate_presize_paths } from "../layout/calculate_presize_paths.ts";
+
+/**
+ * The dragged panel's preview geometry during a drag transition - see
+ * {@link PresizeDetail.overlay}.
+ */
+export type PresizeOverlay = { slot: string; path: LayoutPath } | null;
 
 /**
  * Manages cancelable pre-resize gating for layout updates.
@@ -22,27 +28,40 @@ import { calculate_presize_paths } from "../layout/calculate_presize_paths.ts";
  */
 export class PresizeQueue {
 	#resizing = false;
-	#queued: { layout: Layout; fn: () => void } | null = null;
+	#queued: {
+		layout: Layout;
+		fn: () => void;
+		overlay?: PresizeOverlay;
+	} | null = null;
 	#pending: (() => void) | null = null;
 
 	constructor(
 		private _target: EventTarget,
 		private _eventName: string,
+		private _onDispatch?: () => void,
 	) {}
 
-	async run(layout: Layout, fn: () => void): Promise<void> {
+	async run(
+		layout: Layout,
+		fn: () => void,
+		overlay?: PresizeOverlay,
+	): Promise<void> {
 		if (this.#resizing) {
-			this.#queued = { layout, fn };
+			this.#queued = { layout, fn, overlay };
 			return;
 		}
 
 		this.#resizing = true;
 		try {
-			await this.#dispatchAndMaybeWait(layout, fn);
+			await this.#dispatchAndMaybeWait(layout, fn, overlay);
 			while (this.#queued) {
-				const { layout: nextLayout, fn: nextFn } = this.#queued;
+				const {
+					layout: nextLayout,
+					fn: nextFn,
+					overlay: nextOverlay,
+				} = this.#queued;
 				this.#queued = null;
-				await this.#dispatchAndMaybeWait(nextLayout, nextFn);
+				await this.#dispatchAndMaybeWait(nextLayout, nextFn, nextOverlay);
 			}
 		} finally {
 			this.#resizing = false;
@@ -57,9 +76,15 @@ export class PresizeQueue {
 		}
 	}
 
-	async #dispatchAndMaybeWait(layout: Layout, fn: () => void): Promise<void> {
+	async #dispatchAndMaybeWait(
+		layout: Layout,
+		fn: () => void,
+		overlay?: PresizeOverlay,
+	): Promise<void> {
+		this._onDispatch?.();
 		const detail: PresizeDetail = {
 			calculatePresizePaths: () => calculate_presize_paths(layout),
+			overlay,
 		};
 
 		const event = new CustomEvent(this._eventName, {

@@ -346,6 +346,91 @@ test("should not fire resize-before on restoreSync", async ({ page }) => {
 	});
 });
 
+test("should expose the dragged panel's preview box in detail.overlay", async ({
+	page,
+}) => {
+	await setupLayout(page, LAYOUTS.TWO_HORIZONTAL_EQUAL);
+	const result = await page.evaluate(async () => {
+		const layout = document.querySelector("regular-layout");
+		if (!layout) return null;
+		const center = (name: string) => {
+			const panel = document.querySelector(`[name="${name}"]`) as HTMLElement;
+			const rect = panel.getBoundingClientRect();
+			return {
+				clientX: rect.x + rect.width / 2,
+				clientY: rect.y + rect.height / 2,
+			};
+		};
+
+		const path = layout.calculateIntersect(center("AAA"));
+		if (!path) return null;
+		let captured: {
+			overlay: unknown;
+			paths: string[];
+		} | null = null;
+
+		layout.addEventListener(
+			"regular-layout-before-resize",
+			(e) => {
+				const detail = (e as CustomEvent).detail;
+				captured = {
+					overlay: detail.overlay,
+					paths: Object.keys(detail.calculatePresizePaths()),
+				};
+			},
+			{ once: true },
+		);
+
+		// Drag AAA over BBB - AAA is removed from the transition's layout tree,
+		// so its preview box arrives via `detail.overlay` instead of the paths.
+		await layout.setOverlayState(center("BBB"), path);
+		return captured;
+	});
+
+	expect(result).not.toBeNull();
+	// biome-ignore lint/style/noNonNullAssertion: playwright expectation
+	expect(result!.paths).toStrictEqual(["BBB"]);
+	// biome-ignore lint/style/noNonNullAssertion: playwright expectation
+	const overlay = result!.overlay as {
+		slot: string;
+		path: { view_window: Record<string, number> };
+	};
+
+	expect(overlay.slot).toBe("AAA");
+	expect(overlay.path.view_window).toBeDefined();
+	for (const key of ["col_start", "col_end", "row_start", "row_end"]) {
+		expect(typeof overlay.path.view_window[key]).toBe("number");
+	}
+});
+
+test("should not define detail.overlay for non-drag transitions", async ({
+	page,
+}) => {
+	await setupLayout(page, LAYOUTS.SINGLE_AAA);
+	const overlay = await page.evaluate(async () => {
+		const layout = document.querySelector("regular-layout");
+		let captured: { value: unknown } | null = null;
+		layout?.addEventListener(
+			"regular-layout-before-resize",
+			(e) => {
+				captured = { value: (e as CustomEvent).detail.overlay };
+			},
+			{ once: true },
+		);
+
+		await layout?.restore({ type: "tab-layout", tabs: ["BBB"] });
+		return {
+			fired: captured !== null,
+			isUndefined: captured
+				? (captured as { value: unknown }).value === undefined
+				: false,
+		};
+	});
+
+	expect(overlay.fired).toBe(true);
+	expect(overlay.isUndefined).toBe(true);
+});
+
 test("should resumeResize be a no-op when no resize is pending", async ({
 	page,
 }) => {

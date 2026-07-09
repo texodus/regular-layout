@@ -100,6 +100,18 @@ export interface LayoutPath {
  */
 export interface PresizeDetail {
 	calculatePresizePaths(): Record<string, LayoutPath>;
+
+	/**
+	 * When the transition is a drag preview, the dragged panel's name and the
+	 * {@link LayoutPath} of its preview box. The dragged panel is removed from
+	 * the layout tree during a drag (so it is absent from
+	 * {@link PresizeDetail.calculatePresizePaths}), but `path.view_window` here
+	 * is exactly where the overlay renders it, letting consumers presize the
+	 * dragged panel like any other. `null` when the pointer is outside every
+	 * drop target (the dragged panel is hidden), `undefined` for non-drag
+	 * transitions.
+	 */
+	overlay?: { slot: string; path: LayoutPath } | null;
 }
 
 /**
