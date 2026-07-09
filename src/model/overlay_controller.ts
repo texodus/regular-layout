@@ -70,36 +70,49 @@ export class OverlayController {
 			);
 		}
 
-		await host.presizeQueue.run(panel, () => {
-			if (mode === "grid" && drop_target) {
-				const path: [string, string] = [slot, drop_target?.slot];
-				const css = create_css_grid_layout(panel, path, host.physics);
-				host.stylesheet.replaceSync(css);
-			} else if (mode === "absolute") {
-				const grid_css = create_css_grid_layout(panel, undefined, host.physics);
+		// The dragged panel is removed from `panel` above, so it is absent from
+		// the presize paths - `drop_target` carries its preview box instead
+		// (null when the pointer is outside every drop target and the dragged
+		// panel is hidden).
+		const overlay = drop_target ? { slot, path: drop_target } : null;
+		await host.presizeQueue.run(
+			panel,
+			() => {
+				if (mode === "grid" && drop_target) {
+					const path: [string, string] = [slot, drop_target?.slot];
+					const css = create_css_grid_layout(panel, path, host.physics);
+					host.stylesheet.replaceSync(css);
+				} else if (mode === "absolute") {
+					const grid_css = create_css_grid_layout(
+						panel,
+						undefined,
+						host.physics,
+					);
 
-				while (drag_element?.tagName === "SLOT" && drag_element) {
-					drag_element = (
-						drag_element as HTMLSlotElement
-					).assignedElements()[0];
+					while (drag_element?.tagName === "SLOT" && drag_element) {
+						drag_element = (
+							drag_element as HTMLSlotElement
+						).assignedElements()[0];
+					}
+
+					const margin = drag_element
+						? getComputedStyle(drag_element)
+						: undefined;
+
+					const overlay_css = updateOverlaySheet(
+						slot,
+						box,
+						style,
+						drop_target,
+						host.physics,
+						margin,
+					);
+
+					host.stylesheet.replaceSync([grid_css, overlay_css].join("\n"));
 				}
-
-				const margin = drag_element
-					? getComputedStyle(drag_element)
-					: undefined;
-
-				const overlay_css = updateOverlaySheet(
-					slot,
-					box,
-					style,
-					drop_target,
-					host.physics,
-					margin,
-				);
-
-				host.stylesheet.replaceSync([grid_css, overlay_css].join("\n"));
-			}
-		});
+			},
+			overlay,
+		);
 
 		const event_name = `${host.physics.CUSTOM_EVENT_NAME_PREFIX}-before-update`;
 		const custom_event = new CustomEvent<Layout>(event_name, {

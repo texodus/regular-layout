@@ -27,7 +27,7 @@ const CSS = `
 `;
 
 const HTML_TEMPLATE = `
-	<div part="titlebar"><div class="tabs"><slot name="tab"><regular-layout-tab></regular-layout-tab></slot></div></div>
+	<div part="titlebar"><div class="tabs" part="titlebar-track"><slot name="tab"><regular-layout-tab></regular-layout-tab></slot></div></div>
 	<div part="container"><slot></slot></div>
 `;
 

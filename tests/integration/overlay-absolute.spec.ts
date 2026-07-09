@@ -66,7 +66,7 @@ test("should dispatch regular-layout-update event in absolute mode", async ({
 					clientX: x,
 					clientY: y,
 				});
-				
+
 				if (layoutPath) {
 					layout?.setOverlayState(
 						{ clientX: x, clientY: y },

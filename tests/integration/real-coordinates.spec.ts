@@ -78,3 +78,67 @@ test("realCoordinates matches getBoundingClientRect for 3 horizontal children", 
 		expect(real.height, `${name} height`).toBeCloseTo(actual.height, 0);
 	}
 });
+
+test("realCoordinates refreshes stale bounds on before-resize after the host moves", async ({
+	page,
+}) => {
+	await setupLayout(page, LAYOUTS.TWO_HORIZONTAL_EQUAL);
+
+	const result = await page.evaluate(async (fixture) => {
+		const layout = document.querySelector("regular-layout");
+		if (!layout) return null;
+		const full = { col_start: 0, col_end: 1, row_start: 0, row_end: 1 };
+		// Prime the bounds cache at the original position.
+		const before = layout.realCoordinates(full);
+
+		// A position-only move: `transform` changes the client rect without
+		// resizing the element, so only the before-resize refresh (not the
+		// ResizeObserver) can catch it.
+		layout.style.transform = "translateY(100px)";
+
+		let during: DOMRect | null = null;
+		layout.addEventListener(
+			"regular-layout-before-resize",
+			() => {
+				during = layout.realCoordinates(full);
+			},
+			{ once: true },
+		);
+
+		await layout.restore(fixture as never);
+		return { beforeTop: before.top, duringTop: during?.top };
+	}, LAYOUTS.TWO_HORIZONTAL_EQUAL);
+
+	expect(result).not.toBeNull();
+	// The handler reads coordinates in the element's *current* (moved) frame.
+	// biome-ignore lint/style/noNonNullAssertion: playwright expectation
+	expect(result!.duringTop).toBeCloseTo(result!.beforeTop + 100, 0);
+});
+
+test("realCoordinates refreshes stale bounds after the host resizes", async ({
+	page,
+}) => {
+	await setupLayout(page, LAYOUTS.TWO_HORIZONTAL_EQUAL);
+
+	const result = await page.evaluate(async () => {
+		const layout = document.querySelector("regular-layout");
+		if (!layout) return null;
+		const full = { col_start: 0, col_end: 1, row_start: 0, row_end: 1 };
+		// Prime the bounds cache at the original size.
+		const before = layout.realCoordinates(full);
+
+		// Shrink the host; the `ResizeObserver` invalidates the cache with no
+		// layout transition involved.
+		layout.style.bottom = "150px";
+		await new Promise((resolve) =>
+			requestAnimationFrame(() => requestAnimationFrame(resolve)),
+		);
+
+		const after = layout.realCoordinates(full);
+		return { beforeHeight: before.height, afterHeight: after.height };
+	});
+
+	expect(result).not.toBeNull();
+	// biome-ignore lint/style/noNonNullAssertion: playwright expectation
+	expect(result!.beforeHeight - result!.afterHeight).toBeCloseTo(150, 0);
+});
