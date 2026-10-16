@@ -665,3 +665,53 @@ test("insert with split path into SINGLE_TABS", () => {
 		],
 	});
 });
+
+// Inserting into an EMPTY split (`sizes: []`) must not divide by zero - a
+// `1 / 0 = Infinity` share normalizes to `sizes: [NaN]`, a corrupt tree that
+// renders the first panel correctly (its degenerate `1 / 1` grid line is
+// spec-corrected to `span 1`) but silently superimposes every later insert
+// onto column 1.
+test("insert into an empty split-layout root", () => {
+	const empty = {
+		type: "split-layout",
+		orientation: "horizontal",
+		sizes: [],
+		children: [],
+	} as const;
+
+	const result = insert_child(empty, "AAA", [0], "horizontal");
+	expect(result).toStrictEqual({
+		type: "split-layout",
+		orientation: "horizontal",
+		sizes: [1],
+		children: [{ type: "tab-layout", tabs: ["AAA"] }],
+	});
+
+	const two = insert_child(result, "BBB", [1], "horizontal");
+	expect(two).toStrictEqual({
+		type: "split-layout",
+		orientation: "horizontal",
+		sizes: [0.5, 0.5],
+		children: [
+			{ type: "tab-layout", tabs: ["AAA"] },
+			{ type: "tab-layout", tabs: ["BBB"] },
+		],
+	});
+});
+
+test("append into an empty split-layout root at the root path", () => {
+	const empty = {
+		type: "split-layout",
+		orientation: "horizontal",
+		sizes: [],
+		children: [],
+	} as const;
+
+	const result = insert_child(empty, "AAA", []);
+	expect(result).toStrictEqual({
+		type: "split-layout",
+		orientation: "horizontal",
+		sizes: [1],
+		children: [{ type: "tab-layout", tabs: ["AAA"] }],
+	});
+});

@@ -55,7 +55,7 @@ export function insert_child(
 		} else {
 			// Append to existing split-layout
 			const newChildren = [...panel.children, createChildPanel(child)];
-			const newSizes = [...panel.sizes, 1 / (newChildren.length - 1)];
+			const newSizes = [...panel.sizes, equal_share(newChildren.length)];
 			return {
 				...panel,
 				children: newChildren,
@@ -74,7 +74,7 @@ export function insert_child(
 			const newChildren = [...panel.children];
 			newChildren.splice(index, 0, createChildPanel(child));
 			const newSizes = [...panel.sizes];
-			newSizes.splice(index, 0, 1 / (newChildren.length - 1));
+			newSizes.splice(index, 0, equal_share(newChildren.length));
 			return {
 				...panel,
 				children: newChildren,
@@ -149,7 +149,7 @@ export function insert_child(
 		const newChildren = [...panel.children];
 		newChildren.splice(index, 0, createChildPanel(child));
 		const newSizes = [...panel.sizes];
-		newSizes.splice(index, 0, 1 / (newChildren.length - 1));
+		newSizes.splice(index, 0, equal_share(newChildren.length));
 		return {
 			...panel,
 			children: newChildren,
@@ -184,7 +184,28 @@ export function insert_child(
 	};
 }
 
+/**
+ * The un-normalized share for a child newly spliced into a sibling list of
+ * `count` (post-insert). Existing siblings' sizes sum to 1, so `1 / (count -
+ * 1)` — "one old sibling's worth" — normalizes to an equal `1 / count` split
+ * via {@link redistribute}. Inserting into a previously EMPTY split
+ * (`count === 1`) has no old siblings to take a share of; the divisor floors
+ * at 1 so the sole child gets the whole axis (`1 / 0` is `Infinity`, which
+ * {@link redistribute} would smear into `NaN` sizes — an invisibly corrupt
+ * tree whose grid drops every subsequent insert into column 1).
+ */
+function equal_share(count: number): number {
+	return 1 / Math.max(1, count - 1);
+}
+
 function redistribute(arr: number[]): number[] {
 	const total = arr.reduce((sum, val) => sum + val, 0);
+	if (!Number.isFinite(total) || total <= 0) {
+		// A non-finite or degenerate total would propagate to EVERY size (`x /
+		// NaN`), silently corrupting the tree for all future layouts - fall
+		// back to an equal split instead of normalizing.
+		return arr.map(() => 1 / arr.length);
+	}
+
 	return arr.map((val) => val / total);
 }
