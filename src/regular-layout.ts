@@ -120,7 +120,16 @@ export interface PointerEventCoordinates {
  */
 export class RegularLayout extends HTMLElement {
 	private _shadowRoot: ShadowRoot;
+	/** The committed layout tree - what is on screen. */
 	private _panel: Layout;
+
+	/**
+	 * The latest layout tree requested by a committing mutation, which may
+	 * still be suspended or queued behind a `before-resize`. Mutations build on
+	 * this rather than `_panel` so concurrent updates compose instead of each
+	 * clobbering the in-flight one.
+	 */
+	private _intended: Layout;
 	private _stylesheet: CSSStyleSheet;
 	private _cursor_stylesheet: CSSStyleSheet;
 	private _drag_target?: [LayoutDivider, number, number];
@@ -136,19 +145,17 @@ export class RegularLayout extends HTMLElement {
 		super();
 		this._physics = DEFAULT_PHYSICS;
 		this._panel = structuredClone(EMPTY_PANEL);
+		this._intended = this._panel;
 		this._shadowRoot = this.attachShadow({ mode: "open" });
 		this._shadowRoot.innerHTML = `<slot></slot>`;
 		this._stylesheet = new CSSStyleSheet();
 		this._cursor_stylesheet = new CSSStyleSheet();
 		this._cursor_override = false;
 		const event_name = `${this._physics.CUSTOM_EVENT_NAME_PREFIX}-before-resize`;
-		// Refresh the bounds cache once per layout transition, so consumers
-		// reading coordinates from a `before-resize` handler always see the
-		// element's current position - a `ResizeObserver` alone can't catch
-		// position-only moves of the host.
 		this._presizeQueue = new PresizeQueue(this, event_name, () => {
 			this._dimensions = undefined;
 		});
+
 		this._overlayController = new OverlayController(this.create_overlay_host());
 		this._shadowRoot.adoptedStyleSheets = [
 			this._stylesheet,
@@ -266,7 +273,7 @@ export class RegularLayout extends HTMLElement {
 			orientation = split;
 		}
 
-		await this.restore(insert_child(this._panel, name, path, orientation));
+		await this.restore(insert_child(this._intended, name, path, orientation));
 	};
 
 	/**
@@ -275,7 +282,7 @@ export class RegularLayout extends HTMLElement {
 	 * @param name - Name of the panel to remove
 	 */
 	removePanel = async (name: string) => {
-		await this.restore(remove_child(this._panel, name));
+		await this.restore(remove_child(this._intended, name));
 	};
 
 	/**
@@ -292,7 +299,7 @@ export class RegularLayout extends HTMLElement {
 	 * @param name - The name of the panel to select.
 	 */
 	select = async (name: string) => {
-		const layout = this.save();
+		const layout = structuredClone(this._intended);
 		const tab_panel = this.getPanel(name, layout);
 		if (!tab_panel) {
 			return;
@@ -358,7 +365,7 @@ export class RegularLayout extends HTMLElement {
 	 * @param name - The name of the panel to maximize.
 	 */
 	maximize = async (name: string) => {
-		if (!this.getPanel(name)) {
+		if (!this.getPanel(name, this._intended)) {
 			return;
 		}
 
@@ -389,7 +396,7 @@ export class RegularLayout extends HTMLElement {
 			return;
 		}
 
-		await this._presizeQueue.run(this._panel, () => {
+		await this._presizeQueue.run(this._intended, () => {
 			this._maximized = undefined;
 			this._stylesheet.replaceSync(
 				create_css_grid_layout(this._panel, undefined, this._physics),
@@ -401,12 +408,19 @@ export class RegularLayout extends HTMLElement {
 	 * Restores the layout from a saved state synchronously, without
 	 * dispatching the `regular-layout-before-resize` event.
 	 *
+	 * Supersedes any update still suspended or queued behind a
+	 * `regular-layout-before-resize`: those are discarded (their promises
+	 * resolve without applying). A suspended transition must still be
+	 * released via {@link resumeResize}.
+	 *
 	 * @param layout - The layout tree to restore
 	 */
 	restoreSync = (layout: Layout, _is_flattened: boolean = false) => {
+		this._presizeQueue.cancelPending();
 		this._dimensions = undefined;
 		this._maximized = undefined;
 		this._panel = !_is_flattened ? flatten(layout) : layout;
+		this._intended = this._panel;
 		const css = create_css_grid_layout(this._panel, undefined, this._physics);
 		this._stylesheet.replaceSync(css);
 		const event_name = `${this._physics.CUSTOM_EVENT_NAME_PREFIX}-update`;
@@ -419,7 +433,10 @@ export class RegularLayout extends HTMLElement {
 	 *
 	 * Before applying, dispatches a cancelable `regular-layout-before-resize`
 	 * event. If the event is cancelled via `preventDefault()`, the layout
-	 * update is suspended until {@link resumeResize} is called.
+	 * update is suspended until {@link resumeResize} is called. Updates made
+	 * while one is suspended are queued and applied in order once it lands,
+	 * under a single further `regular-layout-before-resize`; the returned
+	 * promise resolves when this update has been applied.
 	 *
 	 * @param layout - The layout tree to restore
 	 *
@@ -432,6 +449,7 @@ export class RegularLayout extends HTMLElement {
 	 */
 	restore = async (layout: Layout, _is_flattened: boolean = false) => {
 		const panel = !_is_flattened ? flatten(layout) : layout;
+		this._intended = panel;
 		await this._presizeQueue.run(panel, () => {
 			this._maximized = undefined;
 			this._panel = panel;
@@ -456,6 +474,8 @@ export class RegularLayout extends HTMLElement {
 
 	/**
 	 * Serializes the current layout state, which can be restored via `restore`.
+	 * This is the committed (on-screen) tree; updates still suspended behind a
+	 * `regular-layout-before-resize` are not included.
 	 *
 	 * @returns The current layout tree
 	 *
@@ -605,7 +625,7 @@ export class RegularLayout extends HTMLElement {
 		const self = this;
 		return {
 			get panel() {
-				return self._panel;
+				return self._intended;
 			},
 			get physics() {
 				return self._physics;
@@ -633,7 +653,7 @@ export class RegularLayout extends HTMLElement {
 
 		if (divider?.type === "horizontal" || divider?.type === "vertical") {
 			const panel = redistribute_panel_sizes(
-				this._panel,
+				this._intended,
 				divider.path,
 				undefined,
 			);
@@ -705,7 +725,7 @@ export class RegularLayout extends HTMLElement {
 			const [col, row] = this.relativeCoordinates(event, false);
 			const [{ path, type }, old_col, old_row] = this._drag_target;
 			const offset = type === "horizontal" ? old_col - col : old_row - row;
-			const panel = redistribute_panel_sizes(this._panel, path, offset);
+			const panel = redistribute_panel_sizes(this._intended, path, offset);
 			await this.restore(panel, true);
 			this._drag_target = undefined;
 		}

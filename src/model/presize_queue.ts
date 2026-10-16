@@ -18,22 +18,33 @@ import { calculate_presize_paths } from "../layout/calculate_presize_paths.ts";
  */
 export type PresizeOverlay = { slot: string; path: LayoutPath } | null;
 
+type Entry = {
+	layout: Layout;
+	fn: () => void;
+	overlay?: PresizeOverlay;
+	resolve: () => void;
+	reject: (error: unknown) => void;
+};
+
 /**
  * Manages cancelable pre-resize gating for layout updates.
  *
  * Before each layout change, a cancelable `resize-before` event is dispatched
  * on the target. If the event is cancelled via `preventDefault()`, the update
- * is suspended until {@link resume} is called. Concurrent updates are queued
- * and processed sequentially.
+ * is suspended until {@link resume} is called.
+ *
+ * Updates requested while one is suspended are queued, never dropped. When
+ * the suspended update lands, the whole queue is drained as one batch: a
+ * single `resize-before` is dispatched for the batch's final geometry (the
+ * last entry's `layout`), then every entry's `fn` runs in order. Each
+ * {@link run} promise resolves only once its own `fn` has run (or was
+ * discarded by {@link cancelPending}).
  */
 export class PresizeQueue {
 	#resizing = false;
-	#queued: {
-		layout: Layout;
-		fn: () => void;
-		overlay?: PresizeOverlay;
-	} | null = null;
+	#queued: Entry[] = [];
 	#pending: (() => void) | null = null;
+	#generation = 0;
 
 	constructor(
 		private _target: EventTarget,
@@ -41,31 +52,13 @@ export class PresizeQueue {
 		private _onDispatch?: () => void,
 	) {}
 
-	async run(
-		layout: Layout,
-		fn: () => void,
-		overlay?: PresizeOverlay,
-	): Promise<void> {
-		if (this.#resizing) {
-			this.#queued = { layout, fn, overlay };
-			return;
-		}
-
-		this.#resizing = true;
-		try {
-			await this.#dispatchAndMaybeWait(layout, fn, overlay);
-			while (this.#queued) {
-				const {
-					layout: nextLayout,
-					fn: nextFn,
-					overlay: nextOverlay,
-				} = this.#queued;
-				this.#queued = null;
-				await this.#dispatchAndMaybeWait(nextLayout, nextFn, nextOverlay);
+	run(layout: Layout, fn: () => void, overlay?: PresizeOverlay): Promise<void> {
+		return new Promise<void>((resolve, reject) => {
+			this.#queued.push({ layout, fn, overlay, resolve, reject });
+			if (!this.#resizing) {
+				void this.#drain();
 			}
-		} finally {
-			this.#resizing = false;
-		}
+		});
 	}
 
 	resume(): void {
@@ -76,11 +69,54 @@ export class PresizeQueue {
 		}
 	}
 
-	async #dispatchAndMaybeWait(
-		layout: Layout,
-		fn: () => void,
-		overlay?: PresizeOverlay,
-	): Promise<void> {
+	/**
+	 * Discards every queued update and the suspended one, if any, resolving
+	 * their {@link run} promises without running their `fn`. A suspended
+	 * transition still waits for {@link resume}, so a consumer mid-presize is
+	 * never resumed out from under it, but its `fn` is skipped when it lands.
+	 */
+	cancelPending(): void {
+		this.#generation++;
+		const queued = this.#queued;
+		this.#queued = [];
+		for (const entry of queued) {
+			entry.resolve();
+		}
+	}
+
+	async #drain(): Promise<void> {
+		this.#resizing = true;
+		try {
+			while (this.#queued.length > 0) {
+				const batch = this.#queued;
+				this.#queued = [];
+				const generation = this.#generation;
+				const last = batch[batch.length - 1];
+				if (!this.#dispatch(last.layout, last.overlay)) {
+					await new Promise<void>((resolve) => {
+						this.#pending = resolve;
+					});
+				}
+
+				const cancelled = generation !== this.#generation;
+				for (const entry of batch) {
+					try {
+						if (!cancelled) {
+							entry.fn();
+						}
+
+						entry.resolve();
+					} catch (error) {
+						entry.reject(error);
+					}
+				}
+			}
+		} finally {
+			this.#resizing = false;
+		}
+	}
+
+	#dispatch(layout: Layout, overlay?: PresizeOverlay): boolean {
 		this._onDispatch?.();
 		const detail: PresizeDetail = {
 			calculatePresizePaths: () => calculate_presize_paths(layout),
@@ -92,13 +128,6 @@ export class PresizeQueue {
 			detail,
 		});
 
-		const proceed = this._target.dispatchEvent(event);
-		if (!proceed) {
-			await new Promise<void>((resolve) => {
-				this.#pending = resolve;
-			});
-		}
-
-		fn();
+		return this._target.dispatchEvent(event);
 	}
 }

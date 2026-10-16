@@ -20,6 +20,7 @@ import { remove_child } from "../layout/remove_child.ts";
 import { insert_child } from "../layout/insert_child.ts";
 
 export interface OverlayHost {
+	/** The latest intended layout tree, which mutations build on. */
 	readonly panel: Layout;
 	readonly physics: Physics;
 	readonly stylesheet: CSSStyleSheet;
