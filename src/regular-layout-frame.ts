@@ -16,8 +16,8 @@ import type { RegularLayoutTab } from "./regular-layout-tab.ts";
 
 const CSS = `
 :host{box-sizing:border-box;flex-direction:column;pointer-events:none}
-[part~="titlebar"]{height:24px;user-select:none;overflow:hidden}
-[part~="container"]{flex:1 1 auto;pointer-events:auto}
+[part~="titlebar"]{height:24px;flex-shrink:0;user-select:none;overflow:hidden}
+[part~="container"]{flex:1 1 auto;min-height:0;pointer-events:auto}
 [part~="title"]{flex:1 1 auto;pointer-events:none}
 [part~="close"]{align-self:stretch}
 :host([inactive]) [part~="container"]{display:none}
