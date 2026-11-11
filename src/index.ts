@@ -45,6 +45,10 @@
  * layout.restore(savedState);
  * ```
  *
+ * Importing this module registers the custom elements (skipping any tag name
+ * which is already defined). To register them yourself instead, import from
+ * `regular-layout/components` and call {@link defineCustomElements}.
+ *
  * ## Core Components
  *
  * - {@link RegularLayout}: The main `<regular-layout>` custom element.
@@ -59,12 +63,8 @@
  * @packageDocumentation
  */
 
-export type * from "./core/types.ts";
-
-export { RegularLayout } from "./regular-layout.ts";
-export { RegularLayoutFrame } from "./regular-layout-frame.ts";
-
-export type * from "./extensions.ts";
+export * from "./components.ts";
 
 // Side effects
-import "./extensions.ts";
+import { defineCustomElements } from "./define.ts";
+defineCustomElements();

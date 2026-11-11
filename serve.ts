@@ -15,7 +15,13 @@ import * as http from "node:http";
 const PORT = 8081;
 
 const build_config: esbuild.BuildOptions = {
-	entryPoints: ["examples/index.ts"],
+	// The library entry points are served alongside the example for tests
+	// which load them directly (e.g. on a page without the example).
+	entryPoints: [
+		{ in: "examples/index.ts", out: "index" },
+		{ in: "src/index.ts", out: "regular-layout" },
+		{ in: "src/components.ts", out: "components" },
+	],
 	bundle: true,
 	outdir: ".esbuild-serve",
 	platform: "browser",
