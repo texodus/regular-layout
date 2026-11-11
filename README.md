@@ -38,6 +38,23 @@ A library for resizable & repositionable panel layouts.
 npm install regular-layout
 ```
 
+Importing `regular-layout` registers `<regular-layout>`,
+`<regular-layout-frame>` and `<regular-layout-tab>`. Tag names that are already
+defined are skipped, so it's safe to import more than once. If another copy of
+the library loaded first, that copy's elements are used.
+
+### Manual registration
+
+To control when (or into which `CustomElementRegistry`) the elements are
+registered, import from `regular-layout/components` instead. This entry point
+exports the same API but has no side effects:
+
+```javascript
+import { defineCustomElements } from "regular-layout/components";
+
+defineCustomElements(); // or defineCustomElements(registry)
+```
+
 ## Quick Start
 
 Import the library and add `<regular-layout>` to your HTML. Children are

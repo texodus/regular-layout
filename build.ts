@@ -24,14 +24,18 @@ function generateDeclarations(): void {
 	console.log("Declaration files generated!");
 }
 
+// `index` auto-registers the custom elements, `components` does not. Code
+// splitting puts the shared implementation in a common chunk, so importing
+// both entry points yields the same classes rather than two copies.
 const browserConfig: esbuild.BuildOptions = {
-	entryPoints: ["src/index.ts"],
+	entryPoints: ["src/index.ts", "src/components.ts"],
 	bundle: true,
+	splitting: true,
 	minify: true,
 	minifyWhitespace: true,
 	minifyIdentifiers: true,
 	mangleProps: /^[_#]/,
-	outfile: "dist/index.js",
+	outdir: "dist",
 	platform: "browser",
 	format: "esm",
 	sourcemap: true,

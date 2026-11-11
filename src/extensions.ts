@@ -9,14 +9,10 @@
 // ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-import { RegularLayout } from "./regular-layout.ts";
-import { RegularLayoutFrame } from "./regular-layout-frame.ts";
+import type { RegularLayout } from "./regular-layout.ts";
+import type { RegularLayoutFrame } from "./regular-layout-frame.ts";
 import type { Layout, PresizeDetail } from "./core/types.ts";
-import { RegularLayoutTab } from "./regular-layout-tab.ts";
-
-customElements.define("regular-layout", RegularLayout);
-customElements.define("regular-layout-frame", RegularLayoutFrame);
-customElements.define("regular-layout-tab", RegularLayoutTab);
+import type { RegularLayoutTab } from "./regular-layout-tab.ts";
 
 declare global {
 	interface Document {
@@ -44,6 +40,7 @@ declare global {
 	interface CustomElementRegistry {
 		get(tagName: "regular-layout"): typeof RegularLayout;
 		get(tagName: "regular-layout-frame"): typeof RegularLayoutFrame;
+		get(tagName: "regular-layout-tab"): typeof RegularLayoutTab;
 	}
 
 	interface HTMLElement {
