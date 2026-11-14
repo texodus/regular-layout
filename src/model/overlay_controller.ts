@@ -122,54 +122,46 @@ export class OverlayController {
 		host.dispatchEvent(custom_event);
 	}
 
+	/**
+	 * Ends a drag. With an `event`, drops the dragged panel at those
+	 * coordinates; with `null`, cancels the drag and restores the layout as it
+	 * was before it began. Either way the overlay preview and `className` are
+	 * removed.
+	 */
 	async clear(
 		event: { clientX: number; clientY: number } | null,
-		{ slot, layout }: LayoutPath,
+		{ slot }: LayoutPath,
 		className: string = this._host.physics.OVERLAY_CLASSNAME,
 	): Promise<void> {
 		const host = this._host;
-		const panel = remove_child(host.panel, slot);
 		const query = `:scope > [${host.physics.CHILD_ATTRIBUTE_NAME}="${slot}"]`;
 		const drag_element = host.querySelector(query);
 
-		if (event === null) {
-			await host.restore(layout);
-			return;
+		let new_layout = host.panel;
+		if (event !== null) {
+			const panel = remove_child(host.panel, slot);
+			const [col, row, box] = host.relativeCoordinates(event, false);
+			const hit = calculate_intersection(col, row, panel);
+			if (hit) {
+				const drop_target = calculate_edge(
+					col,
+					row,
+					panel,
+					slot,
+					hit,
+					box,
+					host.physics,
+				);
+
+				const orientation = drop_target.is_edge
+					? drop_target.orientation
+					: undefined;
+
+				new_layout = insert_child(panel, slot, drop_target.path, orientation);
+			}
 		}
 
-		const [col, row, box] = host.relativeCoordinates(event, false);
-		let drop_target = calculate_intersection(col, row, panel);
-		if (drop_target) {
-			drop_target = calculate_edge(
-				col,
-				row,
-				panel,
-				slot,
-				drop_target,
-				box,
-				host.physics,
-			);
-		}
-
-		if (drop_target) {
-			const orientation = drop_target?.is_edge
-				? drop_target.orientation
-				: undefined;
-
-			const new_layout = insert_child(
-				panel,
-				slot,
-				drop_target.path,
-				orientation,
-			);
-
-			await host.restore(new_layout);
-		} else {
-			await host.restore(layout);
-		}
-
-		if (drag_element) {
-			drag_element.classList.remove(className);
-		}
+		await host.restore(new_layout);
+		drag_element?.classList.remove(className);
 	}
 }

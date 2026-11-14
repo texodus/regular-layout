@@ -132,7 +132,12 @@ export class RegularLayout extends HTMLElement {
 	private _intended: Layout;
 	private _stylesheet: CSSStyleSheet;
 	private _cursor_stylesheet: CSSStyleSheet;
-	private _drag_target?: [LayoutDivider, number, number];
+	private _drag_target?: [
+		divider: LayoutDivider,
+		col: number,
+		row: number,
+		pointer_id: number,
+	];
 	private _cursor_override: boolean;
 	private _dimensions?: { box: DOMRect; style: CSSStyleDeclaration };
 	private _physics: Physics;
@@ -173,6 +178,9 @@ export class RegularLayout extends HTMLElement {
 		this.addEventListener("pointerdown", this.onPointerDown);
 		this.addEventListener("pointerup", this.onPointerUp);
 		this.addEventListener("pointermove", this.onPointerMove);
+		this.addEventListener("pointercancel", this.onPointerCancel);
+		this.addEventListener("lostpointercapture", this.onPointerCancel);
+		this.update_touch_listener();
 	}
 
 	disconnectedCallback() {
@@ -181,6 +189,9 @@ export class RegularLayout extends HTMLElement {
 		this.removeEventListener("pointerdown", this.onPointerDown);
 		this.removeEventListener("pointerup", this.onPointerUp);
 		this.removeEventListener("pointermove", this.onPointerMove);
+		this.removeEventListener("pointercancel", this.onPointerCancel);
+		this.removeEventListener("lostpointercapture", this.onPointerCancel);
+		this.update_touch_listener();
 	}
 
 	/**
@@ -234,7 +245,8 @@ export class RegularLayout extends HTMLElement {
 	 * Clears the overlay state and commits the panel placement.
 	 *
 	 * @param event - `PointerEvent`, `MouseEvent`, or just X and Y
-	 *     coordinates in screen pixels.
+	 *     coordinates in screen pixels, at which to drop the panel. Pass
+	 *     `null` to cancel the drag instead, restoring the pre-drag layout.
 	 * @param dragTarget - A `LayoutPath` (presumably from `calculateIntersect`)
 	 *     which points to the drag element in the current layout.
 	 * @param className - The CSS class name to use for the overlay panel
@@ -500,6 +512,8 @@ export class RegularLayout extends HTMLElement {
 			...this._physics,
 			...physics,
 		});
+
+		this.update_touch_listener();
 	}
 
 	/**
@@ -662,20 +676,60 @@ export class RegularLayout extends HTMLElement {
 		}
 	};
 
+	private hit_divider(
+		coordinates: PointerEventCoordinates,
+		target: EventTarget | null,
+	): [LayoutDivider, number, number] | null {
+		if (this._physics.GRID_DIVIDER_CHECK_TARGET && target !== this) {
+			return null;
+		}
+
+		const [col, row, rect] = this.relativeCoordinates(coordinates);
+		const size = this._physics.GRID_DIVIDER_SIZE;
+		const hit = calculate_intersection(col, row, this._panel, { rect, size });
+		return hit && hit.type !== "layout-path" ? [hit, col, row] : null;
+	}
+
+	private update_touch_listener() {
+		if (this.isConnected && this._physics.GRID_DIVIDER_TOUCH_RESIZE) {
+			this.addEventListener("touchstart", this.onTouchStart, {
+				passive: false,
+			});
+		} else {
+			this.removeEventListener("touchstart", this.onTouchStart);
+		}
+	}
+
+	private onTouchStart = (event: TouchEvent) => {
+		const touch = event.changedTouches[0];
+		if (event.cancelable && touch && this.hit_divider(touch, event.target)) {
+			event.preventDefault();
+		}
+	};
+
 	private onPointerDown = (event: PointerEvent) => {
 		if (event.button !== 0) {
 			return;
 		}
 
-		if (!this._physics.GRID_DIVIDER_CHECK_TARGET || event.target === this) {
-			const [col, row, rect] = this.relativeCoordinates(event);
-			const size = this._physics.GRID_DIVIDER_SIZE;
-			const hit = calculate_intersection(col, row, this._panel, { rect, size });
-			if (hit && hit.type !== "layout-path") {
-				this._drag_target = [hit, col, row];
-				this.setPointerCapture(event.pointerId);
-				event.preventDefault();
-			}
+		const hit = this.hit_divider(event, event.target);
+		if (hit) {
+			this._drag_target = [...hit, event.pointerId];
+			this.setPointerCapture(event.pointerId);
+			event.preventDefault();
+		}
+	};
+
+	/**
+	 * Abandons an in-progress divider drag, discarding its preview. Handles
+	 * both `pointercancel` and `lostpointercapture` without a preceding
+	 * `pointerup`. Ignores other pointers, since these events also bubble up
+	 * from children (e.g. a frame's tab drag).
+	 */
+	private onPointerCancel = async (event: PointerEvent) => {
+		if (this._drag_target?.[3] === event.pointerId) {
+			this._drag_target = undefined;
+			await this.restore(this._intended, true);
 		}
 	};
 
@@ -720,14 +774,17 @@ export class RegularLayout extends HTMLElement {
 	};
 
 	private onPointerUp = async (event: PointerEvent) => {
-		if (this._drag_target) {
+		const drag_target = this._drag_target;
+		if (drag_target) {
+			// Cleared before `restore` so the `lostpointercapture` that follows
+			// this event does not cancel the drag being committed.
+			this._drag_target = undefined;
 			this.releasePointerCapture(event.pointerId);
 			const [col, row] = this.relativeCoordinates(event, false);
-			const [{ path, type }, old_col, old_row] = this._drag_target;
+			const [{ path, type }, old_col, old_row] = drag_target;
 			const offset = type === "horizontal" ? old_col - col : old_row - row;
 			const panel = redistribute_panel_sizes(this._intended, path, offset);
 			await this.restore(panel, true);
-			this._drag_target = undefined;
 		}
 	};
 }

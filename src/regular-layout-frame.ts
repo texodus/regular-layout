@@ -16,7 +16,7 @@ import type { RegularLayoutTab } from "./regular-layout-tab.ts";
 
 const CSS = `
 :host{box-sizing:border-box;flex-direction:column;pointer-events:none}
-[part~="titlebar"]{height:24px;flex-shrink:0;user-select:none;overflow:hidden}
+[part~="titlebar"]{height:24px;flex-shrink:0;user-select:none;overflow:hidden;touch-action:none}
 [part~="container"]{flex:1 1 auto;min-height:0;pointer-events:auto}
 [part~="title"]{flex:1 1 auto;pointer-events:none}
 [part~="close"]{align-self:stretch}
@@ -116,7 +116,7 @@ export class RegularLayoutFrame extends HTMLElement {
 		this.addEventListener("pointermove", this.onPointerMove);
 		this.addEventListener("pointerup", this.onPointerUp);
 		this.addEventListener("pointercancel", this.onPointerCancel);
-		this.addEventListener("lostpointercapture", this.onPointerLost);
+		this.addEventListener("lostpointercapture", this.onPointerCancel);
 		this._layout.addEventListener("regular-layout-update", this.drawTabs);
 		this._layout.addEventListener(
 			"regular-layout-before-update",
@@ -131,8 +131,8 @@ export class RegularLayoutFrame extends HTMLElement {
 		this._header.removeEventListener("pointerdown", this.onPointerDown);
 		this.removeEventListener("pointermove", this.onPointerMove);
 		this.removeEventListener("pointerup", this.onPointerUp);
-		this.removeEventListener("pointercancel", this.onPointerUp);
-		this.removeEventListener("lostpointercapture", this.onPointerLost);
+		this.removeEventListener("pointercancel", this.onPointerCancel);
+		this.removeEventListener("lostpointercapture", this.onPointerCancel);
 		this._layout.removeEventListener("regular-layout-update", this.drawTabs);
 		this._layout.removeEventListener(
 			"regular-layout-before-update",
@@ -182,20 +182,26 @@ export class RegularLayoutFrame extends HTMLElement {
 	};
 
 	private onPointerUp = (event: PointerEvent): void => {
-		if (this._drag?.moved) {
-			this._layout.clearOverlayState(event, this._drag.path);
-		}
-	};
-
-	private onPointerCancel = (_: PointerEvent): void => {
-		if (this._drag?.moved) {
-			this._layout.clearOverlayState(null, this._drag.path);
-		}
-	};
-
-	private onPointerLost = (event: PointerEvent): void => {
-		this.releasePointerCapture(event.pointerId);
+		const drag = this._drag;
 		this._drag = null;
+		if (drag?.moved) {
+			this._layout.clearOverlayState(event, drag.path);
+		}
+	};
+
+	/**
+	 * Abandons an in-progress drag, restoring the pre-drag layout. Handles
+	 * both `pointercancel` (e.g. the browser claimed a touch gesture) and
+	 * `lostpointercapture` without a preceding `pointerup` (capture released
+	 * or stolen elsewhere). After a drop, `onPointerUp` has already cleared
+	 * `_drag`, so the trailing `lostpointercapture` is a no-op.
+	 */
+	private onPointerCancel = (_: PointerEvent): void => {
+		const drag = this._drag;
+		this._drag = null;
+		if (drag?.moved) {
+			this._layout.clearOverlayState(null, drag.path);
+		}
 	};
 
 	private drawTabs = (event: RegularLayoutEvent) => {

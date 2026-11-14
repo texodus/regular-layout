@@ -82,6 +82,12 @@ export interface Physics {
 	 * the `event.target`.
 	 */
 	GRID_DIVIDER_CHECK_TARGET: boolean;
+
+	/**
+	 * Whether a touch drag on a divider resizes it. Without this, the browser
+	 * claims the gesture as a pan and cancels the drag.
+	 */
+	GRID_DIVIDER_TOUCH_RESIZE: boolean;
 }
 
 /**
@@ -101,6 +107,7 @@ export interface PhysicsUpdate {
 	OVERLAY_DEFAULT?: OverlayMode;
 	GRID_DIVIDER_SIZE?: number;
 	GRID_DIVIDER_CHECK_TARGET?: boolean;
+	GRID_DIVIDER_TOUCH_RESIZE?: boolean;
 }
 
 export const DEFAULT_PHYSICS: Physics = Object.freeze({
@@ -116,4 +123,5 @@ export const DEFAULT_PHYSICS: Physics = Object.freeze({
 	OVERLAY_DEFAULT: "absolute",
 	GRID_DIVIDER_SIZE: 6,
 	GRID_DIVIDER_CHECK_TARGET: true,
+	GRID_DIVIDER_TOUCH_RESIZE: true,
 });
