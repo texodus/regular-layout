@@ -115,6 +115,24 @@ export interface PresizeDetail {
 }
 
 /**
+ * The origin of a layout tree change: `"user"` for a gesture made through the
+ * element itself (a divider drag or reset, a drag-and-drop, a tab close or
+ * select), `"api"` for a programmatic call.
+ */
+export type LayoutChangeSource = "user" | "api";
+
+/**
+ * The detail payload of the `regular-layout-change` event.
+ */
+export interface LayoutChangeDetail {
+	/** The newly requested layout tree. */
+	layout: Layout;
+
+	/** Where the change came from. */
+	source: LayoutChangeSource;
+}
+
+/**
  * An empty `Layout` with no panels.
  */
 export const EMPTY_PANEL: Layout = {

@@ -11,7 +11,11 @@
 
 import type { RegularLayout } from "./regular-layout.ts";
 import type { RegularLayoutFrame } from "./regular-layout-frame.ts";
-import type { Layout, PresizeDetail } from "./core/types.ts";
+import type {
+	Layout,
+	LayoutChangeDetail,
+	PresizeDetail,
+} from "./core/types.ts";
 import type { RegularLayoutTab } from "./regular-layout-tab.ts";
 
 declare global {
@@ -51,6 +55,12 @@ declare global {
 		): void;
 
 		addEventListener(
+			name: "regular-layout-change",
+			cb: (e: RegularLayoutChangeEvent) => void,
+			options?: { signal: AbortSignal },
+		): void;
+
+		addEventListener(
 			name: "regular-layout-before-update",
 			cb: (e: RegularLayoutEvent) => void,
 			options?: { signal: AbortSignal },
@@ -74,6 +84,11 @@ declare global {
 		): void;
 
 		removeEventListener(
+			name: "regular-layout-change",
+			cb: (e: RegularLayoutChangeEvent) => void,
+		): void;
+
+		removeEventListener(
 			name: "regular-layout-before-update",
 			cb: (e: RegularLayoutEvent) => void,
 		): void;
@@ -91,5 +106,6 @@ declare global {
 }
 
 export type RegularLayoutEvent = CustomEvent<Layout>;
+export type RegularLayoutChangeEvent = CustomEvent<LayoutChangeDetail>;
 export type RegularLayoutPresizeEvent = CustomEvent<PresizeDetail>;
 export type RegularLayoutSelectEvent = CustomEvent<{ name: string }>;
