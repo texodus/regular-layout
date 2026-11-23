@@ -170,10 +170,24 @@ complete theme for `<regular-layout>` and `regular-layout-frame>`.
 | Event | Detail | Cancelable | Description |
 |-------|--------|------------|-------------|
 | `regular-layout-before-resize` | `{ calculatePresizePaths() }` | Yes | Fired before any layout change. Cancel to suspend until `resumeResize()`. |
+| `regular-layout-change` | `{ layout, source }` | No | Fired synchronously when a new layout tree is requested, before `regular-layout-before-resize`. `source` is `"user"` for divider drags/resets, drag-and-drop and tab close/select, `"api"` for programmatic calls. |
 | `regular-layout-update` | `Layout` | No | Fired after layout state is updated. |
 
 ```javascript
 layout.addEventListener("regular-layout-update", (event) => {
     console.log("New layout:", event.detail);
+});
+```
+
+`regular-layout-update` fires when a tree is _applied_, which may be later than
+it was requested (behind a suspended `regular-layout-before-resize`), and once
+per queued update. To mirror user edits into an external model, listen to
+`regular-layout-change` instead, which always carries the newest requested tree:
+
+```javascript
+layout.addEventListener("regular-layout-change", (event) => {
+    if (event.detail.source === "user") {
+        model.setLayout(event.detail.layout);
+    }
 });
 ```

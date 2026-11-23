@@ -9,7 +9,12 @@
 // ┃  *  [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). *  ┃
 // ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-import type { Layout, LayoutPath, OverlayMode } from "../core/types.ts";
+import type {
+	Layout,
+	LayoutChangeSource,
+	LayoutPath,
+	OverlayMode,
+} from "../core/types.ts";
 import type { Physics } from "../core/constants.ts";
 import type { PresizeQueue } from "./presize_queue.ts";
 import { calculate_intersection } from "../layout/calculate_intersect.ts";
@@ -29,7 +34,7 @@ export interface OverlayHost {
 		event: { clientX: number; clientY: number },
 		recalculate: boolean,
 	): [number, number, DOMRect, CSSStyleDeclaration];
-	restore(layout: Layout, isFlattened?: boolean): Promise<void>;
+	commit(layout: Layout, source?: LayoutChangeSource): Promise<void>;
 	querySelector(selectors: string): Element | null;
 	dispatchEvent(event: Event): boolean;
 }
@@ -138,6 +143,7 @@ export class OverlayController {
 		const drag_element = host.querySelector(query);
 
 		let new_layout = host.panel;
+		let source: LayoutChangeSource | undefined;
 		if (event !== null) {
 			const panel = remove_child(host.panel, slot);
 			const [col, row, box] = host.relativeCoordinates(event, false);
@@ -158,10 +164,11 @@ export class OverlayController {
 					: undefined;
 
 				new_layout = insert_child(panel, slot, drop_target.path, orientation);
+				source = "user";
 			}
 		}
 
-		await host.restore(new_layout);
+		await host.commit(new_layout, source);
 		drag_element?.classList.remove(className);
 	}
 }

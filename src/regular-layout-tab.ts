@@ -85,7 +85,9 @@ export class RegularLayoutTab extends HTMLElement {
 		}
 
 		if (this._tab_panel !== undefined && this._index !== undefined) {
-			this._layout?.removePanel(this._tab_panel.tabs[this._index]);
+			this._layout?.removePanel(this._tab_panel.tabs[this._index], {
+				source: "user",
+			});
 		}
 	};
 
@@ -95,7 +97,9 @@ export class RegularLayoutTab extends HTMLElement {
 		}
 
 		if (this._tab_panel !== undefined && this._index !== undefined) {
-			this._layout?.select(this._tab_panel.tabs[this._index]);
+			this._layout?.select(this._tab_panel.tabs[this._index], {
+				source: "user",
+			});
 		}
 	};
 }

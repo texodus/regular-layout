@@ -27,6 +27,8 @@ import type {
 	LayoutDivider,
 	TabLayout,
 	OverlayMode,
+	LayoutChangeSource,
+	LayoutChangeDetail,
 	Orientation,
 	LayoutPathTraversal,
 	ViewWindow,
@@ -292,9 +294,15 @@ export class RegularLayout extends HTMLElement {
 	 * Removes a panel from the layout by name.
 	 *
 	 * @param name - Name of the panel to remove
+	 * @param options.source - The origin reported by the `<prefix>-change`
+	 *     event. Defaults to `"api"`; pass `"user"` when removing on behalf of
+	 *     a user gesture (as `<regular-layout-tab>`'s close button does).
 	 */
-	removePanel = async (name: string) => {
-		await this.restore(remove_child(this._intended, name));
+	removePanel = async (
+		name: string,
+		{ source = "api" }: { source?: LayoutChangeSource } = {},
+	) => {
+		await this.commit(flatten(remove_child(this._intended, name)), source);
 	};
 
 	/**
@@ -305,12 +313,18 @@ export class RegularLayout extends HTMLElement {
 	 * The event fires whenever a tab is selected - including re-selecting the
 	 * already-active tab, or selecting the sole tab of a single-element stack -
 	 * so consumers can always map a tab interaction to an "active panel". When
-	 * the selection actually changes, a `<prefix>-update` event is dispatched
-	 * first (via {@link restore}).
+	 * the selection actually changes, a `<prefix>-change` event is dispatched
+	 * first, then a `<prefix>-update` event once the change is applied.
 	 *
 	 * @param name - The name of the panel to select.
+	 * @param options.source - The origin reported by the `<prefix>-change`
+	 *     event. Defaults to `"api"`; pass `"user"` when selecting on behalf of
+	 *     a user gesture (as `<regular-layout-tab>` does).
 	 */
-	select = async (name: string) => {
+	select = async (
+		name: string,
+		{ source = "api" }: { source?: LayoutChangeSource } = {},
+	) => {
 		const layout = structuredClone(this._intended);
 		const tab_panel = this.getPanel(name, layout);
 		if (!tab_panel) {
@@ -320,7 +334,7 @@ export class RegularLayout extends HTMLElement {
 		const index = tab_panel.tabs.indexOf(name);
 		if (index !== -1 && tab_panel.selected !== index) {
 			tab_panel.selected = index;
-			await this.restore(layout);
+			await this.commit(layout, source);
 		}
 
 		const event_name = `${this._physics.CUSTOM_EVENT_NAME_PREFIX}-select`;
@@ -429,10 +443,15 @@ export class RegularLayout extends HTMLElement {
 	 */
 	restoreSync = (layout: Layout, _is_flattened: boolean = false) => {
 		this._presizeQueue.cancelPending();
+		const panel = !_is_flattened ? flatten(layout) : layout;
+		this._intended = panel;
+		if (!this.dispatch_change(panel, "api")) {
+			return;
+		}
+
 		this._dimensions = undefined;
 		this._maximized = undefined;
-		this._panel = !_is_flattened ? flatten(layout) : layout;
-		this._intended = this._panel;
+		this._panel = panel;
 		const css = create_css_grid_layout(this._panel, undefined, this._physics);
 		this._stylesheet.replaceSync(css);
 		const event_name = `${this._physics.CUSTOM_EVENT_NAME_PREFIX}-update`;
@@ -461,7 +480,19 @@ export class RegularLayout extends HTMLElement {
 	 */
 	restore = async (layout: Layout, _is_flattened: boolean = false) => {
 		const panel = !_is_flattened ? flatten(layout) : layout;
+		await this.commit(panel, "api");
+	};
+
+	/**
+	 * Makes `panel` the intended layout tree and applies it once any
+	 * `before-resize` gate allows.
+	 */
+	private commit = async (panel: Layout, source?: LayoutChangeSource) => {
 		this._intended = panel;
+		if (source !== undefined && !this.dispatch_change(panel, source)) {
+			return;
+		}
+
 		await this._presizeQueue.run(panel, () => {
 			this._maximized = undefined;
 			this._panel = panel;
@@ -475,6 +506,17 @@ export class RegularLayout extends HTMLElement {
 			this.dispatchEvent(event);
 		});
 	};
+
+	/**
+	 * Dispatches `<prefix>-change` for `panel`, which must already be
+	 * `_intended`.
+	 */
+	private dispatch_change(panel: Layout, source: LayoutChangeSource) {
+		const event_name = `${this._physics.CUSTOM_EVENT_NAME_PREFIX}-change`;
+		const detail: LayoutChangeDetail = { layout: panel, source };
+		this.dispatchEvent(new CustomEvent(event_name, { detail }));
+		return this._intended === panel;
+	}
 
 	/**
 	 * Resumes a layout update that was suspended by cancelling the
@@ -652,7 +694,7 @@ export class RegularLayout extends HTMLElement {
 			},
 			relativeCoordinates: (event, recalculate) =>
 				self.relativeCoordinates(event, recalculate),
-			restore: (layout, isFlattened) => self.restore(layout, isFlattened),
+			commit: (layout, source) => self.commit(flatten(layout), source),
 			querySelector: (selectors) => self.querySelector(selectors),
 			dispatchEvent: (event) => self.dispatchEvent(event),
 		};
@@ -672,7 +714,7 @@ export class RegularLayout extends HTMLElement {
 				undefined,
 			);
 
-			await this.restore(panel, true);
+			await this.commit(panel, "user");
 		}
 	};
 
@@ -729,7 +771,7 @@ export class RegularLayout extends HTMLElement {
 	private onPointerCancel = async (event: PointerEvent) => {
 		if (this._drag_target?.[3] === event.pointerId) {
 			this._drag_target = undefined;
-			await this.restore(this._intended, true);
+			await this.commit(this._intended);
 		}
 	};
 
@@ -783,8 +825,14 @@ export class RegularLayout extends HTMLElement {
 			const [col, row] = this.relativeCoordinates(event, false);
 			const [{ path, type }, old_col, old_row] = drag_target;
 			const offset = type === "horizontal" ? old_col - col : old_row - row;
-			const panel = redistribute_panel_sizes(this._intended, path, offset);
-			await this.restore(panel, true);
+			if (offset === 0) {
+				// A click without a drag (e.g. half of a `dblclick`) changes
+				// nothing, so discard any preview without reporting a change.
+				await this.commit(this._intended);
+			} else {
+				const panel = redistribute_panel_sizes(this._intended, path, offset);
+				await this.commit(panel, "user");
+			}
 		}
 	};
 }
